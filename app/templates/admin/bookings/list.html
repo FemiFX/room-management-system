@@ -1,0 +1,232 @@
+{% extends "admin/layout.html" %}
+{% from "admin/partials/badges.html" import booking_source_badge, booking_status_badge %}
+{% from "admin/bookings/_toolbar.html" import bookings_toolbar %}
+
+{% block title %}{{ _('Bookings') }}{% endblock %}
+{% block page_title %}{{ _('Bookings') }}{% endblock %}
+{% block page_subtitle %}{{ _('List and calendar across every room') }}{% endblock %}
+
+{% block nav_extra %}{{ bookings_toolbar('list') }}{% endblock %}
+
+{% block admin_content %}
+<div class="space-y-6">
+
+    <div class="card overflow-hidden">
+        {#
+          Filters live in the card header, which already existed. The old page
+          had no filters at all and a hard-coded ±30 day window that was
+          stated in a subtitle and nowhere else.
+        #}
+        <form method="get" action="/bookings"
+              class="flex flex-wrap items-center justify-between gap-3 border-b border-gray-100 px-6 py-3 dark:border-carbon-700">
+            <h3 class="flex items-center gap-2 text-base font-semibold text-gray-900 dark:text-parchment">
+                <i class="fa-solid fa-calendar-days text-sm text-blue-500"></i> {{ _('Bookings') }}
+            </h3>
+            <div class="flex flex-wrap items-center gap-2.5">
+                <label class="sr-only" for="flt-range">{{ _('Period') }}</label>
+                <select id="flt-range" name="range" data-booking-filter
+                        class="rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 dark:border-carbon-600 dark:bg-carbon-800 dark:text-parchment">
+                    {% for key, label in [
+                        ('week', _('This week')), ('month', _('This month')),
+                        ('days30', _('± 30 days')), ('upcoming', _('Next 12 months')),
+                        ('custom', _('Custom period'))
+                    ] %}
+                    <option value="{{ key }}" {% if range_key == key %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+
+                <span id="custom-range" class="flex items-center gap-1.5 {% if range_key != 'custom' %}hidden{% endif %}">
+                    <label class="sr-only" for="flt-from">{{ _('From') }}</label>
+                    <input id="flt-from" name="from" type="date" value="{{ range_from }}"
+                           class="rounded-lg border border-gray-200 bg-white px-2.5 py-1.5 text-xs text-gray-700 dark:border-carbon-600 dark:bg-carbon-800 dark:text-parchment">
+                    <span class="text-xs text-gray-400">–</span>
+                    <label class="sr-only" for="flt-to">{{ _('To') }}</label>
+                    <input id="flt-to" name="to" type="date" value="{{ range_to }}"
+                           class="rounded-lg border border-gray-200 bg-white px-2.5 py-1.5 text-xs text-gray-700 dark:border-carbon-600 dark:bg-carbon-800 dark:text-parchment">
+                </span>
+
+                {# The state is not a filter any more -- the list is grouped by
+                   it, and what waits stands at the top. What is left to choose
+                   is whose bookings, which the groups cannot show. #}
+                <label class="sr-only" for="flt-kind">{{ _('Party') }}</label>
+                <select id="flt-kind" name="kind" data-booking-filter
+                        class="rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 dark:border-carbon-600 dark:bg-carbon-800 dark:text-parchment">
+                    {% for key, label in [
+                        ('all', _('All parties')), ('external', _('External')), ('internal', _('Internal'))
+                    ] %}
+                    <option value="{{ key }}" {% if kind_key == key %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+
+                {# Hidden once JS takes over; without it the filters still work. #}
+                <button type="submit" id="flt-apply" class="btn-secondary !px-3 !py-1.5 text-xs">{{ _('Apply') }}</button>
+
+                <span class="text-xs text-gray-400 dark:text-parchment/50">
+                    {%- if waiting_count %}{{ _('%(count)s waiting')|format(count=waiting_count) }} · {% endif -%}
+                    {{ range_label }} · {{ _('%(count)s bookings')|format(count=upcoming_count) }}
+                </span>
+            </div>
+        </form>
+
+        {% if bookings %}
+        <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+                <thead>
+                    <tr class="border-b border-gray-100 bg-gray-50/60 dark:border-carbon-700 dark:bg-carbon-700/30">
+                        <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-parchment/60">{{ _('Who') }}</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-parchment/60">{{ _('Title') }}</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-parchment/60 hidden md:table-cell">{{ _('Period') }}</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-parchment/60 hidden sm:table-cell">{{ _('Room') }}</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-parchment/60 hidden lg:table-cell">{{ _('Certificate') }}</th>
+                        <th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-parchment/60">{{ _('Actions') }}</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-50 dark:divide-carbon-700/50">
+                    {#
+                      Grouped by state instead of filtered by it: what waits for
+                      an answer is the top of the page, every time, without
+                      anyone having to remember to look. The period picker below
+                      does not touch that group -- a request for next spring is
+                      still owed an answer today.
+                    #}
+                    {% for group in groups %}
+                    {% if group.rows %}
+                    <tr class="bg-gray-50/70 dark:bg-carbon-700/40">
+                        <td colspan="6" class="px-6 py-2">
+                            {% if group.key == 'settled' %}
+                            <button type="button" data-group-toggle
+                                    class="flex items-center gap-2 text-[10.5px] font-bold uppercase tracking-wider text-gray-500 hover:text-gray-800 dark:text-parchment/60 dark:hover:text-parchment">
+                                <i class="fa-solid fa-chevron-right text-[9px] transition-transform" data-group-chevron></i>
+                                {{ _('Done · past, rejected, cancelled') }} · {{ group.rows | length }}
+                            </button>
+                            {% else %}
+                            <span class="text-[10.5px] font-bold uppercase tracking-wider text-gray-500 dark:text-parchment/60">
+                                {% if group.key == 'waiting' %}
+                                    {{ _('Waiting for a decision') }}
+                                    <span class="text-turf-green-700 dark:text-golden-bronze-300">· {{ group.rows | length }}</span>
+                                {% else %}
+                                    {{ _('Confirmed · coming up') }}
+                                {% endif %}
+                            </span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% for b in group.rows %}
+                    <tr data-group-row="{{ group.key }}" {% if not group.open %}hidden{% endif %}
+                        data-booking-id="{{ b.id }}"
+                        class="transition-colors hover:bg-gray-50/60 dark:hover:bg-carbon-700/30
+                               {% if group.key == 'settled' %}opacity-70{% endif %}">
+                        <td class="px-6 py-3.5 align-top {% if group.key == 'waiting' %}shadow-[inset_3px_0_0_theme(colors.amber.500)]{% endif %}">
+                            <a href="/bookings/{{ b.id }}" class="font-medium text-gray-900 hover:text-turf-green-600 dark:text-parchment dark:hover:text-golden-bronze-300">
+                                {{ b.party.name if b.party else _('No party') }}
+                            </a>
+                            <div class="mt-1 flex flex-wrap items-center gap-1.5">
+                                {% if b.party and b.party.party_type.value == 'external' %}
+                                <span class="inline-flex items-center rounded-full bg-blue-100 px-2 py-0.5 text-[10.5px] font-semibold text-blue-700 dark:bg-blue-900/30 dark:text-blue-300">{{ _('External') }}</span>
+                                {% else %}
+                                <span class="inline-flex items-center rounded-full bg-gray-100 px-2 py-0.5 text-[10.5px] font-semibold text-gray-600 dark:bg-carbon-700 dark:text-parchment/70">{{ _('Internal') }}</span>
+                                {% endif %}
+                                {% if b.request %}
+                                <span class="font-mono text-[10px] text-gray-400 dark:text-parchment/40">{{ b.request.public_ref }}</span>
+                                {% endif %}
+                            </div>
+                        </td>
+                        <td class="px-4 py-3.5 align-top">
+                            <span class="text-gray-800 dark:text-parchment">{{ b.title }}</span>
+                            {% if group.key == 'settled' %}
+                            <div class="mt-1" data-status-cell>{{ booking_status_badge(b.status.value) }}</div>
+                            {% endif %}
+                        </td>
+                        <td class="hidden whitespace-nowrap px-4 py-3.5 align-top md:table-cell">
+                            <div class="text-xs text-gray-600 dark:text-parchment/70">{{ b.start_at | local_datetime }}</div>
+                            <div class="text-xs text-gray-400 dark:text-parchment/40">{{ _('until %(time)s')|format(time=b.end_at | local_datetime) }}</div>
+                        </td>
+                        <td class="hidden px-4 py-3.5 align-top sm:table-cell">
+                            {% if b.room %}
+                            <a href="/rooms/{{ b.room.id }}" class="whitespace-nowrap rounded bg-gray-100 px-1.5 py-0.5 font-mono text-xs font-semibold text-gray-700 hover:bg-gray-200 dark:bg-carbon-700 dark:text-parchment dark:hover:bg-carbon-600">{{ b.room.room_code }}</a>
+                            {% else %}<span class="text-gray-400">—</span>{% endif %}
+                        </td>
+                        {# Only an external party owes us a certificate. #}
+                        <td class="hidden px-4 py-3.5 align-top lg:table-cell">
+                            {% set state = insurance_of.get(b.id) %}
+                            {% if not (b.party and b.party.party_type.value == 'external') %}
+                              <span class="text-gray-300 dark:text-parchment/30">—</span>
+                            {% elif state == 'on_file' %}
+                              <span class="inline-flex items-center rounded-full bg-teal-100 px-2 py-0.5 text-[11px] font-medium text-teal-700 dark:bg-teal-900/30 dark:text-teal-400">{{ _('On file') }}</span>
+                            {% elif state == 'promised' %}
+                              <span class="inline-flex items-center rounded-full bg-amber-100 px-2 py-0.5 text-[11px] font-medium text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">{{ _('Missing') }}</span>
+                            {% elif state == 'declined' %}
+                              <span class="inline-flex items-center rounded-full bg-red-100 px-2 py-0.5 text-[11px] font-medium text-red-600 dark:bg-red-900/30 dark:text-red-400">{{ _('No cover') }}</span>
+                            {% else %}
+                              <span class="text-gray-400 dark:text-parchment/40">{{ _('Not asked') }}</span>
+                            {% endif %}
+                        </td>
+                        <td class="px-4 py-3.5 text-right align-top">
+                            <div class="flex items-center justify-end gap-1">
+                                {% if b.status.value == 'pending' %}
+                                <button class="btn-action-approve inline-flex h-[30px] w-[30px] items-center justify-center rounded-lg text-teal-700 transition-colors hover:bg-teal-100 dark:text-teal-400 dark:hover:bg-teal-900/40"
+                                        data-id="{{ b.id }}" title="{{ _('Approve') }}" aria-label="{{ _('Approve') }}">
+                                    <i class="fa-solid fa-check text-[13px]"></i>
+                                </button>
+                                <button class="btn-action-reject inline-flex h-[30px] w-[30px] items-center justify-center rounded-lg text-red-600 transition-colors hover:bg-red-100 dark:text-red-400 dark:hover:bg-red-900/40"
+                                        data-id="{{ b.id }}" title="{{ _('Reject') }}" aria-label="{{ _('Reject') }}">
+                                    <i class="fa-solid fa-xmark text-[13px]"></i>
+                                </button>
+                                {% endif %}
+                                <a href="/bookings/{{ b.id }}" title="{{ _('Open') }}" aria-label="{{ _('Open') }}"
+                                   class="inline-flex h-[30px] w-[30px] items-center justify-center rounded-lg text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-900 dark:text-parchment/60 dark:hover:bg-carbon-700 dark:hover:text-parchment">
+                                    <i class="fa-solid fa-eye text-[13px]"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                    {% endif %}
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="py-16 text-center">
+            <i class="fa-solid fa-calendar-days text-4xl text-gray-200 dark:text-parchment/20 mb-4 block"></i>
+            <p class="text-base font-medium text-gray-600 dark:text-parchment/60">{{ _('Nothing in this period') }}</p>
+            {# Naming the window is the point: an empty list that does not say
+               what it looked at reads as a broken page. #}
+            <p class="text-sm text-gray-400 dark:text-parchment/40 mt-1 mb-6">
+                {{ _('Looked at %(period)s. Widen the period to see more.')|format(period=range_label) }}
+            </p>
+            <button onclick="openBookingModal()" class="btn-primary inline-flex items-center gap-2">
+                <i class="fa-solid fa-plus text-xs"></i> {{ _('New Booking') }}
+            </button>
+        </div>
+        {% endif %}
+    </div>
+
+</div>
+
+{% include "admin/bookings/_booking_create.html" %}
+
+{# ─── Reject Booking Modal ─────────────────────────────────────────── #}
+{% endblock %}
+
+
+{% block page_scripts %}
+<script>
+    // JS strings had no translation pattern in this codebase. This is the
+    // smallest one that works: a dictionary rendered by the server, read by
+    // the handlers below.
+    window.RMS_I18N = Object.assign(window.RMS_I18N || {}, {
+        approved: {{ _('Approved') | tojson }},
+        rejected: {{ _('Rejected') | tojson }},
+        cancelled: {{ _('Cancelled') | tojson }},
+        updated: {{ _('Booking updated') | tojson }},
+        updateFailed: {{ _('Could not update the booking') | tojson }},
+        titleRequired: {{ _('A title is required.') | tojson }},
+        roomRequired: {{ _('Select a room.') | tojson }},
+        partyRequired: {{ _('Select a party.') | tojson }},
+        datesRequired: {{ _('A start and an end are required.') | tojson }},
+    });
+</script>
+{% include "admin/bookings/_booking_create_js.html" %}
+{% include "admin/bookings/_decide.html" %}
+{% endblock %}

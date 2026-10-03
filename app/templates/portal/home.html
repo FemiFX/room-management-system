@@ -1,0 +1,55 @@
+{% extends "portal/layout.html" %}
+{% block title %}{{ _('Room booking') }}{% endblock %}
+
+{% block portal_content %}
+<div class="flex flex-col gap-8">
+  <div class="flex flex-col items-start justify-between gap-5 sm:flex-row sm:items-end">
+    <div class="flex flex-col gap-2.5">
+      <h1 class="ui-h text-[28px] leading-[32px] [hyphens:auto] sm:text-4xl sm:leading-tight">{{ _('Welcome, %(name)s')|format(name=user_name) }}</h1>
+      {% if linked %}
+      <p class="text-primary/80">{{ _('Book an internal room and see the bookings you have made.') }}</p>
+      {% endif %}
+    </div>
+    {% if linked %}
+    <a href="/portal/book" class="btn-brand shrink-0">{{ _('Book a room') }}</a>
+    {% endif %}
+  </div>
+
+  {% if not linked %}
+  {# Without a party the booking service refuses, so say so before they try. #}
+  <div class="flex items-center gap-4 rounded-[18px] bg-accent/15 px-6 py-5">
+    <i class="fa-solid fa-circle-info text-xl text-accent-700" aria-hidden="true"></i>
+    <p class="text-sm leading-6 text-accent-800">
+      {{ _('Your account is not linked to a contact record yet, so you cannot book. Please contact an administrator.') }}
+    </p>
+  </div>
+  {% endif %}
+
+  <div class="flex flex-col gap-4">
+    <h2 class="ui-h text-xl">{{ _('Coming up') }}</h2>
+    {% if upcoming %}
+    <ul class="flex flex-col gap-4">
+      {% for booking in upcoming %}
+      <li class="ui-card flex flex-wrap items-center justify-between gap-4 px-6 py-5 sm:px-7">
+        <span class="flex items-center gap-4">
+          <span class="flex h-14 w-14 flex-col items-center justify-center gap-0.5 rounded-[14px] bg-accent/15">
+            <span class="font-heading text-[19px] font-bold leading-none">{{ booking.start_at | local_datetime('%d.%m.') }}</span>
+            <span class="font-heading text-[10px] font-bold uppercase leading-none text-primary/65">{{ booking.start_at | local_datetime('%Y') }}</span>
+          </span>
+          <span class="flex flex-col gap-0.5">
+            <span class="text-base font-bold">{{ booking.title }}</span>
+            <span class="text-[13px] text-primary/70">
+              {{ booking.room.name if booking.room else '' }} · {{ booking.start_at | local_datetime('%H:%M') }}–{{ booking.end_at | local_datetime('%H:%M') }}
+            </span>
+          </span>
+        </span>
+        <span class="rounded-[25px] bg-primary/10 px-4 pb-1 pt-1.5 font-heading text-[11px] font-bold uppercase">{{ _('Confirmed') }}</span>
+      </li>
+      {% endfor %}
+    </ul>
+    {% else %}
+    <p class="text-primary/60">{{ _('Nothing booked yet.') }}</p>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

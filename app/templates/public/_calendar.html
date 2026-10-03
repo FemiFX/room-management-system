@@ -1,0 +1,94 @@
+{#
+  Brand-styled month grid for the public calendar only. The admin and portal
+  keep partials/calendar_month.html; this fork exists so the public restyle
+  cannot disturb the staff surface. Data contract and the disclosure rule
+  (no titles) are identical.
+#}
+{% macro render_calendar_entry(entry) %}
+  {% set tone = 'bg-highlight/15 text-highlight' if entry.whole_day else 'bg-accent/20 text-accent-700' %}
+  <span class="mb-1 block rounded-lg px-2 py-1 text-[11px] font-semibold leading-tight {{ tone }}">
+    <span class="block truncate">
+      {% if entry.whole_day %}{{ _('All day') }}{% else %}{{ entry.start_label }}–{{ entry.end_label }}{% endif %}
+      · {{ entry.room_name }}
+    </span>
+  </span>
+{% endmacro %}
+
+{% macro render_calendar_month(month, base_url, cta_url='/book/new', cta_label=None) %}
+<div class="flex flex-col gap-6">
+  <div class="flex flex-wrap items-center justify-center gap-4">
+    <a href="{{ base_url }}?year={{ month.previous[0] }}&month={{ month.previous[1] }}" rel="prev"
+       class="flex h-10 w-10 items-center justify-center rounded-full border-2 border-primary text-primary hover:border-accent hover:text-accent"
+       aria-label="{{ _('Previous') }}"><i class="fa-solid fa-chevron-left text-sm" aria-hidden="true"></i></a>
+    <a href="{{ base_url }}" class="ui-h min-w-[220px] text-center text-2xl hover:text-accent" title="{{ _('Today') }}">{{ month.label }}</a>
+    <a href="{{ base_url }}?year={{ month.next[0] }}&month={{ month.next[1] }}" rel="next"
+       class="flex h-10 w-10 items-center justify-center rounded-full border-2 border-primary text-primary hover:border-accent hover:text-accent"
+       aria-label="{{ _('Next') }}"><i class="fa-solid fa-chevron-right text-sm" aria-hidden="true"></i></a>
+  </div>
+
+  <div class="ui-card overflow-hidden p-2 sm:p-4">
+    <div class="overflow-x-auto">
+      <table class="w-full min-w-[46rem] table-fixed border-collapse">
+        <thead>
+          <tr>
+            {% for label in [_('Mon'), _('Tue'), _('Wed'), _('Thu'), _('Fri'), _('Sat'), _('Sun')] %}
+              <th class="pb-2 pt-2 text-center font-heading text-[13px] font-bold uppercase text-primary/75">{{ label }}</th>
+            {% endfor %}
+          </tr>
+        </thead>
+        <tbody>
+          {% for week in month.weeks %}
+          <tr>
+            {% for cell in week %}
+            <td class="h-24 border-l border-t border-primary/10 p-1.5 align-top first:border-l-0
+                       {{ 'bg-primary/[.03]' if not cell.in_month }}
+                       {{ 'rounded-lg shadow-[inset_0_0_0_2px_rgb(var(--c-accent))]' if cell.is_today }}">
+              <div class="mb-1 flex items-center justify-between px-0.5">
+                <span class="font-heading text-sm font-semibold {{ 'text-primary' if cell.in_month else 'text-primary/35' }}">
+                  {{ cell.day.day }}
+                </span>
+                {% if cell.is_today %}
+                  <span class="text-[10px] font-bold uppercase tracking-[0.5px] text-accent">{{ _('Today') }}</span>
+                {% endif %}
+              </div>
+              {% for entry in cell.entries[:3] %}
+                {{ render_calendar_entry(entry) }}
+              {% endfor %}
+              {% if cell.entries | length > 3 %}
+                <details class="group">
+                  <summary class="cursor-pointer list-none px-1 text-[10px] font-semibold text-primary/60 hover:text-primary">
+                    <span class="group-open:hidden">{{ _('+%(count)s more')|format(count=cell.entries | length - 3) }}</span>
+                    <span class="hidden group-open:inline">{{ _('Show fewer') }}</span>
+                  </summary>
+                  <div class="mt-1">
+                    {% for entry in cell.entries[3:] %}
+                      {{ render_calendar_entry(entry) }}
+                    {% endfor %}
+                  </div>
+                </details>
+              {% endif %}
+            </td>
+            {% endfor %}
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="flex flex-col items-center justify-between gap-4 sm:flex-row">
+    <div class="flex flex-wrap items-center gap-6">
+      <span class="flex items-center gap-2 text-[13px] font-semibold">
+        <span class="h-3.5 w-3.5 rounded-[5px] bg-accent/35"></span>{{ _('Partly booked') }}
+      </span>
+      <span class="flex items-center gap-2 text-[13px] font-semibold">
+        <span class="h-3.5 w-3.5 rounded-[5px] bg-highlight/30"></span>{{ _('Booked all day') }}
+      </span>
+      <span class="flex items-center gap-2 text-[13px] font-semibold">
+        <span class="h-3.5 w-3.5 rounded-[5px] border-[1.5px] border-primary/35 bg-white"></span>{{ _('Free') }}
+      </span>
+    </div>
+    <a href="{{ cta_url }}" class="btn-brand">{{ cta_label or _('Request a room') }}</a>
+  </div>
+</div>
+{% endmacro %}

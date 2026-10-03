@@ -1,0 +1,38 @@
+<script>
+(function () {
+    let selectsLoaded = false;
+
+    window.openBookingModal = function () {
+        if (!selectsLoaded) {
+            populateSelect(document.getElementById('bc-room'), '/api/v1/rooms', r => `${r.room_code}${r.name ? ' — ' + r.name : ''}`, r => r.id);
+            populateSelect(document.getElementById('bc-party'), '/api/v1/parties', p => p.name, p => p.id);
+            selectsLoaded = true;
+        }
+        clearModalError('modal-booking-create');
+        openModal('modal-booking-create');
+    };
+
+    document.getElementById('form-booking-create').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const T = window.RMS_I18N || {};
+        const optional = ['purpose', 'notes'];
+        const data = formToObject(e.target, optional);
+        if (!data.title) { setModalError('modal-booking-create', T.titleRequired); return; }
+        if (!data.room_id) { setModalError('modal-booking-create', T.roomRequired); return; }
+        if (!data.party_id) { setModalError('modal-booking-create', T.partyRequired); return; }
+        if (!data.start_at || !data.end_at) { setModalError('modal-booking-create', T.datesRequired); return; }
+        data.room_id = parseInt(data.room_id);
+        data.party_id = parseInt(data.party_id);
+        if (data.attendee_count) data.attendee_count = parseInt(data.attendee_count);
+        // Convert local datetime to ISO
+        data.start_at = new Date(data.start_at).toISOString();
+        data.end_at = new Date(data.end_at).toISOString();
+        setSubmitting('form-booking-create', true);
+        clearModalError('modal-booking-create');
+        const res = await apiPost('/api/v1/bookings', data);
+        setSubmitting('form-booking-create', false);
+        if (res.ok) { location.reload(); }
+        else { setModalError('modal-booking-create', await parseApiError(res)); }
+    });
+})();
+</script>

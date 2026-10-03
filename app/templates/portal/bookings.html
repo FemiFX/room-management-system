@@ -1,0 +1,68 @@
+{% extends "portal/layout.html" %}
+{% block title %}{{ _('My bookings') }}{% endblock %}
+
+{% block portal_content %}
+<div class="flex flex-col gap-7">
+  <div class="flex flex-col items-start justify-between gap-5 sm:flex-row sm:items-end">
+    <h1 class="ui-h text-[28px] leading-[32px] [hyphens:auto] sm:text-4xl sm:leading-tight">{{ _('My bookings') }}</h1>
+    {% if bookings %}
+    <a href="/portal/book" class="btn-brand btn-brand-sm shrink-0">{{ _('Book a room') }}</a>
+    {% endif %}
+  </div>
+
+  {% if bookings %}
+  <ul class="flex flex-col gap-4">
+    {% for booking in bookings %}
+    {% set past = is_past(booking.end_at) %}
+    <li class="ui-card flex flex-wrap items-center justify-between gap-4 px-6 py-5 sm:px-7 {{ 'opacity-60' if past }}" data-booking="{{ booking.id }}">
+      <span class="flex flex-col gap-1">
+        <span class="text-base font-bold">{{ booking.title }}</span>
+        <span class="text-[13px] text-primary/70">{{ booking.room.name if booking.room else '—' }}</span>
+        <span class="text-[13px] text-primary/60">{{ booking.start_at | local_datetime }} – {{ booking.end_at | local_datetime }}</span>
+      </span>
+      <span class="flex items-center gap-3">
+        {% set status = booking.status.value %}
+        {% if status == 'pending' %}
+          <span class="rounded-[25px] bg-accent/20 px-4 pb-1 pt-1.5 font-heading text-[11px] font-bold uppercase text-accent-700">{{ _('Pending') }}</span>
+        {% elif status == 'approved' %}
+          <span class="rounded-[25px] bg-primary/10 px-4 pb-1 pt-1.5 font-heading text-[11px] font-bold uppercase">{{ _('Approved') }}</span>
+        {% elif status == 'completed' %}
+          <span class="rounded-[25px] bg-primary/10 px-4 pb-1 pt-1.5 font-heading text-[11px] font-bold uppercase text-primary/70">{{ _('Completed') }}</span>
+        {% else %}
+          <span class="rounded-[25px] bg-highlight/15 px-4 pb-1 pt-1.5 font-heading text-[11px] font-bold uppercase text-highlight">{{ _('Cancelled') if status == 'cancelled' else _('Rejected') }}</span>
+        {% endif %}
+        {% if not past and booking.status.value in ('pending', 'approved') %}
+        <button type="button" class="btn-highlight px-4 pb-1.5 pt-2 text-[11px]" data-cancel="{{ booking.id }}">
+          {{ _('Cancel') }}
+        </button>
+        {% endif %}
+      </span>
+    </li>
+    {% endfor %}
+  </ul>
+  {% else %}
+  <div class="ui-card flex flex-col items-center gap-5 px-8 py-12 text-center">
+    <p class="text-primary/60">{{ _('Nothing booked yet.') }}</p>
+    <a href="/portal/book" class="btn-brand">{{ _('Book a room') }}</a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', path='js/crud.js') }}"></script>
+<script>
+  document.querySelectorAll('[data-cancel]').forEach(function (button) {
+    button.addEventListener('click', async function () {
+      if (!confirm({{ _('Cancel this booking?') | tojson }})) return;
+      const id = button.dataset.cancel;
+      const res = await apiPost('/api/v1/portal/bookings/' + id + '/cancel', {});
+      if (res.ok) {
+        location.reload();
+      } else {
+        alert(await parseApiError(res));
+      }
+    });
+  });
+</script>
+{% endblock %}

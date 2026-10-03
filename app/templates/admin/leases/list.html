@@ -1,0 +1,233 @@
+{% extends "admin/layout.html" %}
+
+{% block title %}{{ _('Leases') }}{% endblock %}
+{% block page_title %}{{ _('Leases') }}{% endblock %}
+{% block page_subtitle %}{{ _('All lease contracts') }}{% endblock %}
+
+{% block admin_content %}
+<div class="space-y-4">
+
+    <div class="flex items-center justify-between gap-4">
+        {# ─── Filter tabs ─────────────────────────────────────────────── #}
+        <div class="flex items-center gap-1 bg-white dark:bg-carbon-800 border border-gray-200 dark:border-carbon-600 rounded-lg p-1 w-fit">
+            {% for label, key in [('All', 'all'), ('Active', 'active'), ('Expiring Soon', 'expiring'), ('Draft', 'draft'), ('Expired', 'expired')] %}
+            <a href="/leases?status={{ key }}" class="px-3 py-1.5 rounded-md text-sm font-medium transition-colors
+                {% if status_filter == key %}bg-gray-100 dark:bg-carbon-700 text-gray-800 dark:text-parchment{% else %}text-gray-500 dark:text-parchment/60 hover:bg-gray-50 dark:hover:bg-carbon-700{% endif %}">
+                {{ label }}
+            </a>
+            {% endfor %}
+        </div>
+        <button onclick="openLeaseCreateModal()" class="btn-primary inline-flex items-center gap-2 flex-shrink-0">
+            <i class="fa-solid fa-plus text-xs"></i> New Lease
+        </button>
+    </div>
+
+    {# ─── Table ──────────────────────────────────────────────────── #}
+    <div class="card overflow-hidden">
+        {% if leases_annotated %}
+        <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+                <thead>
+                    <tr class="border-b border-gray-100 dark:border-carbon-700 bg-gray-50/60 dark:bg-carbon-700/30">
+                        <th class="text-left px-6 py-3 text-xs font-semibold text-gray-500 dark:text-parchment/60 uppercase tracking-wide hidden md:table-cell">Contract Ref.</th>
+                        <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-parchment/60 uppercase tracking-wide">Room</th>
+                        <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-parchment/60 uppercase tracking-wide">Party</th>
+                        <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-parchment/60 uppercase tracking-wide hidden lg:table-cell">Period</th>
+                        <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-parchment/60 uppercase tracking-wide hidden md:table-cell">Rent</th>
+                        <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-parchment/60 uppercase tracking-wide">Status</th>
+                        <th class="px-4 py-3"></th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-50 dark:divide-carbon-700/50">
+                    {% for item in leases_annotated %}
+                    {% set lease = item.lease %}
+                    {% set is_expiring = item.is_expiring %}
+                    <tr class="hover:bg-gray-50/60 dark:hover:bg-carbon-700/30 transition-colors {% if is_expiring %}bg-amber-50/30 dark:bg-amber-900/5{% endif %}">
+                        <td class="px-6 py-3.5 hidden md:table-cell">
+                            {% if lease.contract_reference %}
+                            <span class="font-mono text-xs font-semibold bg-gray-100 dark:bg-carbon-700 text-gray-700 dark:text-parchment px-1.5 py-0.5 rounded">{{ lease.contract_reference }}</span>
+                            {% else %}
+                            <span class="text-gray-300 dark:text-parchment/30 text-xs">—</span>
+                            {% endif %}
+                        </td>
+                        <td class="px-4 py-3.5">
+                            {% if lease.room %}
+                            <a href="/rooms/{{ lease.room.id }}" class="font-mono text-xs font-semibold bg-gray-100 dark:bg-carbon-700 text-gray-700 dark:text-parchment px-1.5 py-0.5 rounded hover:bg-gray-200">{{ lease.room.room_code }}</a>
+                            {% else %}<span class="text-gray-400">—</span>{% endif %}
+                        </td>
+                        <td class="px-4 py-3.5">
+                            {% if lease.party %}
+                            <a href="/parties/{{ lease.party.id }}" class="text-gray-800 dark:text-parchment hover:text-turf-green-600 dark:hover:text-golden-bronze-300 font-medium">{{ lease.party.name }}</a>
+                            {% else %}<span class="text-gray-400">—</span>{% endif %}
+                        </td>
+                        <td class="px-4 py-3.5 hidden lg:table-cell text-xs text-gray-600 dark:text-parchment/80">
+                            {{ lease.start_date.strftime('%d.%m.%Y') }} —
+                            {% if lease.end_date %}
+                            <span class="{% if is_expiring %}text-amber-600 dark:text-amber-400 font-semibold{% endif %}">{{ lease.end_date.strftime('%d.%m.%Y') }}</span>
+                            {% else %}<span class="text-gray-400">open</span>{% endif %}
+                        </td>
+                        <td class="px-4 py-3.5 hidden md:table-cell text-sm text-gray-700 dark:text-parchment/90">
+                            {{ lease.currency }} {{ "%.2f"|format(lease.monthly_rent) }}
+                        </td>
+                        <td class="px-4 py-3.5">
+                            <div class="flex items-center gap-1.5">
+                                {{ lease_status_badge(lease.status.value) }}
+                                {% if is_expiring %}
+                                <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">
+                                    <i class="fa-solid fa-clock mr-1 text-[9px]"></i>Expiring
+                                </span>
+                                {% endif %}
+                            </div>
+                        </td>
+                        <td class="px-4 py-3.5 text-right">
+                            <select class="lease-status-select text-xs border border-gray-200 dark:border-carbon-600 rounded-lg px-2 py-1 bg-white dark:bg-carbon-700 text-gray-600 dark:text-parchment/80 cursor-pointer hover:border-gray-300 focus:outline-none"
+                                    data-id="{{ lease.id }}"
+                                    title="Change status">
+                                {% for s in ['draft', 'active', 'expired', 'terminated', 'cancelled'] %}
+                                <option value="{{ s }}" {% if lease.status.value == s %}selected{% endif %}>{{ s | capitalize }}</option>
+                                {% endfor %}
+                            </select>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="py-16 text-center">
+            <i class="fa-solid fa-file-contract text-4xl text-gray-200 dark:text-parchment/20 mb-4 block"></i>
+            <p class="text-base font-medium text-gray-600 dark:text-parchment/60">No leases found</p>
+            <p class="text-sm text-gray-400 dark:text-parchment/40 mt-1 mb-6">
+                {% if status_filter != 'all' %}Try a different filter or <a href="/leases" class="text-turf-green-600 dark:text-golden-bronze-300 hover:underline">view all</a>.{% else %}No leases have been created yet.{% endif %}
+            </p>
+            <button onclick="openLeaseCreateModal()" class="btn-primary inline-flex items-center gap-2">
+                <i class="fa-solid fa-plus text-xs"></i> New Lease
+            </button>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+{# ─── Create Lease Modal ───────────────────────────────────────────── #}
+<dialog id="modal-lease-create" class="rounded-xl shadow-2xl p-0 w-full max-w-lg bg-white dark:bg-carbon-800 backdrop:bg-black/50">
+    <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-carbon-700">
+        <h2 class="text-base font-semibold text-gray-900 dark:text-parchment">New Lease</h2>
+        <button type="button" onclick="closeModal('modal-lease-create')" class="w-8 h-8 flex items-center justify-center rounded-lg text-gray-400 hover:bg-gray-100 dark:hover:bg-carbon-700 hover:text-gray-600 transition-colors">&times;</button>
+    </div>
+    <form id="form-lease-create" class="px-6 py-5 space-y-4" novalidate>
+        <div class="grid grid-cols-2 gap-4">
+            <div class="col-span-2">
+                <label class="form-label" for="lc-party">Party <span class="text-red-500">*</span></label>
+                <select id="lc-party" name="party_id" class="form-input" required>
+                    <option value="">Loading…</option>
+                </select>
+            </div>
+            <div class="col-span-2">
+                <label class="form-label" for="lc-room">Room <span class="text-red-500">*</span></label>
+                <select id="lc-room" name="room_id" class="form-input" required>
+                    <option value="">Loading…</option>
+                </select>
+            </div>
+            <div class="col-span-2">
+                <label class="form-label" for="lc-ref">Contract Reference</label>
+                <input id="lc-ref" name="contract_reference" type="text" class="form-input" placeholder="e.g. K-2024-001">
+            </div>
+            <div class="col-span-2 sm:col-span-1">
+                <label class="form-label" for="lc-start">Start Date <span class="text-red-500">*</span></label>
+                <input id="lc-start" name="start_date" type="date" required class="form-input">
+            </div>
+            <div class="col-span-2 sm:col-span-1">
+                <label class="form-label" for="lc-end">End Date</label>
+                <input id="lc-end" name="end_date" type="date" class="form-input">
+            </div>
+            <div class="col-span-2 sm:col-span-1">
+                <label class="form-label" for="lc-rent">Monthly Rent <span class="text-red-500">*</span></label>
+                <input id="lc-rent" name="monthly_rent" type="number" step="0.01" min="0" required class="form-input" placeholder="0.00">
+            </div>
+            <div class="col-span-2 sm:col-span-1">
+                <label class="form-label" for="lc-deposit">Deposit</label>
+                <input id="lc-deposit" name="deposit_amount" type="number" step="0.01" min="0" class="form-input" placeholder="0.00">
+            </div>
+            <div class="col-span-2 sm:col-span-1">
+                <label class="form-label" for="lc-status">Status</label>
+                <select id="lc-status" name="status" class="form-input">
+                    <option value="draft">Draft</option>
+                    <option value="active">Active</option>
+                </select>
+            </div>
+            <div class="col-span-2 sm:col-span-1">
+                <label class="form-label" for="lc-currency">Currency</label>
+                <input id="lc-currency" name="currency" type="text" class="form-input" value="EUR" maxlength="3">
+            </div>
+            <div class="col-span-2">
+                <label class="form-label" for="lc-notes">Notes</label>
+                <textarea id="lc-notes" name="notes" rows="2" class="form-input resize-none"></textarea>
+            </div>
+        </div>
+        <p id="err-lease-create" class="text-sm text-red-600 dark:text-red-400 hidden"></p>
+    </form>
+    <div class="flex justify-end gap-3 px-6 py-4 border-t border-gray-100 dark:border-carbon-700">
+        <button type="button" onclick="closeModal('modal-lease-create')" class="btn-secondary">Cancel</button>
+        <button type="submit" form="form-lease-create" class="btn-primary">Create</button>
+    </div>
+</dialog>
+
+{% endblock %}
+
+
+{% block page_scripts %}
+<script>
+(function () {
+    let selectsLoaded = false;
+
+    function openLeaseCreateModal() {
+        if (!selectsLoaded) {
+            populateSelect(document.getElementById('lc-party'), '/api/v1/parties', p => p.name, p => p.id);
+            populateSelect(document.getElementById('lc-room'), '/api/v1/rooms', r => `${r.room_code}${r.name ? ' — ' + r.name : ''}`, r => r.id);
+            selectsLoaded = true;
+        }
+        clearModalError('modal-lease-create');
+        openModal('modal-lease-create');
+    }
+    window.openLeaseCreateModal = openLeaseCreateModal;
+
+    document.getElementById('form-lease-create').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const form = e.target;
+        const optional = ['contract_reference', 'end_date', 'deposit_amount', 'notes'];
+        const data = formToObject(form, optional);
+        if (!data.party_id) { setModalError('modal-lease-create', 'Please select a party.'); return; }
+        if (!data.room_id) { setModalError('modal-lease-create', 'Please select a room.'); return; }
+        if (!data.monthly_rent) { setModalError('modal-lease-create', 'Monthly rent is required.'); return; }
+        data.party_id = parseInt(data.party_id);
+        data.room_id = parseInt(data.room_id);
+        data.monthly_rent = parseFloat(data.monthly_rent);
+        if (data.deposit_amount) data.deposit_amount = parseFloat(data.deposit_amount);
+        setSubmitting('form-lease-create', true);
+        clearModalError('modal-lease-create');
+        const res = await apiPost('/api/v1/leases', data);
+        setSubmitting('form-lease-create', false);
+        if (res.ok) {
+            location.reload();
+        } else {
+            setModalError('modal-lease-create', await parseApiError(res));
+        }
+    });
+
+    // Inline status change
+    document.querySelectorAll('.lease-status-select').forEach(sel => {
+        const originalValue = sel.value;
+        sel.addEventListener('change', async () => {
+            const id = sel.dataset.id;
+            const res = await apiPatch(`/api/v1/leases/${id}`, { status: sel.value });
+            if (res.ok) {
+                if (window.showToast) window.showToast('Status updated', 'success');
+            } else {
+                sel.value = originalValue;
+                if (window.showToast) window.showToast('Failed to update status', 'error');
+            }
+        });
+    });
+})();
+</script>
+{% endblock %}

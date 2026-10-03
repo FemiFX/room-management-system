@@ -1,0 +1,7 @@
+{{ _('Your booking has been cancelled and the room is free again.') }}
+
+{{ _('Reference') }}: {{ public_ref }}
+{{ _('Event') }}: {{ title }}
+{{ _('Room') }}: {{ room_name }}
+{{ _('From') }}: {{ start_at }}
+{{ _('Until') }}: {{ end_at }}

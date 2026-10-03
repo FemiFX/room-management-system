@@ -1,0 +1,172 @@
+{#
+  Approve and reject, shared by the booking list and the requests inbox.
+  The same two decisions with the same modal and the same conflict
+  handling: one copy, so the two pages cannot answer differently.
+#}
+<dialog id="modal-booking-reject" class="rounded-xl shadow-2xl p-0 w-full max-w-lg bg-white dark:bg-carbon-800 backdrop:bg-black/50">
+    <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-carbon-700">
+        <h2 class="text-base font-semibold text-gray-900 dark:text-parchment">{{ _('Reject booking') }}</h2>
+        <button type="button" onclick="closeModal('modal-booking-reject')" class="text-gray-400 hover:text-gray-600 dark:hover:text-parchment">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+    </div>
+    <form id="form-booking-reject" class="px-6 py-5 space-y-4">
+        <p class="text-sm text-gray-500 dark:text-parchment/60">
+            {{ _('The reason is included in the email the requester receives.') }}
+        </p>
+        <div>
+            <label class="form-label" for="reject-reason">{{ _('Reason') }}</label>
+            <textarea class="form-input" id="reject-reason" name="reason" rows="3"></textarea>
+        </div>
+        {# id, not data-modal-error: setModalError looks up err-<modal id minus
+           the modal- prefix>, so the old marker was never filled in. #}
+        <p id="err-booking-reject" class="hidden text-sm text-red-600 dark:text-red-400"></p>
+        <div class="flex justify-end gap-2 pt-2">
+            <button type="button" onclick="closeModal('modal-booking-reject')" class="btn-secondary">{{ _('Cancel') }}</button>
+            <button type="submit" class="btn-danger">{{ _('Reject booking') }}</button>
+        </div>
+    </form>
+</dialog>
+
+
+<script>
+(function () {
+    // ── Filters ─────────────────────────────────────────────────────────
+    const form = document.querySelector('form[action="/bookings"]');
+    if (form) {
+        const rangeField = document.getElementById('flt-range');
+        const custom = document.getElementById('custom-range');
+        // Removed, not hidden: base.html's .btn-secondary sets display
+        // after the stylesheet loads, so .hidden loses the cascade.
+        document.getElementById('flt-apply')?.remove();
+        form.querySelectorAll('[data-booking-filter]').forEach(function (field) {
+            field.addEventListener('change', function () {
+                // A custom period needs its two dates before it can be asked
+                // for; every other choice is complete the moment it is made.
+                if (rangeField.value === 'custom') { custom.classList.remove('hidden'); return; }
+                custom.classList.add('hidden');
+                form.submit();
+            });
+        });
+        custom?.querySelectorAll('input').forEach(function (field) {
+            field.addEventListener('change', function () {
+                if (form.querySelector('#flt-from').value && form.querySelector('#flt-to').value) form.submit();
+            });
+        });
+    }
+
+    // ── Row actions ─────────────────────────────────────────────────────
+    const T = (window.RMS_I18N || {});
+
+    function formatConflict(conflict) {
+        // The API returns the clashing interval so we can name it. Saying
+        // "already booked 10:00-12:00" is the difference between a user
+        // fixing the problem and guessing at it.
+        if (!conflict || !conflict.start_at) return '';
+        const start = new Date(conflict.start_at);
+        const end = conflict.end_at ? new Date(conflict.end_at) : null;
+        const opts = { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' };
+        return end
+            ? `${start.toLocaleString(undefined, opts)} – ${end.toLocaleString(undefined, opts)}`
+            : start.toLocaleString(undefined, opts);
+    }
+
+    async function updateBookingStatus(id, status, row, extra) {
+        const res = await apiPatch(`/api/v1/bookings/${id}`, Object.assign({ status }, extra || {}));
+        if (res.ok) {
+            const statusCell = row.querySelector('td[data-status-cell]');
+            const actionsCell = row.querySelector('td:last-child div');
+            const labels = { approved: ['bg-teal-100','text-teal-700','dark:bg-teal-900/30','dark:text-teal-400', T.approved || 'Approved'],
+                             rejected: ['bg-red-100','text-red-600','dark:bg-red-900/30','dark:text-red-400', T.rejected || 'Rejected'],
+                             cancelled: ['bg-gray-100','text-gray-500','dark:bg-gray-700/40','dark:text-gray-400', T.cancelled || 'Cancelled'] };
+            if (statusCell && labels[status]) {
+                const [bg, text, dbg, dtxt, label] = labels[status];
+                statusCell.innerHTML = `<span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${bg} ${text} ${dbg} ${dtxt}">${label}</span>`;
+            }
+            if (actionsCell) actionsCell.innerHTML = '';
+            if (window.showToast) window.showToast(T.updated || 'Booking updated', 'success');
+            // The row belongs to another group now; let the page say so.
+            if (document.querySelector('[data-group-row]')) {
+                setTimeout(function () { location.reload(); }, 900);
+            }
+            return true;
+        }
+
+        let message = T.updateFailed || 'Failed to update booking';
+        if (res.status === 409) {
+            try {
+                const body = await res.json();
+                const detail = body.detail || {};
+                const when = formatConflict((detail.conflicts || [])[0]);
+                message = when
+                    ? `${detail.detail} (${when})`
+                    : (detail.detail || message);
+            } catch (e) { /* fall back to the generic message */ }
+        }
+        if (window.showToast) window.showToast(message, 'error');
+        return false;
+    }
+
+    document.querySelectorAll('.btn-action-approve').forEach(btn => {
+        btn.addEventListener('click', () => updateBookingStatus(btn.dataset.id, 'approved', btn.closest('tr')));
+    });
+
+    // Rejecting asks for a reason, which the requester sees in their email.
+    // Turning someone down without saying why is not much of an answer.
+    let rejectingId = null;
+    document.querySelectorAll('.btn-action-reject').forEach(btn => {
+        btn.addEventListener('click', () => {
+            rejectingId = btn.dataset.id;
+            const field = document.getElementById('reject-reason');
+            if (field) field.value = '';
+            clearModalError('modal-booking-reject');
+            openModal('modal-booking-reject');
+        });
+    });
+    const rejectForm = document.getElementById('form-booking-reject');
+    if (rejectForm) {
+        rejectForm.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const reason = document.getElementById('reject-reason').value.trim();
+            setSubmitting('form-booking-reject', true);
+            const res = await apiPost(`/api/v1/bookings/${rejectingId}/reject`, { reason });
+            setSubmitting('form-booking-reject', false);
+            if (res.ok) {
+                closeModal('modal-booking-reject');
+                location.reload();
+            } else {
+                setModalError('modal-booking-reject', await parseApiError(res));
+            }
+        });
+    }
+})();
+</script>
+
+<script>
+    // A row that is only clickable on one word is a target you have to aim
+    // for. The row carries the link; anything interactive inside it -- the
+    // approve and reject buttons, the room chip -- keeps its own click.
+    document.querySelectorAll('tr[data-booking-id]').forEach(function (row) {
+        const open = row.querySelector('a[href^="/bookings/"]');
+        if (!open) return;
+        row.classList.add('cursor-pointer');
+        row.addEventListener('click', function (event) {
+            if (event.target.closest('a, button, input, label, select')) return;
+            if (window.getSelection && String(window.getSelection())) return;
+            window.location = open.getAttribute('href');
+        });
+    });
+</script>
+
+<script>
+    // "Erledigt" starts folded: it is history, and it is the longest group.
+    document.querySelectorAll('[data-group-toggle]').forEach(function (button) {
+        button.addEventListener('click', function () {
+            const rows = document.querySelectorAll('[data-group-row="settled"]');
+            const folded = rows.length && rows[0].hidden;
+            rows.forEach(function (row) { row.hidden = !folded; });
+            const chevron = button.querySelector('[data-group-chevron]');
+            if (chevron) chevron.classList.toggle('rotate-90', folded);
+        });
+    });
+</script>

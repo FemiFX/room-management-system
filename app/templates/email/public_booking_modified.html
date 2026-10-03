@@ -1,0 +1,6 @@
+{% extends "email/base_email.html" %}
+{% block body %}
+<p>{{ _('Your changes have been saved. Because the details changed, the request goes back to us for review.') }}</p>
+{% include "email/_booking_details.html" %}
+<p>{{ _('We will email you once a decision has been made.') }}</p>
+{% endblock %}

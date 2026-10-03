@@ -1,0 +1,1 @@
+{{ _('Booking cancelled') }} — {{ public_ref }}

@@ -1,0 +1,310 @@
+{% extends "admin/layout.html" %}
+
+{% block title %}{{ _('Documents') }}{% endblock %}
+{% block page_title %}{{ _('Documents') }}{% endblock %}
+{% block page_subtitle %}{{ _('Uploaded files and contracts') }}{% endblock %}
+
+{% block nav_extra %}
+{# The type filter was a whole row of tabs; as a select it costs one control,
+   and the row goes to the listing. #}
+{% set types = [
+    ('all', _('All types')), ('contract', _('Contracts')), ('floorplan', _('Floorplans')),
+    ('handover_protocol', _('Handover')), ('invoice', _('Invoices')), ('photo', _('Photos')),
+    ('inspection', _('Inspection')), ('insurance', _('Insurance')), ('other', _('Other')),
+] %}
+<select id="doc-type-filter" class="form-input w-auto max-w-[170px] py-1.5 text-[12.5px]">
+    {% for val, label in types %}
+    <option value="{{ val }}" {% if doc_type_filter == val %}selected{% endif %}>{{ label }}</option>
+    {% endfor %}
+</select>
+<button onclick="openUploadModal()" class="btn-primary inline-flex shrink-0 items-center gap-2 whitespace-nowrap text-sm">
+    <i class="fa-solid fa-arrow-up-from-bracket text-xs"></i> {{ _('Upload Document') }}
+</button>
+{% endblock %}
+
+{% block admin_content %}
+<div class="space-y-6">
+
+    {# ─── Documents, by room ───────────────────────────────────────── #}
+    <div class="card overflow-hidden">
+        {# Same tab pattern as the booking setup page, so the two read alike.
+           Rooms scroll and fade; the leading tab holds documents that belong
+           to a lease or to nothing, which would otherwise be unreachable. #}
+        <div class="relative border-b border-gray-100 dark:border-carbon-700" role="tablist">
+            <div class="flex items-center gap-5 overflow-x-auto px-5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+                {% for tab in room_tabs %}
+                {% set key = 'room-' ~ (tab.room.id if tab.room else 'none') %}
+                <button type="button" role="tab" data-doc-tab="{{ key }}"
+                        aria-selected="{{ 'true' if loop.first else 'false' }}"
+                        class="doc-tab flex shrink-0 items-center gap-2 whitespace-nowrap border-b-2 py-3.5 text-sm
+                               {% if loop.first %}border-turf-green-600 font-semibold text-gray-900 dark:border-golden-bronze-300 dark:text-parchment
+                               {% else %}border-transparent font-medium text-gray-500 hover:text-gray-900 dark:text-parchment/60 dark:hover:text-parchment{% endif %}">
+                    <span>{{ tab.room.name if tab.room else _('No room') }}</span>
+                    {% if tab.room %}<span class="font-mono text-[10px] text-gray-400 dark:text-parchment/40">{{ tab.room.room_code }}</span>{% endif %}
+                    <span class="rounded-full bg-gray-100 px-1.5 py-px text-[10.5px] font-semibold text-gray-500 dark:bg-carbon-700 dark:text-parchment/60">{{ tab.documents | length }}</span>
+                </button>
+                {% endfor %}
+            </div>
+            <span aria-hidden="true" class="pointer-events-none absolute inset-y-0 right-0 w-16 bg-gradient-to-r from-transparent to-white dark:to-carbon-800"></span>
+        </div>
+
+        {% for tab in room_tabs %}
+        {% set key = 'room-' ~ (tab.room.id if tab.room else 'none') %}
+        <div data-doc-panel="{{ key }}" {% if not loop.first %}hidden{% endif %}>
+
+        <div class="flex flex-wrap items-center justify-between gap-3 border-b border-gray-100 bg-gray-50/60 px-6 py-3 dark:border-carbon-700 dark:bg-carbon-700/30">
+            <span class="flex flex-wrap items-baseline gap-3">
+                <span class="text-[15px] font-semibold text-gray-900 dark:text-parchment">{{ tab.room.name if tab.room else _('No room') }}</span>
+                {% if tab.room %}
+                <span class="font-mono text-[11px] text-gray-400 dark:text-parchment/40">
+                    {{ tab.room.room_code }}{% if tab.room.floor and tab.room.floor.building %} · {{ tab.room.floor.building.name }}{% endif %}
+                </span>
+                {% else %}
+                <span class="text-xs text-gray-500 dark:text-parchment/60">{{ _('Attached to a lease, or to nothing') }}</span>
+                {% endif %}
+                <span class="text-xs text-gray-500 dark:text-parchment/60">{{ _('%(count)s documents')|format(count=tab.documents | length) }}</span>
+            </span>
+            <span class="flex items-center gap-4">
+                {% if tab.room %}
+                <a href="/rooms/{{ tab.room.id }}" class="text-xs font-semibold text-turf-green-600 hover:underline dark:text-golden-bronze-300">{{ _('Open room') }} &rarr;</a>
+                {% endif %}
+                <button type="button" onclick="openUploadModal({{ tab.room.id if tab.room else 'null' }})"
+                        class="inline-flex items-center gap-1.5 text-xs font-semibold text-turf-green-600 hover:underline dark:text-golden-bronze-300">
+                    <i class="fa-solid fa-plus text-[10px]"></i> {{ _('Upload here') }}
+                </button>
+            </span>
+        </div>
+
+        {% if tab.documents %}
+        <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+                <thead>
+                    <tr class="border-b border-gray-100 dark:border-carbon-700 bg-gray-50/60 dark:bg-carbon-700/30">
+                        <th class="text-left px-6 py-3 text-xs font-semibold text-gray-500 dark:text-parchment/60 uppercase tracking-wide">Title</th>
+                        <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-parchment/60 uppercase tracking-wide">Type</th>
+                        <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-parchment/60 uppercase tracking-wide hidden sm:table-cell">Room</th>
+                        <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-parchment/60 uppercase tracking-wide hidden md:table-cell">Lease</th>
+                        <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-parchment/60 uppercase tracking-wide hidden lg:table-cell">Size</th>
+                        <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-parchment/60 uppercase tracking-wide hidden md:table-cell">Uploaded</th>
+                        <th class="px-4 py-3"></th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-50 dark:divide-carbon-700/50">
+                    {% for doc in tab.documents %}
+                    {% set ext = '' %}
+                    {% if doc.original_filename and '.' in doc.original_filename %}
+                        {% set ext = doc.original_filename.rsplit('.', 1)[-1].lower() %}
+                    {% endif %}
+                    <tr class="hover:bg-gray-50/60 dark:hover:bg-carbon-700/30 transition-colors">
+                        <td class="px-6 py-3.5">
+                            <div class="flex items-center gap-2">
+                                {% if ext == 'pdf' %}
+                                <i class="fa-solid fa-file-pdf text-red-400 text-sm flex-shrink-0"></i>
+                                {% elif ext in ['jpg', 'jpeg', 'png', 'webp', 'gif'] %}
+                                <i class="fa-solid fa-file-image text-blue-400 text-sm flex-shrink-0"></i>
+                                {% elif ext in ['doc', 'docx'] %}
+                                <i class="fa-solid fa-file-word text-blue-600 text-sm flex-shrink-0"></i>
+                                {% else %}
+                                <i class="fa-solid fa-file text-gray-400 text-sm flex-shrink-0"></i>
+                                {% endif %}
+                                <span class="font-medium text-gray-900 dark:text-parchment">{{ doc.title }}</span>
+                            </div>
+                            {% if doc.original_filename %}
+                            <div class="text-xs text-gray-400 dark:text-parchment/40 mt-0.5 pl-6 font-mono">{{ doc.original_filename }}</div>
+                            {% endif %}
+                        </td>
+                        <td class="px-4 py-3.5">
+                            {% set type_colors = {
+                                'contract': 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
+                                'floorplan': 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400',
+                                'handover_protocol': 'bg-teal-100 text-teal-700 dark:bg-teal-900/30 dark:text-teal-400',
+                                'invoice': 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
+                                'photo': 'bg-pink-100 text-pink-700 dark:bg-pink-900/30 dark:text-pink-400',
+                                'inspection': 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400',
+                                'insurance': 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400',
+                                'other': 'bg-gray-100 text-gray-600 dark:bg-gray-700/40 dark:text-gray-400',
+                            } %}
+                            {% set type_labels = {
+                                'contract': _('Contracts'),
+                                'floorplan': _('Floorplans'),
+                                'handover_protocol': _('Handover'),
+                                'invoice': _('Invoices'),
+                                'photo': _('Photos'),
+                                'inspection': _('Inspection'),
+                                'insurance': _('Insurance'),
+                                'other': _('Other'),
+                            } %}
+                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium {{ type_colors.get(doc.document_type.value, 'bg-gray-100 text-gray-600') }}">
+                                {{ type_labels.get(doc.document_type.value, doc.document_type.value) }}
+                            </span>
+                        </td>
+                        <td class="px-4 py-3.5 hidden sm:table-cell">
+                            {% if doc.room %}
+                            <a href="/rooms/{{ doc.room.id }}" class="font-mono text-xs font-semibold bg-gray-100 dark:bg-carbon-700 text-gray-700 dark:text-parchment px-1.5 py-0.5 rounded hover:bg-gray-200 dark:hover:bg-carbon-600">{{ doc.room.room_code }}</a>
+                            {% else %}<span class="text-gray-300 dark:text-parchment/30 text-xs">—</span>{% endif %}
+                        </td>
+                        <td class="px-4 py-3.5 hidden md:table-cell">
+                            {% if doc.lease %}
+                            <a href="/leases?contract={{ doc.lease.contract_reference }}" class="text-xs text-gray-500 dark:text-parchment/60 font-mono hover:text-turf-green-600 dark:hover:text-golden-bronze-300">{{ doc.lease.contract_reference or '#' + doc.lease.id | string }}</a>
+                            {% else %}<span class="text-gray-300 dark:text-parchment/30 text-xs">—</span>{% endif %}
+                        </td>
+                        <td class="px-4 py-3.5 text-xs text-gray-500 dark:text-parchment/60 hidden lg:table-cell">
+                            {% if doc.file_size %}
+                                {{ (doc.file_size / (1024 * 1024)) | round(2) }} MB
+                            {% else %}—{% endif %}
+                        </td>
+                        <td class="px-4 py-3.5 text-xs text-gray-500 dark:text-parchment/60 hidden md:table-cell whitespace-nowrap">
+                            {{ doc.uploaded_at.strftime('%d.%m.%Y') }}
+                        </td>
+                        <td class="px-4 py-3.5 text-right">
+                            <a href="/documents/{{ doc.id }}" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg bg-gray-100 dark:bg-carbon-700 text-gray-700 dark:text-parchment hover:bg-gray-200 dark:hover:bg-carbon-600 transition-colors">
+                                <i class="fa-solid fa-eye text-[10px]"></i> View
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="py-14 text-center">
+            <i class="fa-solid fa-file-contract mb-4 block text-4xl text-gray-200 dark:text-parchment/20"></i>
+            <p class="text-base font-medium text-gray-600 dark:text-parchment/60">{{ _('Nothing filed here yet') }}</p>
+            {% if doc_type_filter != 'all' %}
+            <p class="mt-1 text-sm text-gray-400 dark:text-parchment/40">{{ _('Try clearing the type filter') }}</p>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        </div>
+        {% endfor %}
+    </div>
+
+</div>
+
+{# ─── Upload Document Modal ────────────────────────────────────────── #}
+<dialog id="modal-doc-upload" class="rounded-xl shadow-2xl p-0 w-full max-w-lg bg-white dark:bg-carbon-800 backdrop:bg-black/50">
+    <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-carbon-700">
+        <h2 class="text-base font-semibold text-gray-900 dark:text-parchment">Upload Document</h2>
+        <button type="button" onclick="closeModal('modal-doc-upload')" class="w-8 h-8 flex items-center justify-center rounded-lg text-gray-400 hover:bg-gray-100 dark:hover:bg-carbon-700 hover:text-gray-600 transition-colors">&times;</button>
+    </div>
+    <form id="form-doc-upload" class="px-6 py-5 space-y-4" novalidate>
+        <div class="grid grid-cols-2 gap-4">
+            <div class="col-span-2">
+                <label class="form-label" for="du-title">Title <span class="text-red-500">*</span></label>
+                <input id="du-title" name="title" type="text" required class="form-input" placeholder="e.g. Lease Contract Q1 2025">
+            </div>
+            <div class="col-span-2 sm:col-span-1">
+                <label class="form-label" for="du-type">{{ _('Document Type') }} <span class="text-red-500">*</span></label>
+                <select id="du-type" name="document_type" class="form-input" required>
+                    {% for val, label in types if val != 'all' %}
+                    <option value="{{ val }}">{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-span-2 sm:col-span-1">
+                <label class="form-label" for="du-room">Room (optional)</label>
+                <select id="du-room" name="room_id" class="form-input">
+                    <option value="">None</option>
+                </select>
+            </div>
+            <div class="col-span-2">
+                <label class="form-label" for="du-file">File <span class="text-red-500">*</span></label>
+                <input id="du-file" name="file" type="file" required class="form-input text-sm cursor-pointer">
+            </div>
+            <div class="col-span-2">
+                <label class="form-label" for="du-notes">Notes</label>
+                <textarea id="du-notes" name="notes" rows="2" class="form-input resize-none"></textarea>
+            </div>
+        </div>
+        <p id="err-doc-upload" class="text-sm text-red-600 dark:text-red-400 hidden"></p>
+    </form>
+    <div class="flex justify-end gap-3 px-6 py-4 border-t border-gray-100 dark:border-carbon-700">
+        <button type="button" onclick="closeModal('modal-doc-upload')" class="btn-secondary">Cancel</button>
+        <button type="submit" form="form-doc-upload" class="btn-primary">Upload</button>
+    </div>
+</dialog>
+
+{% endblock %}
+
+
+{% block page_scripts %}
+<script>
+(function () {
+  // Plain show/hide: the whole page is server-rendered, so switching rooms
+  // costs nothing and the chosen tab rides in the hash across a reload.
+  const buttons = document.querySelectorAll('[data-doc-tab]');
+  const ON = ['border-turf-green-600', 'font-semibold', 'text-gray-900', 'dark:border-golden-bronze-300', 'dark:text-parchment'];
+  const OFF = ['border-transparent', 'font-medium', 'text-gray-500', 'hover:text-gray-900', 'dark:text-parchment/60', 'dark:hover:text-parchment'];
+
+  function show(key) {
+    let found = false;
+    document.querySelectorAll('[data-doc-panel]').forEach(function (panel) {
+      const match = panel.dataset.docPanel === key;
+      panel.hidden = !match;
+      if (match) found = true;
+    });
+    if (!found) return false;
+    buttons.forEach(function (button) {
+      const on = button.dataset.docTab === key;
+      button.setAttribute('aria-selected', on ? 'true' : 'false');
+      button.classList.remove(...(on ? OFF : ON));
+      button.classList.add(...(on ? ON : OFF));
+    });
+    return true;
+  }
+
+  buttons.forEach(function (button) {
+    button.addEventListener('click', function () {
+      if (show(button.dataset.docTab)) history.replaceState(null, '', '#' + button.dataset.docTab);
+    });
+  });
+  if (location.hash) show(location.hash.slice(1));
+
+  // The type filter is a select now; changing it reloads with ?type=.
+  document.getElementById('doc-type-filter')?.addEventListener('change', function () {
+    window.location = '/documents?type=' + encodeURIComponent(this.value);
+  });
+})();
+</script>
+<script>
+(function () {
+    let roomsLoaded = false;
+
+    // roomId prefills the room when the upload is started from inside a room
+    // tab, so the room never has to be picked twice.
+    async function openUploadModal(roomId) {
+        const sel = document.getElementById('du-room');
+        if (!roomsLoaded) {
+            await populateSelect(sel, '/api/v1/rooms', r => `${r.room_code}${r.name ? ' — ' + r.name : ''}`, r => r.id, false);
+            const blank = document.createElement('option');
+            blank.value = ''; blank.textContent = 'None';
+            sel.prepend(blank);
+            roomsLoaded = true;
+        }
+        sel.value = (roomId === undefined || roomId === null) ? '' : String(roomId);
+        clearModalError('modal-doc-upload');
+        openModal('modal-doc-upload');
+    }
+    window.openUploadModal = openUploadModal;
+
+    document.getElementById('form-doc-upload').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const form = e.target;
+        const title = form.querySelector('[name="title"]').value.trim();
+        if (!title) { setModalError('modal-doc-upload', 'Title is required.'); return; }
+        const fileInput = form.querySelector('[name="file"]');
+        if (!fileInput.files.length) { setModalError('modal-doc-upload', 'Please choose a file.'); return; }
+        const fd = new FormData(form);
+        if (!fd.get('room_id')) fd.delete('room_id');
+        if (!fd.get('notes')) fd.delete('notes');
+        setSubmitting('form-doc-upload', true);
+        clearModalError('modal-doc-upload');
+        const res = await apiPostForm('/api/v1/documents/upload', fd);
+        setSubmitting('form-doc-upload', false);
+        if (res.ok) { location.reload(); }
+        else { setModalError('modal-doc-upload', await parseApiError(res)); }
+    });
+})();
+</script>
+{% endblock %}

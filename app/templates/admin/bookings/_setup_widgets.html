@@ -1,0 +1,36 @@
+{#
+  The two small controls the room page and the catalogue page share.
+
+  Both live here rather than in either page because the pages are two views of
+  one job: a switch has to mean the same thing on both, and an icon action has
+  to look the same whether it edits a room's stock or the catalogue itself.
+#}
+
+{% macro icon_btn(title, icon, danger=false, disabled=false, attrs='') %}
+<button type="button" title="{{ title }}" aria-label="{{ title }}" {% if disabled %}disabled{% endif %} {{ attrs | safe }}
+        class="inline-flex h-[30px] w-[30px] items-center justify-center rounded-lg text-gray-500
+               disabled:cursor-not-allowed disabled:text-gray-300 dark:text-parchment/60 dark:disabled:text-parchment/20
+               {% if disabled %}
+                 hover:bg-transparent
+               {% else %}
+                 hover:bg-gray-100 hover:text-gray-900 dark:hover:bg-carbon-700 dark:hover:text-parchment
+                 {% if danger %}hover:!bg-red-50 hover:!text-red-600 dark:hover:!bg-red-900/30 dark:hover:!text-red-400{% endif %}
+               {% endif %}">
+  <i class="fa-solid {{ icon }} text-[13px]"></i>
+</button>
+{% endmacro %}
+
+{#
+  A switch, not a checkbox: every use of it here is a fact that is saved the
+  moment it is flipped, with no form to submit afterwards.
+#}
+{% macro toggle(on, title, attrs='') %}
+<button type="button" role="switch" aria-checked="{{ 'true' if on else 'false' }}"
+        data-on="{{ 'true' if on else 'false' }}" title="{{ title }}" aria-label="{{ title }}" {{ attrs | safe }}
+        class="group/sw relative inline-flex h-5 w-9 shrink-0 items-center rounded-full bg-gray-200
+               transition-colors data-[on=true]:bg-turf-green-600 disabled:opacity-40
+               dark:bg-carbon-600 dark:data-[on=true]:bg-turf-green-600">
+  <span class="pointer-events-none ml-0.5 inline-block h-4 w-4 rounded-full bg-white shadow transition-transform
+               group-data-[on=true]/sw:translate-x-4"></span>
+</button>
+{% endmacro %}

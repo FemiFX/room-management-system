@@ -1,0 +1,7 @@
+{{ _('Your changes have been saved. Because the details changed, the request goes back to us for review.') }}
+
+{{ _('Reference') }}: {{ public_ref }}
+{{ _('Event') }}: {{ title }}
+{{ _('Room') }}: {{ room_name }}
+{{ _('From') }}: {{ start_at }}
+{{ _('Until') }}: {{ end_at }}

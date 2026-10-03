@@ -1,0 +1,17 @@
+{% extends "email/base_email.html" %}
+{% block body %}
+<p>{{ _('A new booking request has arrived through the public form and is waiting for review.') }}</p>
+{% include "email/_booking_details.html" %}
+<table role="presentation" cellpadding="0" cellspacing="0" style="width:100%;border-collapse:collapse;">
+  <tr><td style="padding:6px 0;color:rgba({{ brand.primary_rgb }},0.6);width:40%;">{{ _('Requested by') }}</td>
+      <td style="padding:6px 0;">{{ requester_name }}</td></tr>
+  <tr><td style="padding:6px 0;color:rgba({{ brand.primary_rgb }},0.6);">{{ _('Email') }}</td>
+      <td style="padding:6px 0;">{{ requester_email }}</td></tr>
+</table>
+<p style="margin-top:20px;">
+  <a href="{{ admin_url }}"
+     style="display:inline-block;padding:13px 26px 11px;background:{{ brand.primary_hex }};color:{{ brand.accent_hex }};font-weight:bold;text-transform:uppercase;letter-spacing:.04em;font-family:'Century Gothic','Trebuchet MS',Helvetica,Arial,sans-serif;font-size:14px;text-decoration:none;border-radius:25px;">
+    {{ _('Review the request') }}
+  </a>
+</p>
+{% endblock %}

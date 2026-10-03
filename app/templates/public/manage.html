@@ -1,0 +1,141 @@
+{% extends "public/layout.html" %}
+{% block title %}{{ _('Your booking') }}{% endblock %}
+
+{% block public_content %}
+<div class="mx-auto flex w-full max-w-3xl flex-col gap-7 px-4 pb-20 pt-12 sm:px-6">
+
+  <div class="flex flex-wrap items-center justify-between gap-4">
+    <div class="flex flex-col gap-1.5">
+      <h1 class="ui-h text-[28px] leading-[32px] [hyphens:auto] sm:text-4xl sm:leading-tight">{{ _('Your booking') }}</h1>
+      <p class="text-primary/80">{{ _('Reference') }} <span class="font-heading font-bold tracking-[1px]">{{ booking_request.public_ref }}</span></p>
+    </div>
+    {% set status = booking.status.value %}
+    {% if status == 'pending' %}
+      <span class="rounded-[25px] bg-accent/20 px-5 pb-1.5 pt-2.5 font-heading text-sm font-bold uppercase tracking-[0.5px] text-accent-700">{{ _('Pending') }}</span>
+    {% elif status == 'approved' %}
+      <span class="rounded-[25px] bg-primary/10 px-5 pb-1.5 pt-2.5 font-heading text-sm font-bold uppercase tracking-[0.5px] text-primary">{{ _('Approved') }}</span>
+    {% elif status == 'completed' %}
+      <span class="rounded-[25px] bg-primary/10 px-5 pb-1.5 pt-2.5 font-heading text-sm font-bold uppercase tracking-[0.5px] text-primary/70">{{ _('Completed') }}</span>
+    {% else %}
+      <span class="rounded-[25px] bg-highlight/15 px-5 pb-1.5 pt-2.5 font-heading text-sm font-bold uppercase tracking-[0.5px] text-highlight">{{ _('Cancelled') if status == 'cancelled' else _('Rejected') }}</span>
+    {% endif %}
+  </div>
+
+  <div class="ui-card flex flex-col px-7 py-6 sm:px-11 sm:py-9">
+    <div class="flex justify-between gap-6 border-b border-primary/10 py-3 first:pt-0">
+      <span class="text-[13px] font-semibold uppercase tracking-[0.3px] text-primary/65">{{ _('Event') }}</span>
+      <span class="text-right text-[15px] font-semibold">{{ booking.title }}</span>
+    </div>
+    <div class="flex justify-between gap-6 border-b border-primary/10 py-3">
+      <span class="text-[13px] font-semibold uppercase tracking-[0.3px] text-primary/65">{{ _('Room') }}</span>
+      <span class="text-right text-[15px] font-semibold">{{ booking.room.name }}</span>
+    </div>
+    <div class="flex justify-between gap-6 border-b border-primary/10 py-3">
+      <span class="text-[13px] font-semibold uppercase tracking-[0.3px] text-primary/65">{{ _('From') }}</span>
+      <span class="text-right text-[15px] font-semibold">{{ booking.start_at | local_datetime }}</span>
+    </div>
+    <div class="flex justify-between gap-6 border-b border-primary/10 py-3">
+      <span class="text-[13px] font-semibold uppercase tracking-[0.3px] text-primary/65">{{ _('Until') }}</span>
+      <span class="text-right text-[15px] font-semibold">{{ booking.end_at | local_datetime }}</span>
+    </div>
+    {% if booking.equipment_requests %}
+    <div class="flex justify-between gap-6 border-b border-primary/10 py-3">
+      <span class="text-[13px] font-semibold uppercase tracking-[0.3px] text-primary/65">{{ _('Equipment') }}</span>
+      <span class="text-right text-[15px] font-semibold">
+        {%- for line in booking.equipment_requests -%}
+          {{ line.equipment.name }} × {{ line.quantity }}{% if not loop.last %} · {% endif %}
+        {%- endfor -%}
+      </span>
+    </div>
+    {% endif %}
+    {% if booking_request.cleaning_charge %}
+    <div class="flex flex-col gap-1 py-3 last:pb-0">
+      <div class="flex justify-between gap-6">
+        <span class="text-[13px] font-semibold uppercase tracking-[0.3px] text-primary/65">{{ _('Cleaning charge') }}</span>
+        <span class="text-right text-[15px] font-semibold">
+          {{ booking_request.cleaning_charge }} {{ booking_request.currency }}
+          <span class="font-normal text-primary/60">({{ booking_request.cleaning_days }} × {{ booking_request.cleaning_rate_daily }})</span>
+        </span>
+      </div>
+      <p class="text-right text-xs text-primary/60">{{ _('This figure is indicative. Invoicing is handled separately.') }}</p>
+    </div>
+    {% endif %}
+  </div>
+
+  {#
+    The "send it on later" panel. Shown whenever the booking is still live and
+    the requester said they are covered, and also once the certificate is in,
+    so they can see we have it and swap it if it was the wrong file.
+  #}
+  {% if booking.status.value in ('pending', 'approved') and booking_request.liability_insurance %}
+  <div class="flex flex-col gap-5 rounded-[25px] border-2 {{ 'border-primary/20' if certificate else 'border-accent/50' }} bg-white px-7 py-6 sm:px-11 sm:py-8">
+    <div class="flex items-start gap-4">
+      <span class="flex h-[46px] w-[46px] shrink-0 items-center justify-center rounded-[14px] bg-accent/[.18]">
+        <i class="fa-solid fa-shield-halved text-lg" aria-hidden="true"></i>
+      </span>
+      <div class="flex flex-col gap-1">
+        <h2 class="ui-h text-xl">{{ _('Proof of liability cover') }}</h2>
+        <p class="text-sm leading-[21px] text-primary/75">
+          {% if certificate %}{{ _('We have your certificate. If you sent the wrong file, you can replace it here.') }}
+          {% else %}{{ _('You told us you are covered. We still need the certificate — upload it here whenever you have it to hand.') }}{% endif %}
+        </p>
+      </div>
+    </div>
+
+    {% if certificate %}
+    <div class="flex flex-wrap items-center gap-3 rounded-[14px] bg-surface px-4 py-3">
+      <span class="flex h-[30px] w-[30px] shrink-0 items-center justify-center rounded-lg bg-accent/20 font-heading text-[10px] font-bold">
+        {{ (certificate.original_filename or 'file').rsplit('.', 1)[-1][:4] | upper }}
+      </span>
+      <span class="flex min-w-0 flex-col">
+        <span class="truncate text-sm font-semibold leading-[19px]">{{ certificate.original_filename or _('Certificate') }}</span>
+        <span class="text-xs leading-[17px] text-primary/60">{{ _('Received %(when)s')|format(when=certificate.uploaded_at | local_datetime) }}</span>
+      </span>
+    </div>
+    {% endif %}
+
+    {% if insurance_error %}
+    <p class="text-sm font-semibold text-highlight">{{ insurance_error }}</p>
+    {% endif %}
+
+    <form method="post" action="/book/manage/insurance" enctype="multipart/form-data"
+          class="flex flex-col gap-4 rounded-[18px] border-2 border-dashed border-primary/[.28] px-6 py-6 sm:flex-row sm:items-center sm:justify-between">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+      <input type="hidden" name="t" value="{{ token }}">
+      <div class="flex flex-grow flex-col gap-1.5">
+        <label class="text-[15px] font-bold" for="insurance_document">
+          {{ _('Replace the certificate') if certificate else _('Choose your certificate') }}
+        </label>
+        <input type="file" id="insurance_document" name="insurance_document" required
+               accept="application/pdf,image/jpeg,image/png,image/webp"
+               class="max-w-full text-sm file:mr-3 file:cursor-pointer file:rounded-[25px] file:border-2 file:border-primary file:bg-transparent file:px-6 file:pb-[7px] file:pt-[11px] file:font-heading file:text-sm file:font-bold file:uppercase file:text-primary">
+        <span class="text-[13px] leading-[19px] text-primary/70">{{ _('PDF, JPG or PNG, up to 10 MB') }}</span>
+      </div>
+      <button type="submit" class="btn-brand shrink-0">{{ _('Upload') }}</button>
+    </form>
+  </div>
+  {% endif %}
+
+  {% if booking.status.value in ('pending', 'approved') %}
+  <div class="flex flex-wrap gap-4">
+    <a href="/book/manage/edit?t={{ token }}" class="btn-brand">{{ _('Change this booking') }}</a>
+    <a href="/book" class="btn-brand-outline">{{ _('Back to rooms') }}</a>
+  </div>
+
+  <div class="flex flex-col items-start justify-between gap-5 rounded-[25px] border-2 border-highlight/25 bg-white px-7 py-6 sm:flex-row sm:items-center sm:px-11">
+    <div class="flex flex-col gap-1.5">
+      <h2 class="ui-h text-xl !text-highlight">{{ _('Cancel this booking?') }}</h2>
+      <p class="max-w-md text-sm leading-6 text-primary/80">
+        {{ _('Cancelling is final — the link stops working afterwards. You will get a confirmation by email.') }}
+      </p>
+    </div>
+    <form method="post" action="/book/manage/cancel" class="shrink-0"
+          onsubmit="return confirm('{{ _('Cancel this booking?') }}');">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+      <input type="hidden" name="t" value="{{ token }}">
+      <button type="submit" class="btn-highlight">{{ _('Cancel this booking') }}</button>
+    </form>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

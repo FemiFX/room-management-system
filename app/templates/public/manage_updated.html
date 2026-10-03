@@ -1,0 +1,21 @@
+{% extends "public/layout.html" %}
+{% block title %}{{ _('Booking updated') }}{% endblock %}
+
+{% block public_content %}
+<div class="mx-auto w-full max-w-2xl px-4 pb-24 pt-16 sm:px-6">
+  <div class="ui-card flex flex-col items-center gap-6 p-8 text-center sm:p-14">
+    <span class="flex h-[72px] w-[72px] items-center justify-center rounded-full bg-accent shadow-[0_3px_6px_rgba(0,0,0,.12)]">
+      <i class="fa-solid fa-check text-3xl text-primary" aria-hidden="true"></i>
+    </span>
+    <h1 class="ui-h text-3xl">{{ _('Your changes are saved') }}</h1>
+    <p class="max-w-md text-primary/85">
+      {{ _('Because the details changed, your booking goes back to us for review. We will email you once it is decided.') }}
+    </p>
+    <div class="flex flex-col gap-1 rounded-[18px] border-2 border-dashed border-primary/35 px-11 py-5">
+      <span class="text-xs font-bold uppercase tracking-[1px] text-primary/60">{{ _('Reference') }}</span>
+      <span class="font-heading text-2xl font-bold tracking-[2px]">{{ booking_request.public_ref }}</span>
+    </div>
+    <a href="/book/manage?t={{ token }}" class="btn-brand">{{ _('View my booking') }}</a>
+  </div>
+</div>
+{% endblock %}

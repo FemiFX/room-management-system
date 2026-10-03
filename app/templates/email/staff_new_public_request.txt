@@ -1,0 +1,11 @@
+{{ _('A new booking request has arrived through the public form and is waiting for review.') }}
+
+{{ _('Reference') }}: {{ public_ref }}
+{{ _('Event') }}: {{ title }}
+{{ _('Room') }}: {{ room_name }}
+{{ _('From') }}: {{ start_at }}
+{{ _('Until') }}: {{ end_at }}
+{{ _('Requested by') }}: {{ requester_name }}
+{{ _('Email') }}: {{ requester_email }}
+
+{{ _('Review the request') }}: {{ admin_url }}

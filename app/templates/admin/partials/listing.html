@@ -1,0 +1,146 @@
+{#
+  Shared pieces for the card/list listings (buildings, rooms).
+
+  The toggle is a shared admin pattern: one wrapper carrying
+  data-view-active, two icon buttons, and CSS that hides the inactive view.
+  Both views are rendered server-side, so switching costs no request and the
+  page still works with JavaScript off -- see listing_view_script below, which
+  is the only thing that needs it.
+#}
+
+{% macro view_toggle(active='grid') %}
+<span class="inline-flex rounded-lg border border-gray-200 bg-white p-0.5 dark:border-carbon-600 dark:bg-carbon-800"
+      role="group" aria-label="{{ _('View') }}">
+  <button type="button" data-view-set="grid" title="{{ _('Card view') }}" aria-label="{{ _('Card view') }}"
+          aria-pressed="{{ 'true' if active == 'grid' else 'false' }}"
+          class="view-btn inline-flex items-center rounded-md px-2.5 py-1.5
+                 {% if active == 'grid' %}bg-gray-100 text-gray-800 dark:bg-carbon-700 dark:text-parchment
+                 {% else %}text-gray-400 hover:text-gray-700 dark:text-parchment/50 dark:hover:text-parchment{% endif %}">
+    <i class="fa-solid fa-table-cells-large text-xs"></i>
+  </button>
+  <button type="button" data-view-set="list" title="{{ _('List view') }}" aria-label="{{ _('List view') }}"
+          aria-pressed="{{ 'true' if active == 'list' else 'false' }}"
+          class="view-btn inline-flex items-center rounded-md px-2.5 py-1.5
+                 {% if active == 'list' %}bg-gray-100 text-gray-800 dark:bg-carbon-700 dark:text-parchment
+                 {% else %}text-gray-400 hover:text-gray-700 dark:text-parchment/50 dark:hover:text-parchment{% endif %}">
+    <i class="fa-solid fa-list text-xs"></i>
+  </button>
+</span>
+{% endmacro %}
+
+{#
+  Thumbnail slot. `tone` only decides the fallback tint, so a listing without
+  photos still looks deliberate rather than empty. The oversized initial is
+  the same device the public room cards use.
+#}
+{% macro thumb(url, initial, tone, height='h-32', alt='') %}
+{% set tints = {
+  0: 'bg-turf-green-600 text-parchment',
+  1: 'bg-deep-space-500 text-parchment',
+  2: 'bg-golden-bronze-300 text-carbon',
+  3: 'bg-carbon-500 text-parchment',
+} %}
+<div class="relative {{ height }} w-full overflow-hidden {{ tints[tone % 4] }}">
+  {% if url %}
+    <img src="{{ url }}" alt="{{ alt }}" loading="lazy" class="h-full w-full object-cover">
+  {% else %}
+    <span aria-hidden="true"
+          class="pointer-events-none absolute -left-2 -top-7 select-none text-[8rem] font-bold leading-none opacity-[.14]">
+      {{ initial }}
+    </span>
+  {% endif %}
+</div>
+{% endmacro %}
+
+{# The button that opens the thumbnail picker for one row. #}
+{% macro thumb_button(kind, row_id, has_image) %}
+<button type="button" data-thumb-kind="{{ kind }}" data-thumb-id="{{ row_id }}"
+        title="{{ _('Replace photo') if has_image else _('Add photo') }}"
+        aria-label="{{ _('Replace photo') if has_image else _('Add photo') }}"
+        class="inline-flex h-[30px] w-[30px] items-center justify-center rounded-lg text-gray-500
+               hover:bg-gray-100 hover:text-gray-900 dark:text-parchment/60 dark:hover:bg-carbon-700 dark:hover:text-parchment">
+  <i class="fa-solid fa-image text-[13px]"></i>
+</button>
+{% endmacro %}
+
+{#
+  One hidden file input plus the upload handler, shared by every row on the
+  page. Rendered once per listing.
+#}
+{% macro thumb_script() %}
+<input type="file" id="thumb-input" accept="image/jpeg,image/png,image/webp,image/avif" hidden>
+<script>
+(function () {
+  const input = document.getElementById('thumb-input');
+  if (!input) return;
+  let target = null;
+
+  document.querySelectorAll('[data-thumb-kind]').forEach(function (button) {
+    button.addEventListener('click', function () {
+      target = { kind: button.dataset.thumbKind, id: button.dataset.thumbId };
+      input.value = '';
+      input.click();
+    });
+  });
+
+  input.addEventListener('change', async function () {
+    const file = input.files && input.files[0];
+    if (!file || !target) return;
+    const body = new FormData();
+    body.append('file', file);
+    // Not apiPost: this is multipart, so the CSRF header goes on by hand and
+    // the browser sets its own Content-Type with the multipart boundary.
+    const res = await fetch(`/api/v1/${target.kind}/${target.id}/thumbnail`, {
+      method: 'POST',
+      headers: { 'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]')?.content || '' },
+      body: body,
+    });
+    if (res.ok) { location.reload(); return; }
+    const message = (typeof parseApiError === 'function')
+      ? await parseApiError(res)
+      : 'Upload failed.';
+    if (window.showToast) window.showToast(message, 'error'); else alert(message);
+  });
+})();
+</script>
+{% endmacro %}
+
+{# Hides whichever view is not active, and remembers the choice. #}
+{% macro view_script(storage_key) %}
+<script>
+(function () {
+  const wrap = document.querySelector('[data-view-active]');
+  if (!wrap) return;
+  const buttons = document.querySelectorAll('[data-view-set]');
+  const ON = ['bg-gray-100', 'text-gray-800', 'dark:bg-carbon-700', 'dark:text-parchment'];
+  const OFF = ['text-gray-400', 'hover:text-gray-700', 'dark:text-parchment/50', 'dark:hover:text-parchment'];
+
+  function apply(view) {
+    wrap.setAttribute('data-view-active', view);
+    buttons.forEach(function (button) {
+      const on = button.dataset.viewSet === view;
+      button.setAttribute('aria-pressed', on ? 'true' : 'false');
+      button.classList.remove(...(on ? OFF : ON));
+      button.classList.add(...(on ? ON : OFF));
+    });
+    try { localStorage.setItem({{ storage_key | tojson }}, view); } catch (e) {}
+    // Mirror into the URL so a reload, a bookmark or a shared link keeps it.
+    const url = new URL(window.location.href);
+    url.searchParams.set('view', view);
+    history.replaceState({}, '', url.toString());
+  }
+
+  buttons.forEach(function (button) {
+    button.addEventListener('click', function () { apply(button.dataset.viewSet); });
+  });
+
+  // An explicit ?view= wins; otherwise fall back to what this user last chose.
+  if (!new URLSearchParams(window.location.search).get('view')) {
+    try {
+      const saved = localStorage.getItem({{ storage_key | tojson }});
+      if (saved === 'grid' || saved === 'list') apply(saved);
+    } catch (e) {}
+  }
+})();
+</script>
+{% endmacro %}

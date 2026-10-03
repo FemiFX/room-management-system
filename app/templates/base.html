@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="{{ current_language if current_language is defined else current_language() }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{{ _('Room Management') }}{% endblock %} — RMS</title>
+    <meta name="csrf-token" content="{{ csrf_token or '' }}">
+
+    {# Anti-flash: apply stored theme/sidebar state before first paint #}
+    <script>
+        (function () {
+            try {
+                var root = document.documentElement;
+                var storedTheme = localStorage.getItem('theme');
+                if (storedTheme === 'dark') {
+                    root.classList.add('dark');
+                    root.style.colorScheme = 'dark';
+                } else if (storedTheme === 'light') {
+                    root.style.colorScheme = 'light';
+                }
+                if (localStorage.getItem('sidebarCollapsed') === 'true') {
+                    root.classList.add('sidebar-preload-collapsed');
+                }
+            } catch (e) {}
+        })();
+    </script>
+
+    {# Vendored Tailwind build output #}
+    <link rel="stylesheet" href="{{ url_for('static', path='dist/css/main.css') }}?v={{ asset_version('dist/css/main.css') }}">
+    {# Deployment branding: colours and fonts from RMS_BRAND_* settings
+       (app/core/branding.py). Overrides the defaults in main.css. #}
+    <style>{{ brand.css_variables }}</style>
+    {% if brand.font_css_url %}<link rel="stylesheet" href="{{ brand.font_css_url }}">{% endif %}
+
+    {#
+      Fonts and icons are self-hosted rather than loaded from Google and
+      cdnjs. Fetching them from a CDN sends every visitor's IP address to a
+      third party before anything is rendered. On an internal admin page that
+      is a minor matter; this app now serves a public page for a German
+      organisation, where it is the fact pattern of the LG Muenchen ruling
+      (3 O 17493/20). Self-hosting also removes two third-party outages from
+      the critical path.
+    #}
+    <link rel="stylesheet" href="{{ url_for('static', path='vendor/fonts/fonts.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', path='vendor/fontawesome/css/all.min.css') }}">
+
+    {# Custom CSS (sidebar, header, base styles) #}
+    <link rel="stylesheet" href="{{ url_for('static', path='css/sidebar.css') }}?v={{ asset_version('css/sidebar.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', path='css/header.css') }}?v={{ asset_version('css/header.css') }}">
+
+    <style>
+        :root {
+            --carbon: #1F1E1D;
+            --carbon-900: #181716;
+            --carbon-700: #3b3a38;
+            --deep-space: #243C5A;
+            --golden-bronze: #D8A843;
+            --turf-green: #2F6E47;
+            --parchment: #F6F4F0;
+            --blue-bell: #4A9EDD;
+            --bubblegum: #E85D75;
+            --surface: #F6F4F0;
+            --card: #ffffff;
+            --border: #e3dfd9;
+            --text: #1F1E1D;
+            --muted: #5f5e5d;
+            --shadow: 0 14px 38px rgba(31, 30, 29, 0.08);
+        }
+        .dark {
+            --surface: #1F1E1D;
+            --card: #3b3a38;
+            --border: #4d4c4b;
+            --text: #F6F4F0;
+            --muted: rgba(246, 244, 240, 0.7);
+            --shadow: 0 18px 48px rgba(24, 23, 22, 0.35);
+        }
+        body {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            background: var(--surface);
+            color: var(--text);
+        }
+        h1, h2, h3, h4, h5, h6 { font-family: 'Inter', system-ui, sans-serif; }
+        .card { background: var(--card); border: 1px solid var(--border); border-radius: 1rem; box-shadow: var(--shadow); }
+        .dropdown { display: none; }
+        .dropdown.open { display: block; }
+        html.dark body { background: var(--surface); color: var(--text); }
+        html.dark .bg-white { background-color: var(--surface) !important; }
+        html.dark .bg-gray-50 { background-color: var(--surface) !important; }
+        html.dark .bg-gray-100 { background-color: var(--surface) !important; }
+        html.dark .border-gray-200 { border-color: var(--border) !important; }
+        html.dark .text-gray-900 { color: var(--text) !important; }
+        html.dark .text-gray-800 { color: var(--text) !important; }
+        html.dark .text-gray-700 { color: var(--text) !important; }
+        html.dark .text-gray-600 { color: var(--text) !important; }
+        html.dark .text-gray-500 { color: var(--muted) !important; }
+        html.dark [class*="text-gray-700"],
+        html.dark [class*="text-gray-800"],
+        html.dark [class*="text-gray-900"] { color: #F6F4F0 !important; }
+        html.dark [class*="text-gray-600"] { color: rgba(246, 244, 240, 0.7) !important; }
+        html.dark .hover\:bg-gray-50:hover { background-color: #4b4943 !important; }
+        html.dark input[type="text"],
+        html.dark input[type="number"],
+        html.dark input[type="email"],
+        html.dark input[type="password"],
+        html.dark input[type="date"],
+        html.dark select,
+        html.dark textarea {
+            background-color: #4b4943 !important;
+            border-color: #59574f !important;
+            color: #F6F4F0 !important;
+        }
+        .btn-primary {
+            display: inline-flex; align-items: center; justify-content: center;
+            gap: 0.375rem; padding: 0.5rem 1rem; border-radius: 0.5rem;
+            font-size: 0.875rem; font-weight: 600; line-height: 1;
+            cursor: pointer; transition: all 0.2s;
+            background: #243C5A; color: #F6F4F0; border: 1px solid #243C5A;
+            box-shadow: 0 4px 12px rgba(36, 60, 90, 0.2);
+        }
+        .btn-primary:hover { background: #2d4a6f; transform: translateY(-1px); }
+        html.dark .btn-primary { background: #2F6E47; border-color: #2F6E47; }
+        html.dark .btn-primary:hover { background: #357352; }
+        .btn-secondary {
+            display: inline-flex; align-items: center; justify-content: center;
+            gap: 0.375rem; padding: 0.5rem 1rem; border-radius: 0.5rem;
+            font-size: 0.875rem; font-weight: 600; line-height: 1;
+            cursor: pointer; transition: all 0.2s;
+            background-color: var(--card); color: var(--text); border: 1px solid var(--border);
+        }
+        .btn-secondary:hover { background-color: #fdfbf7; border-color: #cfc6bb; }
+        html.dark .btn-secondary { background-color: #4b4943; border-color: #59574f; }
+        html.dark .btn-secondary:hover { background-color: #59574f; }
+        .btn-danger {
+            display: inline-flex; align-items: center; justify-content: center;
+            gap: 0.375rem; padding: 0.5rem 1rem; border-radius: 0.5rem;
+            font-size: 0.875rem; font-weight: 600; line-height: 1;
+            cursor: pointer; transition: all 0.2s;
+            background: #dc2626; color: #fff; border: 1px solid #dc2626;
+        }
+        .btn-danger:hover { background: #b91c1c; transform: translateY(-1px); }
+        .form-label { display: block; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.375rem; color: var(--text); }
+        .form-input {
+            display: block; width: 100%; padding: 0.5rem 0.75rem; border-radius: 0.5rem;
+            border: 1px solid var(--border); background: var(--card); color: var(--text);
+            font-size: 0.875rem; line-height: 1.5;
+        }
+        .form-input:focus { outline: none; border-color: #2F6E47; box-shadow: 0 0 0 3px rgba(47, 110, 71, 0.15); }
+        html.dark .form-input { background: #4b4943; border-color: #59574f; }
+    </style>
+
+    {% block head_extra %}{% endblock %}
+</head>
+<body class="{% block body_class %}{% endblock %}">
+    {% block content %}{% endblock %}
+    {% block scripts %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,117 @@
+{% extends "public/layout.html" %}
+{% block title %}{{ _('Book a room') }}{% endblock %}
+
+{% block public_content %}
+{# ── Hero ──────────────────────────────────────────────────────────────
+   Optional decoration: large rotated letters scattered behind the heading,
+   taken from RMS_BRAND_HERO_LETTERS and cycled across six fixed slots.
+   Nothing configured -> no decoration. #}
+<section class="relative overflow-hidden bg-surface">
+  {% if brand.hero_letters %}
+  {% set hero_slots = [
+       ('-left-8 -top-10 text-[190px] text-accent', -14),
+       ('left-24 top-40 hidden text-[120px] text-primary lg:block', 9),
+       ('-left-6 top-80 hidden text-[150px] text-highlight lg:block', -7),
+       ('-right-10 -top-8 hidden text-[200px] text-primary sm:block', 12),
+       ('right-16 top-44 hidden text-[110px] text-accent lg:block', -18),
+       ('-right-5 top-80 hidden text-[160px] text-highlight lg:block', 6),
+     ] %}
+  {% for classes, angle in hero_slots %}
+  <span class="ui-letter {{ classes }}" style="transform:rotate({{ angle }}deg);" aria-hidden="true">{{ brand.hero_letters[loop.index0 % (brand.hero_letters|length)] }}</span>
+  {% endfor %}
+  {% endif %}
+  <div class="relative mx-auto flex max-w-3xl flex-col items-center gap-6 px-6 pb-20 pt-16 text-center sm:pt-24">
+    <h1 class="ui-h text-4xl leading-tight sm:text-[44px] sm:leading-[48px]">{{ _('Rooms for the community') }}</h1>
+    <p class="max-w-xl text-lg leading-7">
+      {{ _('Workshops, readings, gatherings: book the rooms at %(org)s for your event. Send us a request and we will confirm it by email.')|format(org=brand.name) }}
+    </p>
+    <div class="mt-2 flex flex-col gap-4 sm:flex-row">
+      <a href="/book/new" class="btn-brand">{{ _('Request a room') }}</a>
+      <a href="/book/calendar" class="btn-brand-outline">{{ _('See availability') }}</a>
+    </div>
+  </div>
+</section>
+
+{# ── Rooms ─────────────────────────────────────────────────────────────── #}
+<section class="bg-white px-6 pb-20 pt-16">
+  <div class="mx-auto flex max-w-5xl min-[1600px]:max-w-[1200px] flex-col gap-10">
+    <div class="flex flex-col gap-3 text-center">
+      <h2 class="ui-h text-3xl">{{ _('Our rooms') }}</h2>
+      <p class="text-primary/80">{{ _('All rooms are in the %(org)s house and accessible by arrangement.')|format(org=brand.name) }}</p>
+    </div>
+
+    {% if rooms %}
+    <div class="grid gap-7 sm:grid-cols-2 lg:grid-cols-3">
+      {% for room in rooms %}
+      {% set tone = loop.index0 % 3 %}
+      <div class="flex flex-col overflow-hidden rounded-[25px] bg-surface">
+        {# Photo slot. Until rooms have photos, a tinted block with the room’s initial keeps the
+           brand instead of an empty gray box. #}
+        <div class="relative flex h-40 items-center justify-center overflow-hidden
+                    {{ 'bg-primary' if tone == 0 else 'bg-accent' if tone == 1 else 'bg-highlight' }}">
+          <span class="font-heading text-[120px] font-bold leading-none {{ 'text-surface/25' if tone == 0 else 'text-primary/25' if tone == 1 else 'text-accent/25' }}"
+                aria-hidden="true">{{ (room.name or '?')[:1]|upper }}</span>
+        </div>
+        <div class="flex flex-grow flex-col gap-3 px-6 pb-7 pt-6">
+          <h3 class="ui-h text-xl [hyphens:auto] break-words">{{ room.name }}</h3>
+          {% if room.capacity %}
+          <span class="flex items-center gap-2 text-sm font-semibold">
+            <i class="fa-solid fa-users text-accent" aria-hidden="true"></i>
+            {{ _('Up to %(count)s people')|format(count=room.capacity) }}
+          </span>
+          {% endif %}
+          {% if room.public_description %}
+          <p class="flex-grow text-sm leading-6 text-primary/85">{{ room.public_description }}</p>
+          {% endif %}
+          {# No price on a room card: the cleaning charge is worked out when
+             there is a date, and it belongs on the booking, not on an advert. #}
+          <div class="mt-1 flex items-center justify-end gap-3">
+            {# The card knows which room it is; asking again on the form is a
+               question the visitor has already answered. #}
+            <a href="/book/new?room={{ room.id }}" class="btn-brand px-[18px] pb-[6px] pt-[9px] text-xs">{{ _('Request') }}</a>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <p class="text-center text-primary/60">
+      {{ _('No rooms are available for online booking at the moment.') }}
+    </p>
+    {% endif %}
+  </div>
+</section>
+
+{# ── How it works (orange band) ────────────────────────────────────────── #}
+<section class="bg-accent px-6 pb-18 pt-16 sm:pb-20">
+  <div class="mx-auto flex max-w-5xl min-[1600px]:max-w-[1200px] flex-col gap-11">
+    <h2 class="ui-h text-center text-3xl">{{ _("How it works") }}</h2>
+    <div class="grid gap-9 sm:grid-cols-3">
+      <div class="flex flex-col items-center gap-3.5 text-center">
+        <span class="flex h-14 w-14 items-center justify-center rounded-full bg-primary pt-1 font-heading text-2xl font-bold text-accent">1</span>
+        <h3 class="ui-h text-lg">{{ _('Send a request') }}</h3>
+        <p class="text-sm leading-6">{{ _('Fill in the form with your preferred date. No account needed.') }}</p>
+      </div>
+      <div class="flex flex-col items-center gap-3.5 text-center">
+        <span class="flex h-14 w-14 items-center justify-center rounded-full bg-primary pt-1 font-heading text-2xl font-bold text-accent">2</span>
+        <h3 class="ui-h text-lg">{{ _('We get back to you') }}</h3>
+        <p class="text-sm leading-6">{{ _('We check availability and reply by email.') }}</p>
+      </div>
+      <div class="flex flex-col items-center gap-3.5 text-center">
+        <span class="flex h-14 w-14 items-center justify-center rounded-full bg-primary pt-1 font-heading text-2xl font-bold text-accent">3</span>
+        <h3 class="ui-h text-lg">{{ _('Date confirmed') }}</h3>
+        <p class="text-sm leading-6">{{ _('Once we say yes, your date is reserved. Change or cancel any time via your link.') }}</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+{# ── CTA band (plum) ───────────────────────────────────────────────────── #}
+<section class="bg-highlight px-6 py-14">
+  <div class="mx-auto flex max-w-2xl flex-col items-center gap-6 text-center">
+    <h2 class="ui-h text-3xl !text-accent">{{ _('Planning an event?') }}</h2>
+    <p class="text-accent/85">{{ _('Send us your request — we usually reply within two working days.') }}</p>
+    <a href="/book/new" class="btn-brand !text-highlight">{{ _('Request a room') }}</a>
+  </div>
+</section>
+{% endblock %}

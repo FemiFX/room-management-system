@@ -1,0 +1,55 @@
+<aside id="sidebar" class="admin-sidebar hidden lg:flex lg:flex-col w-64 bg-white border-r border-gray-200 h-screen dark:bg-carbon-800 dark:border-carbon-700 z-20">
+    <div class="sidebar-header px-6 py-5 border-b border-gray-200 dark:border-carbon-700 flex-shrink-0">
+        <div class="flex items-center space-x-3">
+            <div class="w-9 h-9 rounded-full bg-turf-green-600 text-white font-bold flex items-center justify-center text-sm">R</div>
+            <div class="sidebar-logo-text">
+                <p class="text-xs text-gray-500 dark:text-parchment/60 uppercase tracking-wide">{{ _('Admin') }}</p>
+                <h1 class="text-base font-semibold text-gray-900 dark:text-parchment">{{ _('Room Management') }}</h1>
+            </div>
+        </div>
+    </div>
+    <nav class="pt-4 px-3 space-y-1 pb-4 flex-1 min-h-0 overflow-y-auto">
+        {% if nav_sections %}
+            {% for section in nav_sections %}
+                {% if section.is_header %}
+                    <div class="sidebar-group-header px-4 pt-3 pb-1 text-xs uppercase tracking-wide text-gray-400 dark:text-parchment/50 font-medium">
+                        {{ section.label }}
+                    </div>
+                {% else %}
+                    <div class="mb-1 sidebar-group {% if not section.single %}sidebar-group-expandable{% endif %}">
+                        {% if section.single %}
+                            <a href="{{ section.url }}"{% if section.target %} target="{{ section.target }}" rel="noopener"{% endif %} class="sidebar-item {% if section.active %}active{% endif %} flex items-center w-full px-4 py-2 rounded-lg text-sm text-gray-800 dark:text-parchment hover:bg-gray-50 dark:hover:bg-carbon-700 font-medium" data-tooltip="{{ section.label }}">
+                                <i class="fa-solid {{ fa_icon(section.icon) }} mr-3 w-4 text-center text-gray-500 dark:text-parchment/70"></i>
+                                <span>{{ section.label }}</span>
+                                {% if section.badge %}
+                                <span class="ml-auto rounded-full bg-turf-green-600/15 px-2 py-0.5 text-[11px] font-bold text-turf-green-700 dark:bg-golden-bronze-300/20 dark:text-golden-bronze-300">{{ section.badge }}</span>
+                                {% endif %}
+                            </a>
+                        {% else %}
+                            <button class="sidebar-item sidebar-toggle-item flex items-center justify-between w-full px-4 py-2 rounded-lg text-sm text-gray-800 dark:text-parchment hover:bg-gray-50 dark:hover:bg-carbon-700 font-medium" data-toggle="section" data-target="section-{{ section.id }}" data-tooltip="{{ section.label }}">
+                                <div class="flex items-center">
+                                    <i class="fa-solid {{ fa_icon(section.icon) }} mr-3 w-4 text-center text-gray-500 dark:text-parchment/70"></i>
+                                    <span>{{ section.label }}</span>
+                                </div>
+                                <i class="fa-solid fa-chevron-down text-gray-400 text-xs {% if section.open %}rotate-180 transform{% endif %}"></i>
+                            </button>
+                            <div id="section-{{ section.id }}" class="submenu {% if section.open %}open{% endif %} mt-1 ml-7 pl-3 border-l border-gray-200 dark:border-carbon-600">
+                                <div class="submenu-flyout-title hidden">{{ section.label }}</div>
+                                {% for child in section.children %}
+                                    <a href="{{ child.url }}" class="block py-2 px-2 text-sm font-medium rounded {% if child.active %}active text-turf-green-600 dark:text-golden-bronze-300 font-semibold{% else %}text-gray-600 dark:text-parchment/80 hover:text-gray-900 dark:hover:text-parchment{% endif %}">{{ child.label }}</a>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                {% endif %}
+            {% endfor %}
+        {% endif %}
+    </nav>
+    <div class="sidebar-collapse-btn hidden lg:flex">
+        <button id="sidebarCollapseBtn" aria-label="Collapse sidebar">
+            <i class="fa-solid fa-chevron-left"></i>
+            <span>{{ _('Collapse') }}</span>
+        </button>
+    </div>
+</aside>
+<div id="sidebar-item-tooltip" aria-hidden="true"></div>

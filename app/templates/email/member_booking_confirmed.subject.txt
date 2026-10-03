@@ -1,0 +1,1 @@
+{{ _('Room booked') }} — {{ public_ref }}

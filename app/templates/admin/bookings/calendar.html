@@ -1,0 +1,336 @@
+{% extends "admin/layout.html" %}
+{% from "partials/calendar_month.html" import calendar_month %}
+{% from "admin/bookings/_toolbar.html" import bookings_toolbar %}
+
+{% block title %}{{ _('Bookings') }}{% endblock %}
+{% block page_title %}{{ _('Bookings') }}{% endblock %}
+{% block page_subtitle %}{{ _('List and calendar across every room') }}{% endblock %}
+
+{% block head_extra %}
+  {# Self-hosted, like every other asset. See static/vendor/event-calendar/README.md. #}
+  <link rel="stylesheet" href="{{ url_for('static', path='vendor/event-calendar/event-calendar.min.css') }}">
+  <style>
+    /*
+      The library ships 16px buttons with .375rem/.75rem padding and a 4px
+      radius, which next to the admin's own controls read as oversized. These
+      are the exact numbers .btn-secondary uses.
+    */
+    #ec .ec-button {
+      border: 1px solid var(--border); border-radius: 0.5rem;
+      padding: 0.375rem 0.75rem; font-size: 0.8125rem; font-weight: 600;
+      line-height: 1.15; background: var(--card); color: var(--text);
+    }
+    #ec .ec-button:not(:disabled):hover, #ec .ec-button.ec-active {
+      background: #f3f4f6; border-color: #d6d1c9; color: var(--text);
+    }
+    html.dark #ec .ec-button:not(:disabled):hover,
+    html.dark #ec .ec-button.ec-active { background: #59574f; border-color: #59574f; }
+    /* A button group is one control, so only its outer corners are round. */
+    #ec .ec-button-group .ec-button { border-radius: 0; }
+    #ec .ec-button-group .ec-button:first-child { border-radius: 0.5rem 0 0 0.5rem; }
+    #ec .ec-button-group .ec-button:last-child { border-radius: 0 0.5rem 0.5rem 0; }
+    /* .ec-title is an h2, so without this it renders at the browser default. */
+    #ec .ec-title { font-size: 0.9375rem; font-weight: 600; line-height: 1.4; }
+    #ec .ec-toolbar { margin-block-end: 0.875rem; }
+    #ec .ec-event { cursor: pointer; }
+  </style>
+{% endblock %}
+
+{% block nav_extra %}{{ bookings_toolbar('calendar') }}{% endblock %}
+
+{% block admin_content %}
+<div class="space-y-4">
+  {# The legend is moved into the calendar's own toolbar by the script below,
+     beside Monat/Woche/Räume, rather than spending a row on three dots. It is
+     rendered here so it exists without JavaScript too. #}
+  <template id="calendar-legend">
+    <span class="ec-legend flex flex-wrap items-center gap-3 text-xs">
+      {# The same colours the status badges use, so the two views agree. #}
+      {% for label, colour in [
+        (_('Pending'), '#D8A843'), (_('Approved'), '#2F6E47'), (_('Completed'), '#4A9EDD')
+      ] %}
+        <span class="inline-flex items-center gap-1.5 text-gray-600 dark:text-parchment/70">
+          <span class="h-2.5 w-2.5 rounded-full" style="background: {{ colour }}"></span>{{ label }}
+        </span>
+      {% endfor %}
+    </span>
+  </template>
+
+  <div class="card relative p-4">
+    <div id="ec" class="min-h-[36rem]"></div>
+
+    {#
+      The detail popover. One node, moved and filled on each click, rather than
+      one per event: a busy month would otherwise build hundreds of hidden
+      cards nobody opens.
+    #}
+    <div id="ec-popover" hidden role="dialog" aria-modal="false" aria-labelledby="ec-pop-title"
+         class="absolute z-30 w-[22rem] overflow-hidden rounded-xl border border-gray-200 bg-white shadow-2xl dark:border-carbon-600 dark:bg-carbon-800">
+      <div id="ec-pop-head" class="flex items-start justify-between gap-2.5 px-3.5 py-2.5">
+        <span class="flex min-w-0 flex-col gap-0.5">
+          <span id="ec-pop-title" class="truncate text-sm font-bold text-white"></span>
+          <span id="ec-pop-meta" class="text-[11px] font-semibold uppercase tracking-wide text-white/75"></span>
+        </span>
+        <span class="flex shrink-0 gap-0.5">
+          <a id="ec-pop-open-icon" href="#" title="{{ _('Open booking') }}" aria-label="{{ _('Open booking') }}"
+             class="inline-flex h-[26px] w-[26px] items-center justify-center rounded-md bg-white/15 text-white hover:bg-white/25">
+            <i class="fa-solid fa-arrow-up-right-from-square text-[11px]"></i>
+          </a>
+          <button type="button" id="ec-pop-close" title="{{ _('Close') }}" aria-label="{{ _('Close') }}"
+                  class="inline-flex h-[26px] w-[26px] items-center justify-center rounded-md text-white/85 hover:bg-white/15">
+            <i class="fa-solid fa-xmark text-[12px]"></i>
+          </button>
+        </span>
+      </div>
+      <div class="flex flex-col gap-2.5 px-3.5 py-3.5 text-[13px] text-gray-900 dark:text-parchment">
+        <span class="flex items-start gap-2.5">
+          <i class="fa-regular fa-clock mt-0.5 shrink-0 text-gray-400"></i>
+          <span><span id="ec-pop-day" class="block"></span><span id="ec-pop-time" class="block text-gray-500 dark:text-parchment/60"></span></span>
+        </span>
+        <span class="flex items-start gap-2.5">
+          <i class="fa-solid fa-door-open mt-0.5 shrink-0 text-gray-400"></i>
+          <span id="ec-pop-room"></span>
+        </span>
+        <span class="flex items-start gap-2.5">
+          <i class="fa-solid fa-users mt-0.5 shrink-0 text-gray-400"></i>
+          <span id="ec-pop-party"></span>
+        </span>
+        <span class="h-px bg-gray-100 dark:bg-carbon-700"></span>
+        <span class="flex items-center justify-between gap-2.5">
+          <span id="ec-pop-hint" class="text-[11px] text-gray-400 dark:text-parchment/40">{{ _('Drag a booking to move it.') }}</span>
+          <a id="ec-pop-open" href="#" class="btn-primary shrink-0 whitespace-nowrap !px-3 !py-1.5 text-xs">
+            {{ _('Open booking') }} <i class="fa-solid fa-arrow-right text-[10px]"></i>
+          </a>
+        </span>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% include "admin/bookings/_booking_create.html" %}
+
+{#
+  Without JavaScript the interactive calendar renders nothing, so the
+  server-rendered month grid stands in. It is the same grid the public and
+  member calendars use.
+#}
+<noscript>
+  <div class="mt-4">{{ calendar_month(month, '/bookings?view=calendar', show_titles=true, link_bookings=true) }}</div>
+</noscript>
+{% endblock %}
+
+{% block page_scripts %}
+<script>
+    window.RMS_I18N = Object.assign(window.RMS_I18N || {}, {
+        titleRequired: {{ _('A title is required.') | tojson }},
+        roomRequired: {{ _('Select a room.') | tojson }},
+        partyRequired: {{ _('Select a party.') | tojson }},
+        datesRequired: {{ _('A start and an end are required.') | tojson }},
+    });
+</script>
+{% include "admin/bookings/_booking_create_js.html" %}
+<script src="{{ url_for('static', path='vendor/event-calendar/event-calendar.min.js') }}"></script>
+<script>
+(function () {
+  const el = document.getElementById('ec');
+  if (!el || typeof EventCalendar === 'undefined') return;
+
+  const LANG = {{ current_language | tojson }};
+  const T = {
+    month: {{ _('Month') | tojson }},
+    week: {{ _('Week') | tojson }},
+    day: {{ _('Day') | tojson }},
+    rooms: {{ _('Rooms') | tojson }},
+    today: {{ _('Today') | tojson }},
+    moved: {{ _('Booking moved') | tojson }},
+    clash: {{ _('That slot is already taken.') | tojson }},
+    failed: {{ _('Could not move the booking.') | tojson }},
+    notEditable: {{ _('This booking cannot be moved.') | tojson }},
+    hours: {{ _('%(count)s h') | tojson }},
+    attendees: {{ _('%(count)s attending') | tojson }},
+    noParty: {{ _('No party') | tojson }},
+    dragHint: {{ _('Drag a booking to move it.') | tojson }},
+    fixedHint: {{ _('This booking cannot be moved.') | tojson }},
+    status: {
+      pending: {{ _('Pending') | tojson }},
+      approved: {{ _('Approved') | tojson }},
+      completed: {{ _('Completed') | tojson }},
+    },
+    source: {
+      public: {{ _('Public') | tojson }},
+      internal: {{ _('Internal') | tojson }},
+      staff: {{ _('Staff') | tojson }},
+    },
+  };
+  const STATUS_COLOUR = { pending: '#D8A843', approved: '#2F6E47', completed: '#4A9EDD' };
+
+  function toLocalIso(value) {
+    // The API expects a local datetime; sending UTC would shift every booking
+    // by the Berlin offset.
+    const d = new Date(value);
+    const pad = (n) => String(n).padStart(2, '0');
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}` +
+           `T${pad(d.getHours())}:${pad(d.getMinutes())}:00`;
+  }
+
+  const calendar = EventCalendar.create(el, {
+    view: 'dayGridMonth',
+    date: new Date({{ month.year }}, {{ month.month - 1 }}, 1),
+    firstDay: 1,
+    locale: LANG,
+    height: '40rem',
+    nowIndicator: true,
+    slotMinTime: '07:00',
+    slotMaxTime: '23:00',
+    dayMaxEvents: true,
+    editable: true,
+    eventStartEditable: true,
+    eventDurationEditable: true,
+    headerToolbar: {
+      start: 'prev,next today',
+      center: 'title',
+      // No list view. The library's one shows only days that have something on
+      // them and cannot be pointed at a different range -- and the page's own
+      // list view already is the list, with a period picker.
+      end: 'dayGridMonth,timeGridWeek,resourceTimeGridDay',
+    },
+    buttonText: {
+      today: T.today,
+      dayGridMonth: T.month,
+      timeGridWeek: T.week,
+      resourceTimeGridDay: T.rooms,
+    },
+    resources: { url: '/api/v1/bookings/calendar-resources' },
+    eventSources: [{
+      url: '/api/v1/bookings/calendar-events',
+      method: 'GET',
+    }],
+    eventClick: openPopover,
+    eventDrop: onMove,
+    eventResize: onMove,
+  });
+
+  // ── Detail popover ────────────────────────────────────────────────────
+  // Everything shown here already travels with the event in extendedProps,
+  // so opening one costs no request.
+  const pop = document.getElementById('ec-popover');
+  const card = el.parentElement;
+
+  function fmt(date, opts) {
+    try { return date.toLocaleString(LANG, opts); } catch (e) { return date.toLocaleString(undefined, opts); }
+  }
+
+  function openPopover(info) {
+    if (info.jsEvent) info.jsEvent.preventDefault();
+    const event = info.event;
+    const props = event.extendedProps || {};
+    const start = new Date(event.start);
+    const end = new Date(event.end);
+    const colour = STATUS_COLOUR[props.status] || '#6b6865';
+
+    document.getElementById('ec-pop-head').style.background = colour;
+    document.getElementById('ec-pop-title').textContent = event.title;
+    document.getElementById('ec-pop-meta').textContent =
+      [T.status[props.status] || props.status, T.source[props.source] || props.source]
+        .filter(Boolean).join(' · ');
+
+    document.getElementById('ec-pop-day').textContent =
+      fmt(start, { weekday: 'short', day: '2-digit', month: '2-digit', year: 'numeric' });
+    const hours = Math.round(((end - start) / 3600000) * 10) / 10;
+    document.getElementById('ec-pop-time').textContent =
+      fmt(start, { hour: '2-digit', minute: '2-digit' }) + ' – ' +
+      fmt(end, { hour: '2-digit', minute: '2-digit' }) + ' · ' +
+      T.hours.replace('%(count)s', hours);
+
+    document.getElementById('ec-pop-room').textContent =
+      [props.room, props.room_code].filter(Boolean).join(' · ') || '—';
+    const party = props.party || T.noParty;
+    document.getElementById('ec-pop-party').textContent = props.attendees
+      ? party + ' · ' + T.attendees.replace('%(count)s', props.attendees)
+      : party;
+    document.getElementById('ec-pop-hint').textContent =
+      props.editable === false ? T.fixedHint : T.dragHint;
+
+    const href = '/bookings/' + event.id;
+    document.getElementById('ec-pop-open').href = href;
+    document.getElementById('ec-pop-open-icon').href = href;
+
+    // Place it near the click, then pull it back inside the card so it never
+    // hangs off the right edge or below the fold.
+    pop.hidden = false;
+    const box = card.getBoundingClientRect();
+    const point = info.jsEvent || { clientX: box.left + 40, clientY: box.top + 40 };
+    let left = point.clientX - box.left + 12;
+    let top = point.clientY - box.top + 12;
+    left = Math.max(8, Math.min(left, box.width - pop.offsetWidth - 8));
+    if (top + pop.offsetHeight > box.height - 8) {
+      top = Math.max(8, point.clientY - box.top - pop.offsetHeight - 12);
+    }
+    pop.style.left = left + 'px';
+    pop.style.top = top + 'px';
+    document.getElementById('ec-pop-close').focus();
+  }
+
+  function closePopover() { pop.hidden = true; }
+
+  document.getElementById('ec-pop-close').addEventListener('click', closePopover);
+  document.addEventListener('keydown', function (event) {
+    if (event.key === 'Escape' && !pop.hidden) closePopover();
+  });
+  document.addEventListener('click', function (event) {
+    if (pop.hidden) return;
+    if (pop.contains(event.target) || el.contains(event.target)) return;
+    closePopover();
+  });
+
+  // The toolbar is built by the calendar library, so the legend can only be
+  // placed into it after the first render.
+  function placeLegend() {
+    const template = document.getElementById('calendar-legend');
+    const end = el.querySelector('.ec-toolbar .ec-end');
+    if (!template || !end || end.querySelector('.ec-legend')) return;
+    end.insertBefore(template.content.cloneNode(true), end.firstChild);
+  }
+  requestAnimationFrame(placeLegend);
+
+  async function onMove(info) {
+    closePopover();
+    const props = info.event.extendedProps || {};
+    if (props.editable === false) {
+      calendar.updateEvent(info.oldEvent);
+      if (window.showToast) window.showToast(T.notEditable, 'error');
+      return;
+    }
+
+    const body = {
+      start_at: toLocalIso(info.event.start),
+      end_at: toLocalIso(info.event.end),
+    };
+    // Dragging between lanes in the rooms view is a room change.
+    if (info.newResource && info.newResource.id !== (info.oldResource || {}).id) {
+      body.room_id = Number(info.newResource.id);
+    }
+
+    const res = await apiPatch('/api/v1/bookings/' + info.event.id, body);
+    if (res.ok) {
+      if (window.showToast) window.showToast(T.moved, 'success');
+      return;
+    }
+
+    // The server re-checks conflicts on every move, so a rejected drag has to
+    // put the booking back where it was rather than leave the UI lying.
+    calendar.updateEvent(info.oldEvent);
+    let message = T.failed;
+    if (res.status === 409) {
+      try {
+        const detail = (await res.json()).detail || {};
+        message = detail.detail || T.clash;
+      } catch (e) { message = T.clash; }
+    } else {
+      message = (await parseApiError(res)) || T.failed;
+    }
+    if (window.showToast) window.showToast(message, 'error');
+  }
+})();
+</script>
+{% endblock %}

@@ -1,0 +1,280 @@
+{% extends "admin/layout.html" %}
+
+{% block title %}{{ doc.title }} — {{ _('Documents') }}{% endblock %}
+{% block page_title %}{{ doc.title }}{% endblock %}
+{% block page_subtitle %}{{ _('Document detail') }}{% endblock %}
+
+{% block admin_content %}
+<div class="space-y-6">
+
+    <div class="flex items-center justify-between gap-4">
+        <a href="/documents" class="inline-flex items-center gap-1.5 text-sm text-gray-500 dark:text-parchment/60 hover:text-gray-900 dark:hover:text-parchment transition-colors">
+            <i class="fa-solid fa-chevron-left text-xs"></i> Documents
+        </a>
+        <button onclick="deleteDocument({{ doc.id }})" class="btn-danger inline-flex items-center gap-2 text-sm">
+            <i class="fa-solid fa-trash-can text-xs"></i> Delete
+        </button>
+    </div>
+
+    {# ─── Metadata card ────────────────────────────────────────────── #}
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+        <div class="lg:col-span-2 space-y-6">
+
+            {# File viewer #}
+            <div class="card overflow-hidden">
+                <div class="px-6 py-4 border-b border-gray-100 dark:border-carbon-700">
+                    <h3 class="text-base font-semibold text-gray-900 dark:text-parchment flex items-center gap-2">
+                        <i class="fa-solid fa-eye text-sm text-gray-400"></i> Preview
+                    </h3>
+                </div>
+                <div class="p-6" id="file-viewer-container">
+                    <div class="flex flex-col items-center justify-center py-10 gap-4">
+                        <div class="w-12 h-12 rounded-full bg-gray-100 dark:bg-carbon-700 flex items-center justify-center">
+                            <i class="fa-solid fa-spinner fa-spin text-gray-400"></i>
+                        </div>
+                        <p class="text-sm text-gray-400 dark:text-parchment/50">Loading file…</p>
+                    </div>
+                </div>
+            </div>
+
+            {# Notes #}
+            {% if doc.notes %}
+            <div class="card">
+                <div class="px-6 py-4 border-b border-gray-100 dark:border-carbon-700">
+                    <h3 class="text-base font-semibold text-gray-900 dark:text-parchment flex items-center gap-2">
+                        <i class="fa-solid fa-note-sticky text-sm text-gray-400"></i> Notes
+                    </h3>
+                </div>
+                <div class="px-6 py-4">
+                    <p class="text-sm text-gray-700 dark:text-parchment/80 whitespace-pre-wrap">{{ doc.notes }}</p>
+                </div>
+            </div>
+            {% endif %}
+
+        </div>
+
+        {# Sidebar metadata #}
+        <div class="space-y-6">
+            <div class="card">
+                <div class="px-6 py-4 border-b border-gray-100 dark:border-carbon-700">
+                    <h3 class="text-base font-semibold text-gray-900 dark:text-parchment">Details</h3>
+                </div>
+                <dl class="divide-y divide-gray-100 dark:divide-carbon-700/60">
+                    <div class="px-6 py-3 flex items-start justify-between gap-4">
+                        <dt class="text-xs font-medium text-gray-500 dark:text-parchment/50 uppercase tracking-wide mt-0.5">Type</dt>
+                        <dd>
+                            {% set type_colors = {
+                                'contract': 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
+                                'floorplan': 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400',
+                                'handover_protocol': 'bg-teal-100 text-teal-700 dark:bg-teal-900/30 dark:text-teal-400',
+                                'invoice': 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
+                                'photo': 'bg-pink-100 text-pink-700 dark:bg-pink-900/30 dark:text-pink-400',
+                                'inspection': 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400',
+                                'other': 'bg-gray-100 text-gray-600 dark:bg-gray-700/40 dark:text-gray-400',
+                            } %}
+                            {% set type_labels = {
+                                'contract': 'Contract',
+                                'floorplan': 'Floorplan',
+                                'handover_protocol': 'Handover Protocol',
+                                'invoice': 'Invoice',
+                                'photo': 'Photo',
+                                'inspection': 'Inspection',
+                                'other': 'Other',
+                            } %}
+                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium {{ type_colors.get(doc.document_type.value, 'bg-gray-100 text-gray-600') }}">
+                                {{ type_labels.get(doc.document_type.value, doc.document_type.value) }}
+                            </span>
+                        </dd>
+                    </div>
+                    {% if doc.original_filename %}
+                    <div class="px-6 py-3 flex items-start justify-between gap-4">
+                        <dt class="text-xs font-medium text-gray-500 dark:text-parchment/50 uppercase tracking-wide mt-0.5">Filename</dt>
+                        <dd class="text-sm text-gray-700 dark:text-parchment/80 font-mono text-right truncate max-w-[180px]" title="{{ doc.original_filename }}">{{ doc.original_filename }}</dd>
+                    </div>
+                    {% endif %}
+                    {% if file_ext %}
+                    <div class="px-6 py-3 flex items-start justify-between gap-4">
+                        <dt class="text-xs font-medium text-gray-500 dark:text-parchment/50 uppercase tracking-wide mt-0.5">Format</dt>
+                        <dd class="text-sm text-gray-700 dark:text-parchment/80 uppercase font-semibold">{{ file_ext }}</dd>
+                    </div>
+                    {% endif %}
+                    {% if file_size_mb is not none %}
+                    <div class="px-6 py-3 flex items-start justify-between gap-4">
+                        <dt class="text-xs font-medium text-gray-500 dark:text-parchment/50 uppercase tracking-wide mt-0.5">Size</dt>
+                        <dd class="text-sm text-gray-700 dark:text-parchment/80">{{ file_size_mb }} MB</dd>
+                    </div>
+                    {% endif %}
+                    <div class="px-6 py-3 flex items-start justify-between gap-4">
+                        <dt class="text-xs font-medium text-gray-500 dark:text-parchment/50 uppercase tracking-wide mt-0.5">Uploaded</dt>
+                        <dd class="text-sm text-gray-700 dark:text-parchment/80">{{ doc.uploaded_at.strftime('%d.%m.%Y') }}</dd>
+                    </div>
+                    {% if doc.room %}
+                    <div class="px-6 py-3 flex items-start justify-between gap-4">
+                        <dt class="text-xs font-medium text-gray-500 dark:text-parchment/50 uppercase tracking-wide mt-0.5">Room</dt>
+                        <dd>
+                            <a href="/rooms/{{ doc.room.id }}" class="font-mono text-xs font-semibold bg-gray-100 dark:bg-carbon-700 text-gray-700 dark:text-parchment px-1.5 py-0.5 rounded hover:bg-gray-200 dark:hover:bg-carbon-600">{{ doc.room.room_code }}</a>
+                        </dd>
+                    </div>
+                    {% endif %}
+                    {% if doc.lease %}
+                    <div class="px-6 py-3 flex items-start justify-between gap-4">
+                        <dt class="text-xs font-medium text-gray-500 dark:text-parchment/50 uppercase tracking-wide mt-0.5">Lease</dt>
+                        <dd class="text-sm text-gray-600 dark:text-parchment/70 font-mono">{{ doc.lease.contract_reference or '#' + doc.lease.id | string }}</dd>
+                    </div>
+                    {% endif %}
+                </dl>
+            </div>
+        </div>
+
+    </div>
+
+</div>
+
+{# Modal backdrop for fullscreen view #}
+<div id="media-file-viewer-modal" class="media-file-modal-backdrop">
+    <div class="media-file-modal-body">
+        <button id="media-file-modal-close" class="media-file-modal-close" aria-label="Close">&times;</button>
+        <div id="media-file-modal-body" class="w-full h-full flex items-center justify-center">
+            <p class="text-sm text-gray-100">Loading…</p>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+
+{% block page_scripts %}
+<style>
+.media-file-modal-backdrop {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 9999;
+    display: none; align-items: center; justify-content: center; padding: 1rem;
+}
+.media-file-modal-backdrop.show { display: flex; }
+.media-file-modal-close {
+    position: absolute; top: 1rem; right: 1rem; color: #111827; background: #f8fafc;
+    border-radius: 9999px; width: 48px; height: 48px; display: flex; align-items: center;
+    justify-content: center; font-size: 1.5rem; cursor: pointer; z-index: 10000;
+    border: 1px solid rgba(17,24,39,0.15); font-weight: bold;
+}
+.media-file-modal-body { position: relative; width: 95vw; height: 95vh; display: flex; align-items: center; justify-content: center; }
+.media-file-modal-content { width: 100%; height: 100%; border: none; background: transparent; object-fit: contain; display: block; }
+</style>
+<script src="https://cdn.jsdelivr.net/npm/mammoth@1.6.0/mammoth.browser.min.js"></script>
+<script>
+(function() {
+    const docId = {{ doc.id }};
+    const csrf = document.querySelector('meta[name="csrf-token"]')?.content;
+
+    // Close modal
+    const modal = document.getElementById('media-file-viewer-modal');
+    document.getElementById('media-file-modal-close').addEventListener('click', () => modal.classList.remove('show'));
+    modal.addEventListener('click', e => { if (e.target === modal) modal.classList.remove('show'); });
+
+    window.openMediaFileModal = async function(src, type) {
+        const body = document.getElementById('media-file-modal-body');
+        body.innerHTML = '<p class="text-sm text-gray-100">Loading…</p>';
+        modal.classList.add('show');
+
+        const isImage = ['png','jpg','jpeg','webp','gif'].includes(type);
+        const isPdf = type === 'pdf';
+        const isDocx = ['docx','doc'].includes(type);
+
+        if (isImage) {
+            const img = document.createElement('img');
+            img.src = src; img.alt = 'Document'; img.className = 'media-file-modal-content';
+            body.innerHTML = ''; body.appendChild(img);
+        } else if (isPdf) {
+            const iframe = document.createElement('iframe');
+            iframe.src = src + '#toolbar=1'; iframe.className = 'media-file-modal-content';
+            body.innerHTML = ''; body.appendChild(iframe);
+        } else if (isDocx && typeof mammoth !== 'undefined') {
+            try {
+                const resp = await fetch(src);
+                const buf = await resp.arrayBuffer();
+                const result = await mammoth.convertToHtml({ arrayBuffer: buf });
+                const container = document.createElement('div');
+                container.className = 'media-file-modal-content overflow-auto p-8 bg-white dark:bg-gray-800 rounded-lg';
+                container.style.maxWidth = '900px'; container.style.height = '100%';
+                container.innerHTML = result.value;
+                body.innerHTML = ''; body.appendChild(container);
+            } catch (err) {
+                body.innerHTML = '<p class="text-red-400">Error loading document</p>';
+            }
+        } else {
+            const iframe = document.createElement('iframe');
+            iframe.src = src; iframe.className = 'media-file-modal-content';
+            body.innerHTML = ''; body.appendChild(iframe);
+        }
+    };
+
+    // Fetch presigned URL and render viewer
+    async function loadViewer() {
+        const container = document.getElementById('file-viewer-container');
+        try {
+            const res = await fetch(`/api/v1/documents/${docId}/url`, {
+                headers: { 'x-csrf-token': csrf || '' }
+            });
+            if (!res.ok) throw new Error('Failed to load');
+            const data = await res.json();
+            const url = data.url;
+            const ext = '{{ file_ext }}';
+
+            let html = '';
+            if (['png','jpg','jpeg','webp','gif'].includes(ext)) {
+                html = `
+                    <div class="flex flex-col items-center gap-4">
+                        <img src="${url}" alt="{{ doc.title | e }}" class="max-h-96 rounded-lg border border-gray-200 dark:border-carbon-600 object-contain cursor-pointer hover:shadow-lg transition-shadow" onclick="openMediaFileModal('${url}', '${ext}')">
+                        <div class="flex gap-3">
+                            <a href="${url}" download class="btn-primary text-sm">Download</a>
+                            <button onclick="openMediaFileModal('${url}', '${ext}')" class="btn-secondary text-sm">Fullscreen</button>
+                        </div>
+                    </div>`;
+            } else if (ext === 'pdf') {
+                html = `
+                    <div>
+                        <embed src="${url}#toolbar=1" type="application/pdf" class="w-full h-[600px] rounded-lg border border-gray-200 dark:border-carbon-600">
+                        <div class="mt-3 flex gap-3">
+                            <a href="${url}" target="_blank" rel="noopener" class="btn-secondary text-sm flex-1 text-center">Open in new tab</a>
+                            <button onclick="openMediaFileModal('${url}', 'pdf')" class="btn-secondary text-sm flex-1">Fullscreen</button>
+                            <a href="${url}" download class="btn-primary text-sm">Download</a>
+                        </div>
+                    </div>`;
+            } else if (['doc','docx'].includes(ext)) {
+                html = `
+                    <div class="text-center py-8 border-2 border-dashed border-gray-200 dark:border-carbon-600 rounded-lg">
+                        <i class="fa-solid fa-file-word text-4xl text-blue-400 mb-4 block"></i>
+                        <p class="text-sm text-gray-600 dark:text-parchment/70 mb-4">Word document — preview in browser</p>
+                        <div class="flex gap-3 justify-center">
+                            <button onclick="openMediaFileModal('${url}', '${ext}')" class="btn-secondary text-sm">View document</button>
+                            <a href="${url}" download class="btn-primary text-sm">Download</a>
+                        </div>
+                    </div>`;
+            } else {
+                html = `
+                    <div class="text-center py-8 border-2 border-dashed border-gray-200 dark:border-carbon-600 rounded-lg">
+                        <i class="fa-solid fa-file text-4xl text-gray-300 dark:text-parchment/20 mb-4 block"></i>
+                        <p class="text-sm text-gray-500 dark:text-parchment/60 mb-4 uppercase font-semibold">${ext || 'File'}</p>
+                        <a href="${url}" download class="btn-primary text-sm">Download</a>
+                    </div>`;
+            }
+            container.innerHTML = html;
+        } catch (err) {
+            container.innerHTML = '<div class="py-8 text-center text-sm text-red-500 dark:text-red-400"><i class="fa-solid fa-triangle-exclamation mr-2"></i>Could not load file preview</div>';
+        }
+    }
+
+    loadViewer();
+
+    window.deleteDocument = async function(id) {
+        if (!confirm('Delete this document? This cannot be undone.')) return;
+        const res = await apiDelete(`/api/v1/documents/${id}`);
+        if (res.ok) {
+            window.location.href = '/documents';
+        } else {
+            if (window.showToast) window.showToast('Failed to delete document', 'error');
+        }
+    };
+})();
+</script>
+{% endblock %}

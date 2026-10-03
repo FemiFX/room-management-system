@@ -1,0 +1,2100 @@
+{
+  "language": "de",
+  "po_file": "translations/de/LC_MESSAGES/messages.po",
+  "generated_at": "2026-04-13T08:27:21.737014+00:00",
+  "metadata": {
+    "Project-Id-Version": "rms",
+    "Report-Msgid-Bugs-To": "EMAIL@ADDRESS",
+    "POT-Creation-Date": "2026-04-13 10:27+0200",
+    "PO-Revision-Date": "2026-04-10 00:00+0000",
+    "Last-Translator": "RMS Team",
+    "Language": "de",
+    "Language-Team": "de",
+    "Plural-Forms": "nplurals=2; plural=(n != 1);",
+    "MIME-Version": "1.0",
+    "Content-Type": "text/plain; charset=utf-8",
+    "Content-Transfer-Encoding": "8bit",
+    "Generated-By": "Babel 2.17.0"
+  },
+  "entry_count": 114,
+  "entries": [
+    {
+      "msgid": "Room Management",
+      "msgstr": "Raumverwaltung",
+      "msgctxt": null,
+      "msgid_plural": null,
+      "msgstr_plural": {},
+      "flags": [],
+      "comment": null,
+      "tcomment": null,
+      "occurrences": [
+        {
+          "file": "app/templates/admin/partials/sidebar_desktop.html",
+          "line": "7"
+        },
+        {
+          "file": "app/templates/admin/partials/sidebar_mobile.html",
+          "line": "5"
+        },
+        {
+          "file": "app/templates/auth/login.html",
+          "line": "12"
+        },
+        {
+          "file": "app/templates/base.html",
+          "line": "6"
+        }
+      ]
+    },
+    {
+      "msgid": "Action Center",
+      "msgstr": "Aktionszentrum",
+      "msgctxt": null,
+      "msgid_plural": null,
+      "msgstr_plural": {},
+      "flags": [],
+      "comment": null,
+      "tcomment": null,
+      "occurrences": [
+        {
+          "file": "app/templates/admin/action_center.html",
+          "line": "3"
+        },
+        {
+          "file": "app/templates/admin/action_center.html",
+          "line": "4"
+        },
+        {
+          "file": "app/views/deps.py",
+          "line": "40"
+        }
+      ]
+    },
+    {
+      "msgid": "Items requiring action",
+      "msgstr": "Zu bearbeitende Elemente",
+      "msgctxt": null,
+      "msgid_plural": null,
+      "msgstr_plural": {},
+      "flags": [],
+      "comment": null,
+      "tcomment": null,
+      "occurrences": [
+        {
+          "file": "app/templates/admin/action_center.html",
+          "line": "5"
+        }
+      ]
+    },
+    {
+      "msgid": "Dashboard",
+      "msgstr": "Dashboard",
+      "msgctxt": null,
+      "msgid_plural": null,
+      "msgstr_plural": {},
+      "flags": [],
+      "comment": null,
+      "tcomment": null,
+      "occurrences": [
+        {
+          "file": "app/templates/admin/dashboard.html",
+          "line": "3"
+        },
+        {
+          "file": "app/templates/admin/dashboard.html",
+          "line": "4"
+        },
+        {
+          "file": "app/templates/admin/layout.html",
+          "line": "8"
+        },
+        {
+          "file": "app/templates/admin/partials/admin_header.html",
+          "line": "91"
+        },
+        {
+          "file": "app/views/deps.py",
+          "line": "35"
+        }
+      ]
+    },
+    {
+      "msgid": "Operational overview",
+      "msgstr": "Betriebliche Uebersicht",
+      "msgctxt": null,
+      "msgid_plural": null,
+      "msgstr_plural": {},
+      "flags": [],
+      "comment": null,
+      "tcomment": null,
+      "occurrences": [
+        {
+          "file": "app/templates/admin/dashboard.html",
+          "line": "5"
+        }
+      ]
+    },
+    {
+      "msgid": "Total Rooms",
+      "msgstr": "Gesamtanzahl der Räume",
+      "msgctxt": null,
+      "msgid_plural": null,
+      "msgstr_plural": {},
+      "flags": [],
+      "comment": null,
+      "tcomment": null,
+      "occurrences": [
+        {
+          "file": "app/templates/admin/dashboard.html",
+          "line": "13"
+        }
+      ]
+    },
+    {
+      "msgid": "Active",
+      "msgstr": "Aktiv",
+      "msgctxt": null,
+      "msgid_plural": null,
+      "msgstr_plural": {},
+      "flags": [],
+      "comment": null,
+      "tcomment": null,
+      "occurrences": [
+        {
+          "file": "app/templates/admin/dashboard.html",
+          "line": "21"
+        },
+        {
+          "file": "app/templates/admin/parties/detail.html",
+          "line": "5"
+        },
+        {
+          "file": "app/templates/admin/parties/list.html",
+          "line": "71"
+        }
+      ]
+    },
+    {
+      "msgid": "of",
+      "msgstr": "von",
+      "msgctxt": null,
+      "msgid_plural": null,
+      "msgstr_plural": {},
+      "flags": [],
+      "comment": null,
+      "tcomment": null,
+      "occurrences": [
+        {
+          "file": "app/templates/admin/dashboard.html",
+          "line": "25"
+        }
+      ]
+    },
+    {
+      "msgid": "total",
+      "msgstr": "gesamt",
+      "msgctxt": null,
+      "msgid_plural": null,
+      "msgstr_plural": {},
+      "flags": [],
+      "comment": null,
+      "tcomment": null,
+      "occurrences": [
+        {
+          "file": "app/templates/admin/dashboard.html",
+          "line": "25"
+        },
+        {
+          "file": "app/templates/admin/rooms/list.html",
+          "line": "5"
+        }
+      ]
+    },
+    {
+      "msgid": "Occupied",
+      "msgstr": "Belegt",
+      "msgctxt": null,
+      "msgid_plural": null,
+      "msgstr_plural": {},
+      "flags": [],
+      "comment": null,
+      "tcomment": null,
+      "occurrences": [
+        {
+          "file": "app/templates/admin/dashboard.html",
+          "line": "30"
+        }
+      ]
+    },
+    {
+      "msgid": "active leases",
+      "msgstr": "aktive Mietverträge",
+      "msgctxt": null,
+      "msgid_plural": null,
+      "msgstr_plural": {},
+      "flags": [],
+      "comment": null,
+      "tcomment": null,
+      "occurrences": [
+        {
+          "file": "app/templates/admin/dashboard.html",
+          "line": "34"
+        }
+      ]
+    },
+    {
+      "msgid": "Booked Now",
+      "msgstr": "Jetzt gebucht",
+      "msgctxt": null,
+      "msgid_plural": null,
+      "msgstr_plural": {},
+      "flags": [],
+      "comment": null,
+      "tcomment": null,
+      "occurrences": [
+        {
+          "file": "app/templates/admin/dashboard.html",
+          "line": "39"
+        }
+      ]
+    },
+    {
+      "msgid": "right now",
+      "msgstr": "aktuell",
+      "msgctxt": null,
+      "msgid_plural": null,
+      "msgstr_plural": {},
+      "flags": [],
+      "comment": null,
+      "tcomment": null,
+      "occurrences": [
+        {
+          "file": "app/templates/admin/dashboard.html",
+          "line": "43"
+        }
+      ]
+    },
+    {
+      "msgid": "Expiring",
+      "msgstr": "Laufen aus",
+      "msgctxt": null,
+      "msgid_plural": null,
+      "msgstr_plural": {},
+      "flags": [],
+      "comment": null,
+      "tcomment": null,
+      "occurrences": [
+        {
+          "file": "app/templates/admin/dashboard.html",
+          "line": "48"
+        }
+      ]
+    },
+    {
+      "msgid": "leases in 30 days",
+      "msgstr": "Mietvertraege in 30 Tagen",
+      "msgctxt": null,
+      "msgid_plural": null,
+      "msgstr_plural": {},
+      "flags": [],
+      "comment": null,
+      "tcomment": null,
+      "occurrences": [
+        {
+          "file": "app/templates/admin/dashboard.html",
+          "line": "52"
+        }
+      ]
+    },
+    {
+      "msgid": "Keys Out",
+      "msgstr": "Ausgegebene Schlüssel",
+      "msgctxt": null,
+      "msgid_plural": null,
+      "msgstr_plural": {},
+      "flags": [],
+      "comment": null,
+      "tcomment": null,
+      "occurrences": [
+        {
+          "file": "app/templates/admin/dashboard.html",
+          "line": "57"
+        }
+      ]
+    },
+    {
+      "msgid": "unreturned",
+      "msgstr": "nicht zurueckgegeben",
+      "msgctxt": null,
+      "msgid_plural": null,
+      "msgstr_plural": {},
+      "flags": [],
+      "comment": null,
+      "tcomment": null,
+      "occurrences": [
+        {
+          "file": "app/templates/admin/dashboard.html",
+          "line": "61"
+        },
+        {
+          "file": "app/templates/admin/dashboard.html",
+          "line": "95"
+        }
+      ]
+    },
+    {
+      "msgid": "Quick Links",
+      "msgstr": "Schnellzugriffe",
+      "msgctxt": null,
+      "msgid_plural": null,
+      "msgstr_plural": {},
+      "flags": [],
+      "comment": null,
+      "tcomment": null,
+      "occurrences": [
+        {
+          "file": "app/templates/admin/dashboard.html",
+          "line": "67"
+        }
+      ]
+    },
+    {
+      "msgid": "Rooms",
+      "msgstr": "Räume",
+      "msgctxt": null,
+      "msgid_plural": null,
+      "msgstr_plural": {},
+      "flags": [],
+      "comment": null,
+      "tcomment": null,
+      "occurrences": [
+        {
+          "file": "app/templates/admin/dashboard.html",
+          "line": "74"
+        },
+        {
+          "file": "app/templates/admin/rooms/detail.html",
+          "line": "16"
+        },
+        {
+          "file": "app/templates/admin/rooms/list.html",
+          "line": "3"
+        },
+        {
+          "file": "app/templates/admin/rooms/list.html",
+          "line": "4"
+        },
+        {
+          "file": "app/views/deps.py",
+          "line": "51"
+        }
+      ]
+    },
+    {
+      "msgid": "active",
+      "msgstr": "aktiv",
+      "msgctxt": null,
+      "msgid_plural": null,
+      "msgstr_plural": {},
+      "flags": [],
+      "comment": null,
+      "tcomment": null,
+      "occurrences": [
+        {
+          "file": "app/templates/admin/dashboard.html",
+          "line": "75"
+        }
+      ]
+    },
+    {
+      "msgid": "Leases",
+      "msgstr": "Mietverträge",
+      "msgctxt": null,
+      "msgid_plural": null,
+      "msgstr_plural": {},
+      "flags": [],
+      "comment": null,
+      "tcomment": null,
+      "occurrences": [
+        {
+          "file": "app/templates/admin/dashboard.html",
+          "line": "84"
+        },
+        {
+          "file": "app/templates/admin/leases/list.html",
+          "line": "3"
+        },
+        {
+          "file": "app/templates/admin/leases/list.html",
+          "line": "4"
+        },
+        {
+          "file": "app/views/deps.py",
+          "line": "62"
+        }
+      ]
+    },
+    {
+      "msgid": "occupied",
+      "msgstr": "belegt",
+      "msgctxt": null,
+      "msgid_plural": null,
+      "msgstr_plural": {},
+      "flags": [],
+      "comment": null,
+      "tcomment": null,
+      "occurrences": [
+        {
+          "file": "app/templates/admin/dashboard.html",
+          "line": "85"
+        }
+      ]
+    },
+    {
+      "msgid": "Keys",
+      "msgstr": "Schlüssel",
+      "msgctxt": null,
+      "msgid_plural": null,
+      "msgstr_plural": {},
+      "flags": [],
+      "comment": null,
+      "tcomment": null,
+      "occurrences": [
+        {
+          "file": "app/templates/admin/dashboard.html",
+          "line": "94"
+        },
+        {
+          "file": "app/templates/admin/keys/list.html",
+          "line": "3"
+        },
+        {
+          "file": "app/templates/admin/keys/list.html",
+          "line": "4"
+        },
+        {
+          "file": "app/views/deps.py",
+          "line": "74"
+        }
+      ]
+    },
+    {
+      "msgid": "Bookings",
+      "msgstr": "Buchungen",
+      "msgctxt": null,
+      "msgid_plural": null,
+      "msgstr_plural": {},
+      "flags": [],
+      "comment": null,
+      "tcomment": null,
+      "occurrences": [
+        {
+          "file": "app/templates/admin/bookings/list.html",
+          "line": "4"
+        },
+        {
+          "file": "app/templates/admin/bookings/list.html",
+          "line": "5"
+        },
+        {
+          "file": "app/templates/admin/dashboard.html",
+          "line": "104"
+        },
+        {
+          "file": "app/views/deps.py",
+          "line": "68"
+        }
+      ]
+    },
+    {
+      "msgid": "active now",
+      "msgstr": "jetzt aktiv",
+      "msgctxt": null,
+      "msgid_plural": null,
+      "msgstr_plural": {},
+      "flags": [],
+      "comment": null,
+      "tcomment": null,
+      "occurrences": [
+        {
+          "file": "app/templates/admin/dashboard.html",
+          "line": "105"
+        }
+      ]
+    },
+    {
+      "msgid": "Infrastructure",
+      "msgstr": "Infrastruktur",
+      "msgctxt": null,
+      "msgid_plural": null,
+      "msgstr_plural": {},
+      "flags": [],
+      "comment": null,
+      "tcomment": null,
+      "occurrences": [
+        {
+          "file": "app/templates/admin/infrastructure.html",
+          "line": "3"
+        },
+        {
+          "file": "app/templates/admin/infrastructure.html",
+          "line": "4"
+        },
+        {
+          "file": "app/views/deps.py",
+          "line": "79"
+        }
+      ]
+    },
+    {
+      "msgid": "Internet connections and utility meters",
+      "msgstr": "Internetverbindungen und Versorgungsmessgeräte",
+      "msgctxt": null,
+      "msgid_plural": null,
+      "msgstr_plural": {},
+      "flags": [],
+      "comment": null,
+      "tcomment": null,
+      "occurrences": [
+        {
+          "file": "app/templates/admin/infrastructure.html",
+          "line": "5"
+        }
+      ]
+    },
+    {
+      "msgid": "Notifications",
+      "msgstr": "Benachrichtigungen",
+      "msgctxt": null,
+      "msgid_plural": null,
+      "msgstr_plural": {},
+      "flags": [],
+      "comment": null,
+      "tcomment": null,
+      "occurrences": [
+        {
+          "file": "app/templates/admin/notifications.html",
+          "line": "3"
+        },
+        {
+          "file": "app/templates/admin/notifications.html",
+          "line": "4"
+        },
+        {
+          "file": "app/templates/admin/partials/admin_header.html",
+          "line": "26"
+        },
+        {
+          "file": "app/templates/admin/partials/admin_header.html",
+          "line": "33"
+        },
+        {
+          "file": "app/views/deps.py",
+          "line": "91"
+        }
+      ]
+    },
+    {
+      "msgid": "Inbox and alert history",
+      "msgstr": "Posteingang und Alarmverlauf",
+      "msgctxt": null,
+      "msgid_plural": null,
+      "msgstr_plural": {},
+      "flags": [],
+      "comment": null,
+      "tcomment": null,
+      "occurrences": [
+        {
+          "file": "app/templates/admin/notifications.html",
+          "line": "5"
+        }
+      ]
+    },
+    {
+      "msgid": "Preferences",
+      "msgstr": "Einstellungen",
+      "msgctxt": null,
+      "msgid_plural": null,
+      "msgstr_plural": {},
+      "flags": [],
+      "comment": null,
+      "tcomment": null,
+      "occurrences": [
+        {
+          "file": "app/templates/admin/partials/admin_header.html",
+          "line": "95"
+        },
+        {
+          "file": "app/templates/admin/preferences.html",
+          "line": "3"
+        },
+        {
+          "file": "app/templates/admin/preferences.html",
+          "line": "4"
+        },
+        {
+          "file": "app/views/deps.py",
+          "line": "102"
+        }
+      ]
+    },
+    {
+      "msgid": "General settings",
+      "msgstr": "Allgemeine Einstellungen",
+      "msgctxt": null,
+      "msgid_plural": null,
+      "msgstr_plural": {},
+      "flags": [],
+      "comment": null,
+      "tcomment": null,
+      "occurrences": [
+        {
+          "file": "app/templates/admin/preferences.html",
+          "line": "5"
+        },
+        {
+          "file": "app/templates/admin/preferences.html",
+          "line": "11"
+        }
+      ]
+    },
+    {
+      "msgid": "These settings control your admin interface language.",
+      "msgstr": "Diese Einstellungen steuern die Sprache der Admin-Oberflaeche.",
+      "msgctxt": null,
+      "msgid_plural": null,
+      "msgstr_plural": {},
+      "flags": [],
+      "comment": null,
+      "tcomment": null,
+      "occurrences": [
+        {
+          "file": "app/templates/admin/preferences.html",
+          "line": "14"
+        }
+      ]
+    },
+    {
+      "msgid": "Preferred Language",
+      "msgstr": "Bevorzugte Sprache",
+      "msgctxt": null,
+      "msgid_plural": null,
+      "msgstr_plural": {},
+      "flags": [],
+      "comment": null,
+      "tcomment": null,
+      "occurrences": [
+        {
+          "file": "app/templates/admin/preferences.html",
+          "line": "19"
+        }
+      ]
+    },
+    {
+      "msgid": "This affects all admin pages after saving.",
+      "msgstr": "Dies wirkt sich nach dem Speichern auf alle Admin-Seiten aus.",
+      "msgctxt": null,
+      "msgid_plural": null,
+      "msgstr_plural": {},
+      "flags": [],
+      "comment": null,
+      "tcomment": null,
+      "occurrences": [
+        {
+          "file": "app/templates/admin/preferences.html",
+          "line": "28"
+        }
+      ]
+    },
+    {
+      "msgid": "Save",
+      "msgstr": "Speichern",
+      "msgctxt": null,
+      "msgid_plural": null,
+      "msgstr_plural": {},
+      "flags": [],
+      "comment": null,
+      "tcomment": null,
+      "occurrences": [
+        {
+          "file": "app/templates/admin/preferences.html",
+          "line": "35"
+        }
+      ]
+    },
+    {
+      "msgid": "Preferences saved.",
+      "msgstr": "Einstellungen gespeichert.",
+      "msgctxt": null,
+      "msgid_plural": null,
+      "msgstr_plural": {},
+      "flags": [],
+      "comment": null,
+      "tcomment": null,
+      "occurrences": [
+        {
+          "file": "app/templates/admin/preferences.html",
+          "line": "71"
+        }
+      ]
+    },
+    {
+      "msgid": "Upcoming and recent bookings (±30 days)",
+      "msgstr": "Bevorstehende und kürzliche Buchungen (±30 Tage)",
+      "msgctxt": null,
+      "msgid_plural": null,
+      "msgstr_plural": {},
+      "flags": [],
+      "comment": null,
+      "tcomment": null,
+      "occurrences": [
+        {
+          "file": "app/templates/admin/bookings/list.html",
+          "line": "6"
+        }
+      ]
+    },
+    {
+      "msgid": "Buildings",
+      "msgstr": "Gebäude",
+      "msgctxt": null,
+      "msgid_plural": null,
+      "msgstr_plural": {},
+      "flags": [],
+      "comment": null,
+      "tcomment": null,
+      "occurrences": [
+        {
+          "file": "app/templates/admin/buildings/list.html",
+          "line": "3"
+        },
+        {
+          "file": "app/templates/admin/buildings/list.html",
+          "line": "4"
+        },
+        {
+          "file": "app/views/deps.py",
+          "line": "46"
+        }
+      ]
+    },
+    {
+      "msgid": "building",
+      "msgstr": "Gebäude",
+      "msgctxt": null,
+      "msgid_plural": null,
+      "msgstr_plural": {},
+      "flags": [],
+      "comment": null,
+      "tcomment": null,
+      "occurrences": [
+        {
+          "file": "app/templates/admin/buildings/list.html",
+          "line": "5"
+        }
+      ]
+    },
+    {
+      "msgid": "Documents",
+      "msgstr": "Dokumente",
+      "msgctxt": null,
+      "msgid_plural": null,
+      "msgstr_plural": {},
+      "flags": [],
+      "comment": null,
+      "tcomment": null,
+      "occurrences": [
+        {
+          "file": "app/templates/admin/documents/detail.html",
+          "line": "3"
+        },
+        {
+          "file": "app/templates/admin/documents/list.html",
+          "line": "3"
+        },
+        {
+          "file": "app/templates/admin/documents/list.html",
+          "line": "4"
+        },
+        {
+          "file": "app/views/deps.py",
+          "line": "85"
+        }
+      ]
+    },
+    {
+      "msgid": "Document detail",
+      "msgstr": "Dokumentdetails",
+      "msgctxt": null,
+      "msgid_plural": null,
+      "msgstr_plural": {},
+      "flags": [],
+      "comment": null,
+      "tcomment": null,
+      "occurrences": [
+        {
+          "file": "app/templates/admin/documents/detail.html",
+          "line": "5"
+        }
+      ]
+    },
+    {
+      "msgid": "Uploaded files and contracts",
+      "msgstr": "Hochgeladene Dateien und Verträge",
+      "msgctxt": null,
+      "msgid_plural": null,
+      "msgstr_plural": {},
+      "flags": [],
+      "comment": null,
+      "tcomment": null,
+      "occurrences": [
+        {
+          "file": "app/templates/admin/documents/list.html",
+          "line": "5"
+        }
+      ]
+    },
+    {
+      "msgid": "Integrations",
+      "msgstr": "Integrationen",
+      "msgctxt": null,
+      "msgid_plural": null,
+      "msgstr_plural": {},
+      "flags": [],
+      "comment": null,
+      "tcomment": null,
+      "occurrences": [
+        {
+          "file": "app/templates/admin/integrations/list.html",
+          "line": "3"
+        },
+        {
+          "file": "app/templates/admin/integrations/list.html",
+          "line": "4"
+        },
+        {
+          "file": "app/views/deps.py",
+          "line": "97"
+        }
+      ]
+    },
+    {
+      "msgid": "External system configuration and sync",
+      "msgstr": "Externe Systemkonfiguration und Synchronisation",
+      "msgctxt": null,
+      "msgid_plural": null,
+      "msgstr_plural": {},
+      "flags": [],
+      "comment": null,
+      "tcomment": null,
+      "occurrences": [
+        {
+          "file": "app/templates/admin/integrations/list.html",
+          "line": "5"
+        }
+      ]
+    },
+    {
+      "msgid": "Key inventory and assignments",
+      "msgstr": "Schlüsselbestand und Zuweisungen",
+      "msgctxt": null,
+      "msgid_plural": null,
+      "msgstr_plural": {},
+      "flags": [],
+      "comment": null,
+      "tcomment": null,
+      "occurrences": [
+        {
+          "file": "app/templates/admin/keys/list.html",
+          "line": "5"
+        }
+      ]
+    },
+    {
+      "msgid": "All lease contracts",
+      "msgstr": "Alle Mietverträge",
+      "msgctxt": null,
+      "msgid_plural": null,
+      "msgstr_plural": {},
+      "flags": [],
+      "comment": null,
+      "tcomment": null,
+      "occurrences": [
+        {
+          "file": "app/templates/admin/leases/list.html",
+          "line": "5"
+        }
+      ]
+    },
+    {
+      "msgid": "Search",
+      "msgstr": "Suchen",
+      "msgctxt": null,
+      "msgid_plural": null,
+      "msgstr_plural": {},
+      "flags": [],
+      "comment": null,
+      "tcomment": null,
+      "occurrences": [
+        {
+          "file": "app/templates/admin/partials/admin_header.html",
+          "line": "16"
+        },
+        {
+          "file": "app/templates/admin/partials/admin_header.html",
+          "line": "18"
+        },
+        {
+          "file": "app/templates/admin/partials/search_overlay.html",
+          "line": "6"
+        }
+      ]
+    },
+    {
+      "msgid": "Toggle theme",
+      "msgstr": "Design wechseln",
+      "msgctxt": null,
+      "msgid_plural": null,
+      "msgstr_plural": {},
+      "flags": [],
+      "comment": null,
+      "tcomment": null,
+      "occurrences": [
+        {
+          "file": "app/templates/admin/partials/admin_header.html",
+          "line": "21"
+        }
+      ]
+    },
+    {
+      "msgid": "Mark all read",
+      "msgstr": "Alle als gelesen markieren",
+      "msgctxt": null,
+      "msgid_plural": null,
+      "msgstr_plural": {},
+      "flags": [],
+      "comment": null,
+      "tcomment": null,
+      "occurrences": [
+        {
+          "file": "app/templates/admin/partials/admin_header.html",
+          "line": "38"
+        }
+      ]
+    },
+    {
+      "msgid": "View",
+      "msgstr": "Ansehen",
+      "msgctxt": null,
+      "msgid_plural": null,
+      "msgstr_plural": {},
+      "flags": [],
+      "comment": null,
+      "tcomment": null,
+      "occurrences": [
+        {
+          "file": "app/templates/admin/partials/admin_header.html",
+          "line": "49"
+        },
+        {
+          "file": "app/templates/admin/parties/list.html",
+          "line": "78"
+        }
+      ]
+    },
+    {
+      "msgid": "Mark as read",
+      "msgstr": "Als gelesen markieren",
+      "msgctxt": null,
+      "msgid_plural": null,
+      "msgstr_plural": {},
+      "flags": [],
+      "comment": null,
+      "tcomment": null,
+      "occurrences": [
+        {
+          "file": "app/templates/admin/partials/admin_header.html",
+          "line": "52"
+        }
+      ]
+    },
+    {
+      "msgid": "No notifications",
+      "msgstr": "Keine Benachrichtigungen",
+      "msgctxt": null,
+      "msgid_plural": null,
+      "msgstr_plural": {},
+      "flags": [],
+      "comment": null,
+      "tcomment": null,
+      "occurrences": [
+        {
+          "file": "app/templates/admin/partials/admin_header.html",
+          "line": "61"
+        }
+      ]
+    },
+    {
+      "msgid": "View all notifications",
+      "msgstr": "Alle Benachrichtigungen anzeigen",
+      "msgctxt": null,
+      "msgid_plural": null,
+      "msgstr_plural": {},
+      "flags": [],
+      "comment": null,
+      "tcomment": null,
+      "occurrences": [
+        {
+          "file": "app/templates/admin/partials/admin_header.html",
+          "line": "67"
+        }
+      ]
+    },
+    {
+      "msgid": "Log out",
+      "msgstr": "Abmelden",
+      "msgctxt": null,
+      "msgid_plural": null,
+      "msgstr_plural": {},
+      "flags": [],
+      "comment": null,
+      "tcomment": null,
+      "occurrences": [
+        {
+          "file": "app/templates/admin/partials/admin_header.html",
+          "line": "103"
+        }
+      ]
+    },
+    {
+      "msgid": "Status",
+      "msgstr": "Status",
+      "msgctxt": null,
+      "msgid_plural": null,
+      "msgstr_plural": {},
+      "flags": [],
+      "comment": null,
+      "tcomment": null,
+      "occurrences": [
+        {
+          "file": "app/templates/admin/partials/badges.html",
+          "line": "1"
+        },
+        {
+          "file": "app/templates/admin/parties/list.html",
+          "line": "45"
+        }
+      ]
+    },
+    {
+      "msgid": "Icon",
+      "msgstr": "Symbol",
+      "msgctxt": null,
+      "msgid_plural": null,
+      "msgstr_plural": {},
+      "flags": [],
+      "comment": null,
+      "tcomment": null,
+      "occurrences": [
+        {
+          "file": "app/templates/admin/partials/fa_icon_macro.html",
+          "line": "1"
+        }
+      ]
+    },
+    {
+      "msgid": "Search rooms, leases, parties...",
+      "msgstr": "Raeume, Mietvertraege, Parteien suchen...",
+      "msgctxt": null,
+      "msgid_plural": null,
+      "msgstr_plural": {},
+      "flags": [],
+      "comment": null,
+      "tcomment": null,
+      "occurrences": [
+        {
+          "file": "app/templates/admin/partials/search_overlay.html",
+          "line": "6"
+        }
+      ]
+    },
+    {
+      "msgid": "Admin",
+      "msgstr": "Admin",
+      "msgctxt": null,
+      "msgid_plural": null,
+      "msgstr_plural": {},
+      "flags": [],
+      "comment": null,
+      "tcomment": null,
+      "occurrences": [
+        {
+          "file": "app/templates/admin/partials/sidebar_desktop.html",
+          "line": "6"
+        }
+      ]
+    },
+    {
+      "msgid": "Collapse",
+      "msgstr": "Einklappen",
+      "msgctxt": null,
+      "msgid_plural": null,
+      "msgstr_plural": {},
+      "flags": [],
+      "comment": null,
+      "tcomment": null,
+      "occurrences": [
+        {
+          "file": "app/templates/admin/partials/sidebar_desktop.html",
+          "line": "48"
+        }
+      ]
+    },
+    {
+      "msgid": "Close menu",
+      "msgstr": "Menü schließen",
+      "msgctxt": null,
+      "msgid_plural": null,
+      "msgstr_plural": {},
+      "flags": [],
+      "comment": null,
+      "tcomment": null,
+      "occurrences": [
+        {
+          "file": "app/templates/admin/partials/sidebar_mobile.html",
+          "line": "7"
+        }
+      ]
+    },
+    {
+      "msgid": "Inactive",
+      "msgstr": "Inaktiv",
+      "msgctxt": null,
+      "msgid_plural": null,
+      "msgstr_plural": {},
+      "flags": [],
+      "comment": null,
+      "tcomment": null,
+      "occurrences": [
+        {
+          "file": "app/templates/admin/parties/detail.html",
+          "line": "5"
+        },
+        {
+          "file": "app/templates/admin/parties/list.html",
+          "line": "73"
+        }
+      ]
+    },
+    {
+      "msgid": "Parties",
+      "msgstr": "Parteien",
+      "msgctxt": null,
+      "msgid_plural": null,
+      "msgstr_plural": {},
+      "flags": [],
+      "comment": null,
+      "tcomment": null,
+      "occurrences": [
+        {
+          "file": "app/templates/admin/parties/list.html",
+          "line": "3"
+        },
+        {
+          "file": "app/templates/admin/parties/list.html",
+          "line": "4"
+        },
+        {
+          "file": "app/views/deps.py",
+          "line": "61"
+        }
+      ]
+    },
+    {
+      "msgid": "Tenants, organizations and teams",
+      "msgstr": "Mieter, Organisationen und Teams",
+      "msgctxt": null,
+      "msgid_plural": null,
+      "msgstr_plural": {},
+      "flags": [],
+      "comment": null,
+      "tcomment": null,
+      "occurrences": [
+        {
+          "file": "app/templates/admin/parties/list.html",
+          "line": "5"
+        }
+      ]
+    },
+    {
+      "msgid": "%(count)s party",
+      "msgstr": "",
+      "msgctxt": null,
+      "msgid_plural": "%(count)s parties",
+      "msgstr_plural": {
+        "0": "%(count)s Partei",
+        "1": "%(count)s Parteien"
+      },
+      "flags": [
+        "python-format"
+      ],
+      "comment": null,
+      "tcomment": null,
+      "occurrences": [
+        {
+          "file": "app/templates/admin/parties/list.html",
+          "line": "12"
+        }
+      ]
+    },
+    {
+      "msgid": "Search parties",
+      "msgstr": "Parteien suchen",
+      "msgctxt": null,
+      "msgid_plural": null,
+      "msgstr_plural": {},
+      "flags": [],
+      "comment": null,
+      "tcomment": null,
+      "occurrences": [
+        {
+          "file": "app/templates/admin/parties/list.html",
+          "line": "19"
+        }
+      ]
+    },
+    {
+      "msgid": "New Party",
+      "msgstr": "Neue Partei",
+      "msgctxt": null,
+      "msgid_plural": null,
+      "msgstr_plural": {},
+      "flags": [],
+      "comment": null,
+      "tcomment": null,
+      "occurrences": [
+        {
+          "file": "app/templates/admin/parties/list.html",
+          "line": "24"
+        },
+        {
+          "file": "app/templates/admin/parties/list.html",
+          "line": "110"
+        },
+        {
+          "file": "app/templates/admin/parties/list.html",
+          "line": "120"
+        }
+      ]
+    },
+    {
+      "msgid": "Name",
+      "msgstr": "Name",
+      "msgctxt": null,
+      "msgid_plural": null,
+      "msgstr_plural": {},
+      "flags": [],
+      "comment": null,
+      "tcomment": null,
+      "occurrences": [
+        {
+          "file": "app/templates/admin/parties/list.html",
+          "line": "43"
+        },
+        {
+          "file": "app/templates/admin/parties/list.html",
+          "line": "126"
+        }
+      ]
+    },
+    {
+      "msgid": "Contact",
+      "msgstr": "Kontakt",
+      "msgctxt": null,
+      "msgid_plural": null,
+      "msgstr_plural": {},
+      "flags": [],
+      "comment": null,
+      "tcomment": null,
+      "occurrences": [
+        {
+          "file": "app/templates/admin/parties/list.html",
+          "line": "44"
+        }
+      ]
+    },
+    {
+      "msgid": "Delete",
+      "msgstr": "Löschen",
+      "msgctxt": null,
+      "msgid_plural": null,
+      "msgstr_plural": {},
+      "flags": [],
+      "comment": null,
+      "tcomment": null,
+      "occurrences": [
+        {
+          "file": "app/templates/admin/parties/list.html",
+          "line": "79"
+        },
+        {
+          "file": "app/templates/admin/parties/list.html",
+          "line": "170"
+        },
+        {
+          "file": "app/templates/admin/parties/list.html",
+          "line": "182"
+        }
+      ]
+    },
+    {
+      "msgid": "No matching entries.",
+      "msgstr": "Keine passenden Einträge.",
+      "msgctxt": null,
+      "msgid_plural": null,
+      "msgstr_plural": {},
+      "flags": [],
+      "comment": null,
+      "tcomment": null,
+      "occurrences": [
+        {
+          "file": "app/templates/admin/parties/list.html",
+          "line": "85"
+        }
+      ]
+    },
+    {
+      "msgid": "No entries.",
+      "msgstr": "Keine Einträge.",
+      "msgctxt": null,
+      "msgid_plural": null,
+      "msgstr_plural": {},
+      "flags": [],
+      "comment": null,
+      "tcomment": null,
+      "occurrences": [
+        {
+          "file": "app/templates/admin/parties/list.html",
+          "line": "91"
+        }
+      ]
+    },
+    {
+      "msgid": "Internal Teams",
+      "msgstr": "Interne Teams",
+      "msgctxt": null,
+      "msgid_plural": null,
+      "msgstr_plural": {},
+      "flags": [],
+      "comment": null,
+      "tcomment": null,
+      "occurrences": [
+        {
+          "file": "app/templates/admin/parties/list.html",
+          "line": "99"
+        }
+      ]
+    },
+    {
+      "msgid": "External Parties",
+      "msgstr": "Externe Parteien",
+      "msgctxt": null,
+      "msgid_plural": null,
+      "msgstr_plural": {},
+      "flags": [],
+      "comment": null,
+      "tcomment": null,
+      "occurrences": [
+        {
+          "file": "app/templates/admin/parties/list.html",
+          "line": "100"
+        }
+      ]
+    },
+    {
+      "msgid": "Teams",
+      "msgstr": "Teams",
+      "msgctxt": null,
+      "msgid_plural": null,
+      "msgstr_plural": {},
+      "flags": [],
+      "comment": null,
+      "tcomment": null,
+      "occurrences": [
+        {
+          "file": "app/templates/admin/parties/list.html",
+          "line": "101"
+        }
+      ]
+    },
+    {
+      "msgid": "Organizations",
+      "msgstr": "Organisationen",
+      "msgctxt": null,
+      "msgid_plural": null,
+      "msgstr_plural": {},
+      "flags": [],
+      "comment": null,
+      "tcomment": null,
+      "occurrences": [
+        {
+          "file": "app/templates/admin/parties/list.html",
+          "line": "102"
+        }
+      ]
+    },
+    {
+      "msgid": "No parties yet",
+      "msgstr": "Noch keine Parteien",
+      "msgctxt": null,
+      "msgid_plural": null,
+      "msgstr_plural": {},
+      "flags": [],
+      "comment": null,
+      "tcomment": null,
+      "occurrences": [
+        {
+          "file": "app/templates/admin/parties/list.html",
+          "line": "107"
+        }
+      ]
+    },
+    {
+      "msgid": "Add tenants, organizations or teams to get started.",
+      "msgstr": "Fügen Sie Mieter, Organisationen oder Teams hinzu, um zu beginnen.",
+      "msgctxt": null,
+      "msgid_plural": null,
+      "msgstr_plural": {},
+      "flags": [],
+      "comment": null,
+      "tcomment": null,
+      "occurrences": [
+        {
+          "file": "app/templates/admin/parties/list.html",
+          "line": "108"
+        }
+      ]
+    },
+    {
+      "msgid": "e.g. Acme GmbH",
+      "msgstr": "z. B. Acme GmbH",
+      "msgctxt": null,
+      "msgid_plural": null,
+      "msgstr_plural": {},
+      "flags": [],
+      "comment": null,
+      "tcomment": null,
+      "occurrences": [
+        {
+          "file": "app/templates/admin/parties/list.html",
+          "line": "127"
+        }
+      ]
+    },
+    {
+      "msgid": "Type",
+      "msgstr": "Typ",
+      "msgctxt": null,
+      "msgid_plural": null,
+      "msgstr_plural": {},
+      "flags": [],
+      "comment": null,
+      "tcomment": null,
+      "occurrences": [
+        {
+          "file": "app/templates/admin/parties/list.html",
+          "line": "130"
+        }
+      ]
+    },
+    {
+      "msgid": "Person",
+      "msgstr": "Person",
+      "msgctxt": null,
+      "msgid_plural": null,
+      "msgstr_plural": {},
+      "flags": [],
+      "comment": null,
+      "tcomment": null,
+      "occurrences": [
+        {
+          "file": "app/templates/admin/parties/list.html",
+          "line": "132"
+        }
+      ]
+    },
+    {
+      "msgid": "Organization",
+      "msgstr": "Organisation",
+      "msgctxt": null,
+      "msgid_plural": null,
+      "msgstr_plural": {},
+      "flags": [],
+      "comment": null,
+      "tcomment": null,
+      "occurrences": [
+        {
+          "file": "app/templates/admin/parties/list.html",
+          "line": "133"
+        }
+      ]
+    },
+    {
+      "msgid": "Team",
+      "msgstr": "Team",
+      "msgctxt": null,
+      "msgid_plural": null,
+      "msgstr_plural": {},
+      "flags": [],
+      "comment": null,
+      "tcomment": null,
+      "occurrences": [
+        {
+          "file": "app/templates/admin/parties/list.html",
+          "line": "134"
+        }
+      ]
+    },
+    {
+      "msgid": "Phone",
+      "msgstr": "Telefon",
+      "msgctxt": null,
+      "msgid_plural": null,
+      "msgstr_plural": {},
+      "flags": [],
+      "comment": null,
+      "tcomment": null,
+      "occurrences": [
+        {
+          "file": "app/templates/admin/parties/list.html",
+          "line": "138"
+        }
+      ]
+    },
+    {
+      "msgid": "+49 30 …",
+      "msgstr": "+49 30 …",
+      "msgctxt": null,
+      "msgid_plural": null,
+      "msgstr_plural": {},
+      "flags": [],
+      "comment": null,
+      "tcomment": null,
+      "occurrences": [
+        {
+          "file": "app/templates/admin/parties/list.html",
+          "line": "139"
+        }
+      ]
+    },
+    {
+      "msgid": "Email",
+      "msgstr": "E-Mail",
+      "msgctxt": null,
+      "msgid_plural": null,
+      "msgstr_plural": {},
+      "flags": [],
+      "comment": null,
+      "tcomment": null,
+      "occurrences": [
+        {
+          "file": "app/templates/admin/parties/list.html",
+          "line": "142"
+        },
+        {
+          "file": "app/templates/auth/login.html",
+          "line": "39"
+        }
+      ]
+    },
+    {
+      "msgid": "contact@example.com",
+      "msgstr": "kontakt@beispiel.de",
+      "msgctxt": null,
+      "msgid_plural": null,
+      "msgstr_plural": {},
+      "flags": [],
+      "comment": null,
+      "tcomment": null,
+      "occurrences": [
+        {
+          "file": "app/templates/admin/parties/list.html",
+          "line": "143"
+        }
+      ]
+    },
+    {
+      "msgid": "Notes",
+      "msgstr": "Notizen",
+      "msgctxt": null,
+      "msgid_plural": null,
+      "msgstr_plural": {},
+      "flags": [],
+      "comment": null,
+      "tcomment": null,
+      "occurrences": [
+        {
+          "file": "app/templates/admin/parties/list.html",
+          "line": "146"
+        }
+      ]
+    },
+    {
+      "msgid": "Cancel",
+      "msgstr": "Abbrechen",
+      "msgctxt": null,
+      "msgid_plural": null,
+      "msgstr_plural": {},
+      "flags": [],
+      "comment": null,
+      "tcomment": null,
+      "occurrences": [
+        {
+          "file": "app/templates/admin/parties/list.html",
+          "line": "153"
+        },
+        {
+          "file": "app/templates/admin/parties/list.html",
+          "line": "169"
+        }
+      ]
+    },
+    {
+      "msgid": "Create",
+      "msgstr": "Erstellen",
+      "msgctxt": null,
+      "msgid_plural": null,
+      "msgstr_plural": {},
+      "flags": [],
+      "comment": null,
+      "tcomment": null,
+      "occurrences": [
+        {
+          "file": "app/templates/admin/parties/list.html",
+          "line": "154"
+        }
+      ]
+    },
+    {
+      "msgid": "Delete Party",
+      "msgstr": "Partei löschen",
+      "msgctxt": null,
+      "msgid_plural": null,
+      "msgstr_plural": {},
+      "flags": [],
+      "comment": null,
+      "tcomment": null,
+      "occurrences": [
+        {
+          "file": "app/templates/admin/parties/list.html",
+          "line": "161"
+        }
+      ]
+    },
+    {
+      "msgid": "Name is required.",
+      "msgstr": "Name ist erforderlich.",
+      "msgctxt": null,
+      "msgid_plural": null,
+      "msgstr_plural": {},
+      "flags": [],
+      "comment": null,
+      "tcomment": null,
+      "occurrences": [
+        {
+          "file": "app/templates/admin/parties/list.html",
+          "line": "179"
+        }
+      ]
+    },
+    {
+      "msgid": "Delete {name}? This action cannot be undone.",
+      "msgstr": "{name} löschen? Diese Aktion kann nicht rückgängig gemacht werden.",
+      "msgctxt": null,
+      "msgid_plural": null,
+      "msgstr_plural": {},
+      "flags": [
+        "python-brace-format"
+      ],
+      "comment": null,
+      "tcomment": null,
+      "occurrences": [
+        {
+          "file": "app/templates/admin/parties/list.html",
+          "line": "180"
+        }
+      ]
+    },
+    {
+      "msgid": "Deleting...",
+      "msgstr": "Lösche...",
+      "msgctxt": null,
+      "msgid_plural": null,
+      "msgstr_plural": {},
+      "flags": [],
+      "comment": null,
+      "tcomment": null,
+      "occurrences": [
+        {
+          "file": "app/templates/admin/parties/list.html",
+          "line": "181"
+        }
+      ]
+    },
+    {
+      "msgid": "All rooms",
+      "msgstr": "Alle Räume",
+      "msgctxt": null,
+      "msgid_plural": null,
+      "msgstr_plural": {},
+      "flags": [],
+      "comment": null,
+      "tcomment": null,
+      "occurrences": [
+        {
+          "file": "app/templates/admin/rooms/list.html",
+          "line": "5"
+        }
+      ]
+    },
+    {
+      "msgid": "Users & Roles",
+      "msgstr": "Benutzer & Rollen",
+      "msgctxt": null,
+      "msgid_plural": null,
+      "msgstr_plural": {},
+      "flags": [],
+      "comment": null,
+      "tcomment": null,
+      "occurrences": [
+        {
+          "file": "app/templates/admin/users/list.html",
+          "line": "4"
+        },
+        {
+          "file": "app/templates/admin/users/list.html",
+          "line": "5"
+        },
+        {
+          "file": "app/views/deps.py",
+          "line": "107"
+        }
+      ]
+    },
+    {
+      "msgid": "System user accounts",
+      "msgstr": "Systembenutzerkonten",
+      "msgctxt": null,
+      "msgid_plural": null,
+      "msgstr_plural": {},
+      "flags": [],
+      "comment": null,
+      "tcomment": null,
+      "occurrences": [
+        {
+          "file": "app/templates/admin/users/list.html",
+          "line": "6"
+        }
+      ]
+    },
+    {
+      "msgid": "Sign In",
+      "msgstr": "Anmelden",
+      "msgctxt": null,
+      "msgid_plural": null,
+      "msgstr_plural": {},
+      "flags": [],
+      "comment": null,
+      "tcomment": null,
+      "occurrences": [
+        {
+          "file": "app/templates/auth/login.html",
+          "line": "3"
+        }
+      ]
+    },
+    {
+      "msgid": "Sign in to your account",
+      "msgstr": "Melden Sie sich bei Ihrem Konto an",
+      "msgctxt": null,
+      "msgid_plural": null,
+      "msgstr_plural": {},
+      "flags": [],
+      "comment": null,
+      "tcomment": null,
+      "occurrences": [
+        {
+          "file": "app/templates/auth/login.html",
+          "line": "13"
+        }
+      ]
+    },
+    {
+      "msgid": "Language",
+      "msgstr": "Sprache",
+      "msgctxt": null,
+      "msgid_plural": null,
+      "msgstr_plural": {},
+      "flags": [],
+      "comment": null,
+      "tcomment": null,
+      "occurrences": [
+        {
+          "file": "app/templates/auth/login.html",
+          "line": "18"
+        }
+      ]
+    },
+    {
+      "msgid": "Sign in with SSO",
+      "msgstr": "Mit SSO anmelden",
+      "msgctxt": null,
+      "msgid_plural": null,
+      "msgstr_plural": {},
+      "flags": [],
+      "comment": null,
+      "tcomment": null,
+      "occurrences": [
+        {
+          "file": "app/templates/auth/login.html",
+          "line": "28"
+        }
+      ]
+    },
+    {
+      "msgid": "or developer login",
+      "msgstr": "oder Entwickler-Anmeldung",
+      "msgctxt": null,
+      "msgid_plural": null,
+      "msgstr_plural": {},
+      "flags": [],
+      "comment": null,
+      "tcomment": null,
+      "occurrences": [
+        {
+          "file": "app/templates/auth/login.html",
+          "line": "33"
+        }
+      ]
+    },
+    {
+      "msgid": "Display Name",
+      "msgstr": "Anzeigename",
+      "msgctxt": null,
+      "msgid_plural": null,
+      "msgstr_plural": {},
+      "flags": [],
+      "comment": null,
+      "tcomment": null,
+      "occurrences": [
+        {
+          "file": "app/templates/auth/login.html",
+          "line": "44"
+        }
+      ]
+    },
+    {
+      "msgid": "Role",
+      "msgstr": "Rolle",
+      "msgctxt": null,
+      "msgid_plural": null,
+      "msgstr_plural": {},
+      "flags": [],
+      "comment": null,
+      "tcomment": null,
+      "occurrences": [
+        {
+          "file": "app/templates/auth/login.html",
+          "line": "49"
+        }
+      ]
+    },
+    {
+      "msgid": "Developer Login",
+      "msgstr": "Entwickler-Anmeldung",
+      "msgctxt": null,
+      "msgid_plural": null,
+      "msgstr_plural": {},
+      "flags": [],
+      "comment": null,
+      "tcomment": null,
+      "occurrences": [
+        {
+          "file": "app/templates/auth/login.html",
+          "line": "59"
+        }
+      ]
+    },
+    {
+      "msgid": "Authentication is not configured.",
+      "msgstr": "Authentifizierung ist nicht konfiguriert.",
+      "msgctxt": null,
+      "msgid_plural": null,
+      "msgstr_plural": {},
+      "flags": [],
+      "comment": null,
+      "tcomment": null,
+      "occurrences": [
+        {
+          "file": "app/templates/auth/login.html",
+          "line": "67"
+        }
+      ]
+    },
+    {
+      "msgid": "OVERVIEW",
+      "msgstr": "ÜBERSICHT",
+      "msgctxt": null,
+      "msgid_plural": null,
+      "msgstr_plural": {},
+      "flags": [],
+      "comment": null,
+      "tcomment": null,
+      "occurrences": [
+        {
+          "file": "app/views/deps.py",
+          "line": "32"
+        }
+      ]
+    },
+    {
+      "msgid": "SPACES",
+      "msgstr": "RÄUME",
+      "msgctxt": null,
+      "msgid_plural": null,
+      "msgstr_plural": {},
+      "flags": [],
+      "comment": null,
+      "tcomment": null,
+      "occurrences": [
+        {
+          "file": "app/views/deps.py",
+          "line": "43"
+        }
+      ]
+    },
+    {
+      "msgid": "OCCUPANCY",
+      "msgstr": "BELEGUNG",
+      "msgctxt": null,
+      "msgid_plural": null,
+      "msgstr_plural": {},
+      "flags": [],
+      "comment": null,
+      "tcomment": null,
+      "occurrences": [
+        {
+          "file": "app/views/deps.py",
+          "line": "54"
+        }
+      ]
+    },
+    {
+      "msgid": "Occupancy",
+      "msgstr": "Belegung",
+      "msgctxt": null,
+      "msgid_plural": null,
+      "msgstr_plural": {},
+      "flags": [],
+      "comment": null,
+      "tcomment": null,
+      "occurrences": [
+        {
+          "file": "app/views/deps.py",
+          "line": "57"
+        }
+      ]
+    },
+    {
+      "msgid": "BOOKINGS",
+      "msgstr": "BUCHUNGEN",
+      "msgctxt": null,
+      "msgid_plural": null,
+      "msgstr_plural": {},
+      "flags": [],
+      "comment": null,
+      "tcomment": null,
+      "occurrences": [
+        {
+          "file": "app/views/deps.py",
+          "line": "65"
+        }
+      ]
+    },
+    {
+      "msgid": "ACCESS & INFRASTRUCTURE",
+      "msgstr": "ZUGANG & INFRASTRUKTUR",
+      "msgctxt": null,
+      "msgid_plural": null,
+      "msgstr_plural": {},
+      "flags": [],
+      "comment": null,
+      "tcomment": null,
+      "occurrences": [
+        {
+          "file": "app/views/deps.py",
+          "line": "71"
+        }
+      ]
+    },
+    {
+      "msgid": "DOCUMENTS",
+      "msgstr": "DOKUMENTE",
+      "msgctxt": null,
+      "msgid_plural": null,
+      "msgstr_plural": {},
+      "flags": [],
+      "comment": null,
+      "tcomment": null,
+      "occurrences": [
+        {
+          "file": "app/views/deps.py",
+          "line": "82"
+        }
+      ]
+    },
+    {
+      "msgid": "NOTIFICATIONS",
+      "msgstr": "BENACHRICHTIGUNGEN",
+      "msgctxt": null,
+      "msgid_plural": null,
+      "msgstr_plural": {},
+      "flags": [],
+      "comment": null,
+      "tcomment": null,
+      "occurrences": [
+        {
+          "file": "app/views/deps.py",
+          "line": "88"
+        }
+      ]
+    },
+    {
+      "msgid": "ADMINISTRATION",
+      "msgstr": "VERWALTUNG",
+      "msgctxt": null,
+      "msgid_plural": null,
+      "msgstr_plural": {},
+      "flags": [],
+      "comment": null,
+      "tcomment": null,
+      "occurrences": [
+        {
+          "file": "app/views/deps.py",
+          "line": "94"
+        }
+      ]
+    }
+  ],
+  "review_meta": {
+    "reviewed_at": "2026-04-13T08:27:35.178217+00:00",
+    "review_model": "gpt-4.1-mini",
+    "api_base": "https://api.openai.com/v1",
+    "target_language": "de",
+    "processed_entry_count": 29,
+    "changed_entry_count": 29,
+    "filled_entry_count": 28,
+    "updated_entry_count": 0,
+    "error_count": 1
+  }
+}

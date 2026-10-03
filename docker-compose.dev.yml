@@ -1,0 +1,51 @@
+# Local development overlay.
+#
+# The base compose file points every service at `.env`, which on this machine
+# holds live credentials. This overlay swaps in `.env.dev` so a laptop stack
+# cannot reach a real system -- the scheduler in particular runs an hourly
+# Nextcloud sync that provisions user rows in bulk.
+#
+#   docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d --build
+#
+# or just `make dev-up`.
+
+services:
+  # Another local stack may already hold 9003 for its own MinIO console,
+  # so move ours out of the way. Console only -- the S3 API stays on 9002.
+  minio:
+    # !override replaces the base list instead of appending to it.
+    ports: !override
+      - "9002:9000"
+      - "9005:9001"
+
+  minio-init:
+    env_file:
+      - .env.dev
+
+  api:
+    env_file:
+      - .env.dev
+    # Reload on edit, so you can change a template and just refresh.
+    command: >
+      sh -c "alembic upgrade head &&
+             uvicorn app.main:app --host 0.0.0.0 --port 8001 --reload --reload-dir /app/app"
+    volumes:
+      - ./app:/app/app
+      - ./alembic:/app/alembic
+      - ./translations:/app/translations
+      - ./scripts:/app/scripts
+      - ./tests:/app/tests
+
+  worker:
+    env_file:
+      - .env.dev
+    volumes:
+      - ./app:/app/app
+      - ./translations:/app/translations
+
+  scheduler:
+    env_file:
+      - .env.dev
+    volumes:
+      - ./app:/app/app
+      - ./translations:/app/translations

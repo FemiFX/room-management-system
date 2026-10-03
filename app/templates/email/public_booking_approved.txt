@@ -1,0 +1,10 @@
+{{ _('Good news — your booking has been confirmed.') }}
+
+{{ _('Reference') }}: {{ public_ref }}
+{{ _('Event') }}: {{ title }}
+{{ _('Room') }}: {{ room_name }}
+{{ _('From') }}: {{ start_at }}
+{{ _('Until') }}: {{ end_at }}
+{% if manage_url %}
+{{ _('View your booking') }}: {{ manage_url }}
+{% endif %}

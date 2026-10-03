@@ -1,0 +1,32 @@
+{#- Shared booking summary block. -#}
+<table role="presentation" cellpadding="0" cellspacing="0" style="width:100%;margin:16px 0;border-collapse:collapse;">
+  <tr>
+    <td style="padding:8px 0;border-bottom:1px solid rgba({{ brand.primary_rgb }},0.1);color:rgba({{ brand.primary_rgb }},0.6);font-size:12px;text-transform:uppercase;letter-spacing:.03em;width:40%;">{{ _('Reference') }}</td>
+    <td style="padding:8px 0;border-bottom:1px solid rgba({{ brand.primary_rgb }},0.1);font-weight:bold;color:{{ brand.primary_hex }};">{{ public_ref }}</td>
+  </tr>
+  <tr>
+    <td style="padding:8px 0;border-bottom:1px solid rgba({{ brand.primary_rgb }},0.1);color:rgba({{ brand.primary_rgb }},0.6);font-size:12px;text-transform:uppercase;letter-spacing:.03em;">{{ _('Event') }}</td>
+    <td style="padding:8px 0;border-bottom:1px solid rgba({{ brand.primary_rgb }},0.1);color:{{ brand.primary_hex }};">{{ title }}</td>
+  </tr>
+  <tr>
+    <td style="padding:8px 0;border-bottom:1px solid rgba({{ brand.primary_rgb }},0.1);color:rgba({{ brand.primary_rgb }},0.6);font-size:12px;text-transform:uppercase;letter-spacing:.03em;">{{ _('Room') }}</td>
+    <td style="padding:8px 0;border-bottom:1px solid rgba({{ brand.primary_rgb }},0.1);color:{{ brand.primary_hex }};">{{ room_name }}</td>
+  </tr>
+  <tr>
+    <td style="padding:8px 0;border-bottom:1px solid rgba({{ brand.primary_rgb }},0.1);color:rgba({{ brand.primary_rgb }},0.6);font-size:12px;text-transform:uppercase;letter-spacing:.03em;">{{ _('From') }}</td>
+    <td style="padding:8px 0;border-bottom:1px solid rgba({{ brand.primary_rgb }},0.1);color:{{ brand.primary_hex }};">{{ start_at }}</td>
+  </tr>
+  <tr>
+    <td style="padding:8px 0;{% if cleaning_charge %}border-bottom:1px solid rgba({{ brand.primary_rgb }},0.1);{% endif %}color:rgba({{ brand.primary_rgb }},0.6);font-size:12px;text-transform:uppercase;letter-spacing:.03em;">{{ _('Until') }}</td>
+    <td style="padding:8px 0;{% if cleaning_charge %}border-bottom:1px solid rgba({{ brand.primary_rgb }},0.1);{% endif %}color:{{ brand.primary_hex }};">{{ end_at }}</td>
+  </tr>
+  {% if cleaning_charge %}
+  <tr>
+    <td style="padding:8px 0;color:rgba({{ brand.primary_rgb }},0.6);font-size:12px;text-transform:uppercase;letter-spacing:.03em;">{{ _('Cleaning charge') }}</td>
+    <td style="padding:8px 0;color:{{ brand.primary_hex }};">
+      {{ cleaning_charge }} {{ currency }}
+      <span style="color:rgba({{ brand.primary_rgb }},0.6);">({{ cleaning_days }} &times; {{ cleaning_rate_daily }} {{ currency }})</span>
+    </td>
+  </tr>
+  {% endif %}
+</table>

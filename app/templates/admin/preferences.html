@@ -1,0 +1,76 @@
+{% extends "admin/layout.html" %}
+
+{% block title %}{{ _('Preferences') }}{% endblock %}
+{% block page_title %}{{ _('Preferences') }}{% endblock %}
+{% block page_subtitle %}{{ _('General settings') }}{% endblock %}
+
+{% block admin_content %}
+<div class="space-y-6">
+    <div class="card p-6 max-w-3xl">
+        <h3 class="text-base font-semibold text-gray-900 dark:text-parchment mb-1">
+            {{ _('General settings') }}
+        </h3>
+        <p class="text-sm text-gray-500 dark:text-parchment/60 mb-6">
+            {{ _('These settings control your admin interface language.') }}
+        </p>
+
+        <form id="form-preferences" class="space-y-4" novalidate>
+            <div>
+                <label class="form-label" for="pref-language">{{ _('Preferred Language') }}</label>
+                <select id="pref-language" name="preferred_language" class="form-input">
+                    {% for option in language_options %}
+                    <option value="{{ option.code }}" {% if option.code == current_user.preferred_language %}selected{% endif %}>
+                        {{ option.label }}
+                    </option>
+                    {% endfor %}
+                </select>
+                <p class="text-sm text-gray-500 dark:text-parchment/60 mt-2">
+                    {{ _('This affects all admin pages after saving.') }}
+                </p>
+            </div>
+
+            <p id="err-preferences" class="text-sm text-red-600 dark:text-red-400 hidden"></p>
+            <p id="ok-preferences" class="text-sm text-green-600 dark:text-green-400 hidden"></p>
+            <div class="pt-2">
+                <button type="submit" class="btn-primary">{{ _('Save') }}</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block page_scripts %}
+<script>
+(function () {
+    const form = document.getElementById('form-preferences');
+    const errEl = document.getElementById('err-preferences');
+    const okEl = document.getElementById('ok-preferences');
+
+    function setErr(msg) {
+        errEl.textContent = msg || '';
+        errEl.classList.toggle('hidden', !msg);
+    }
+
+    function setOk(msg) {
+        okEl.textContent = msg || '';
+        okEl.classList.toggle('hidden', !msg);
+    }
+
+    form?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        setErr('');
+        setOk('');
+        setSubmitting('form-preferences', true);
+        const payload = { preferred_language: document.getElementById('pref-language').value };
+        const res = await apiPatch('/api/v1/preferences', payload);
+        setSubmitting('form-preferences', false);
+        if (!res.ok) {
+            setErr(await parseApiError(res));
+            return;
+        }
+        setOk('{{ _("Preferences saved.") }}');
+        window.location.reload();
+    });
+})();
+</script>
+{% endblock %}

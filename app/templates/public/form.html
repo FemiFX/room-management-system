@@ -1,0 +1,831 @@
+{% extends "public/layout.html" %}
+{% from "public/_room_picker.html" import room_picker with context %}
+{% block title %}{{ _('Booking request') }}{% endblock %}
+
+{% block public_content %}
+<div class="mx-auto flex w-full max-w-6xl min-[1600px]:max-w-[1440px] flex-col gap-9 px-4 pb-20 pt-12 sm:px-8">
+
+  <div class="flex flex-col gap-2.5">
+    <h1 class="ui-h text-[28px] leading-[32px] [hyphens:auto] sm:text-4xl sm:leading-tight">{{ _('Booking request') }}</h1>
+    <p class="text-primary/80">{{ _('Six short steps — fields marked * are required.') }}</p>
+  </div>
+
+  {% if errors.get('__all__') %}
+  <p class="rounded-2xl bg-highlight/10 px-5 py-4 text-sm font-semibold text-highlight" role="alert">
+    {{ errors['__all__'] }}
+  </p>
+  {% endif %}
+
+  {#
+    One <form>, six <fieldset>s. The wizard is progressive enhancement: with
+    JavaScript off `js-wizard` is never added, every step stays visible and the
+    single submit still works, which is the behaviour the tests pin. The server
+    validates the whole form either way — the client-side step check below only
+    saves a round trip.
+  #}
+  <form method="post" action="/book/submit" enctype="multipart/form-data" class="flex flex-col gap-8 lg:flex-row lg:gap-14" id="booking-form">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+    {# Honeypot: hidden from people, irresistible to naive bots. #}
+    <div aria-hidden="true" style="position:absolute;left:-9999px;">
+      <label for="website">{{ _('Leave this field empty') }}</label>
+      <input type="text" id="website" name="website" tabindex="-1" autocomplete="off">
+    </div>
+
+    {# ─── Step rail ─────────────────────────────────────────────────── #}
+    {# Starts hidden and stays hidden without JavaScript: the dots and states
+   are painted by the script, so an unpainted rail would be an empty
+   column beside a form that is simply all-visible in that case. #}
+    <nav id="step-rail" class="hidden shrink-0 flex-col gap-6 lg:w-[280px] min-[1600px]:w-[320px]" aria-label="{{ _('Steps') }}">
+      {% for label, hint in [
+        (_('Your details'),        _('Who you are, how we reach you')),
+        (_('Your event'),          _('Title, date, attendees')),
+        (_('Room & extras'),       _('Room, equipment, services')),
+        (_('Anything else'),       _('Billing, notes for us')),
+        (_('Insurance'),           _('Liability cover, certificate')),
+        (_('Check & send'),        _('Everything once more'))
+      ] %}
+      <button type="button" data-rail-step="{{ loop.index }}"
+              class="rail-item flex items-start gap-3.5 text-left" aria-current="false">
+        <span class="rail-dot flex h-9 w-9 shrink-0 items-center justify-center rounded-full pt-0.5 font-heading text-base font-bold"></span>
+        <span class="flex flex-col gap-0.5 pt-0.5">
+          <span class="rail-title font-heading text-base font-semibold uppercase tracking-[0.3px]">{{ label }}</span>
+          <span class="rail-hint text-[12.5px] leading-[18px]">{{ hint }}</span>
+        </span>
+      </button>
+      {% endfor %}
+    </nav>
+
+    {# Compact rail for small screens. #}
+    <ol id="step-dots" class="hidden items-center justify-center gap-2.5 lg:!hidden" aria-hidden="true">
+      {% for i in range(1, 7) %}
+      <li data-dot-step="{{ i }}" class="h-2.5 w-2.5 rounded-full bg-primary/25"></li>
+      {% endfor %}
+    </ol>
+
+    <div class="flex flex-grow flex-col gap-8">
+      <fieldset class="ui-card flex flex-col gap-6 p-6 sm:p-9" data-step="1">
+        <legend class="sr-only">{{ _('Your details') }}</legend>
+        <div class="flex items-center gap-4">
+          <span class="step-badge flex h-11 w-11 items-center justify-center rounded-full bg-accent pt-0.5 font-heading text-xl font-bold text-primary lg:hidden">1</span>
+          <h2 class="ui-h text-xl">{{ _('Your details') }}</h2>
+        </div>
+        <div class="grid gap-4 sm:grid-cols-2">
+          <div>
+            <label class="ui-label mb-1.5" for="first_name">{{ _('First name') }}</label>
+            <input class="ui-input" id="first_name" name="first_name" value="{{ form.get('first_name', '') }}">
+          </div>
+          <div>
+            <label class="ui-label mb-1.5" for="last_name">{{ _('Last name') }}</label>
+            <input class="ui-input" id="last_name" name="last_name" value="{{ form.get('last_name', '') }}">
+          </div>
+          <div>
+            <label class="ui-label mb-1.5" for="academic_title">{{ _('Title') }}</label>
+            <input class="ui-input" id="academic_title" name="academic_title" value="{{ form.get('academic_title', '') }}">
+          </div>
+          <div>
+            <label class="ui-label mb-1.5" for="organization">{{ _('Organisation') }}</label>
+            <input class="ui-input" id="organization" name="organization" value="{{ form.get('organization', '') }}">
+          </div>
+          <div>
+            <label class="ui-label mb-1.5" for="email">{{ _('Email') }} *</label>
+            <input class="ui-input" id="email" name="email" type="email" required value="{{ form.get('email', '') }}">
+            {% if errors.get('email') %}<p class="mt-1 text-sm font-semibold text-highlight">{{ errors['email'] }}</p>{% endif %}
+          </div>
+          <div>
+            <label class="ui-label mb-1.5" for="phone">{{ _('Phone') }}</label>
+            <input class="ui-input" id="phone" name="phone" value="{{ form.get('phone', '') }}">
+          </div>
+          <div class="sm:col-span-2">
+            <label class="ui-label mb-1.5" for="address">{{ _('Address') }}</label>
+            <textarea class="ui-input" id="address" name="address" rows="2">{{ form.get('address', '') }}</textarea>
+          </div>
+          <div class="sm:col-span-2">
+            <label class="ui-label mb-1.5" for="contact_person">{{ _('Contact person on the day') }}</label>
+            <input class="ui-input" id="contact_person" name="contact_person" value="{{ form.get('contact_person', '') }}">
+          </div>
+        </div>
+        <div class="step-nav hidden justify-end border-t border-primary/10 pt-6">
+          <span class="flex items-center gap-3">
+            <button type="button" data-return-summary hidden
+                    class="items-center gap-2 font-heading text-sm font-bold uppercase tracking-[0.3px] underline underline-offset-4 hover:text-accent-600">
+              {{ _('Back to the summary') }}
+            </button>
+            <button type="button" class="btn-brand inline-flex items-center gap-2.5" data-next>
+              {{ _('Next') }} <i class="fa-solid fa-arrow-right text-sm" aria-hidden="true"></i>
+            </button>
+          </span>
+        </div>
+      </fieldset>
+
+      <fieldset class="ui-card flex flex-col gap-6 p-6 sm:p-9" data-step="2">
+        <legend class="sr-only">{{ _('Your event') }}</legend>
+        <div class="flex items-center gap-4">
+          <span class="step-badge flex h-11 w-11 items-center justify-center rounded-full bg-accent pt-0.5 font-heading text-xl font-bold text-primary lg:hidden">2</span>
+          <h2 class="ui-h text-xl">{{ _('Your event') }}</h2>
+        </div>
+        <div class="grid gap-4 sm:grid-cols-2">
+          <div class="sm:col-span-2">
+            <label class="ui-label mb-1.5" for="event_title">{{ _('Event title') }} *</label>
+            <input class="ui-input" id="event_title" name="event_title" required value="{{ form.get('event_title', '') }}">
+            {% if errors.get('event_title') %}<p class="mt-1 text-sm font-semibold text-highlight">{{ errors['event_title'] }}</p>{% endif %}
+          </div>
+          <div>
+            <label class="ui-label mb-1.5" for="start_date">{{ _('Start date') }} *</label>
+            <input class="ui-input" id="start_date" name="start_date" type="date" required
+                   min="{{ min_date }}" value="{{ form.get('start_date', '') }}">
+            {% if errors.get('start_date') %}<p class="mt-1 text-sm font-semibold text-highlight">{{ errors['start_date'] }}</p>{% endif %}
+          </div>
+          <div>
+            <label class="ui-label mb-1.5" for="start_time">{{ _('Start time') }}</label>
+            <input class="ui-input" id="start_time" name="start_time" type="time" value="{{ form.get('start_time', '') }}">
+          </div>
+          <div>
+            <label class="ui-label mb-1.5" for="end_date">{{ _('End date') }}</label>
+            <input class="ui-input" id="end_date" name="end_date" type="date"
+                   min="{{ min_date }}" value="{{ form.get('end_date', '') }}">
+            {% if errors.get('end_date') %}<p class="mt-1 text-sm font-semibold text-highlight">{{ errors['end_date'] }}</p>{% endif %}
+          </div>
+          <div>
+            <label class="ui-label mb-1.5" for="end_time">{{ _('End time') }}</label>
+            <input class="ui-input" id="end_time" name="end_time" type="time" value="{{ form.get('end_time', '') }}">
+          </div>
+          <div class="sm:col-span-2">
+            <label class="inline-flex items-center gap-2.5">
+              <input type="checkbox" name="whole_day" value="1" class="h-5 w-5 rounded-md border-2 border-primary accent-accent"
+                     {% if form.get('whole_day') %}checked{% endif %}>
+              <span class="text-sm font-semibold">{{ _('Whole day — we can sort the times out later') }}</span>
+            </label>
+          </div>
+          <div>
+            <label class="ui-label mb-1.5" for="participants">{{ _('Number of attendees') }}</label>
+            <input class="ui-input" id="participants" name="participants" type="number" min="1"
+                   value="{{ form.get('participants', '') }}">
+            {% if errors.get('participants') %}<p class="mt-1 text-sm font-semibold text-highlight">{{ errors['participants'] }}</p>{% endif %}
+          </div>
+        </div>
+        <div class="step-nav hidden justify-between border-t border-primary/10 pt-6">
+          <button type="button" class="btn-brand-outline inline-flex items-center gap-2.5" data-back>
+            <i class="fa-solid fa-arrow-left text-sm" aria-hidden="true"></i> {{ _('Back') }}
+          </button>
+          <span class="flex items-center gap-3">
+            <button type="button" data-return-summary hidden
+                    class="items-center gap-2 font-heading text-sm font-bold uppercase tracking-[0.3px] underline underline-offset-4 hover:text-accent-600">
+              {{ _('Back to the summary') }}
+            </button>
+            <button type="button" class="btn-brand inline-flex items-center gap-2.5" data-next>
+              {{ _('Next') }} <i class="fa-solid fa-arrow-right text-sm" aria-hidden="true"></i>
+            </button>
+          </span>
+        </div>
+      </fieldset>
+
+      <fieldset class="ui-card flex flex-col gap-6 p-6 sm:p-9" data-step="3">
+        <legend class="sr-only">{{ _('Room & extras') }}</legend>
+        <div class="flex items-center gap-4">
+          <span class="step-badge flex h-11 w-11 items-center justify-center rounded-full bg-accent pt-0.5 font-heading text-xl font-bold text-primary lg:hidden">3</span>
+          <h2 class="ui-h text-xl">{{ _('Room & extras') }}</h2>
+        </div>
+
+        {{ room_picker(rooms, room_services, selected_equipment, selected_services, checked_room_id) }}
+        {% if errors.get('room_id') %}<p class="-mt-2 text-sm font-semibold text-highlight">{{ errors['room_id'] }}</p>{% endif %}
+
+        <div class="step-nav hidden justify-between border-t border-primary/10 pt-6">
+          <button type="button" class="btn-brand-outline inline-flex items-center gap-2.5" data-back>
+            <i class="fa-solid fa-arrow-left text-sm" aria-hidden="true"></i> {{ _('Back') }}
+          </button>
+          <span class="flex items-center gap-3">
+            <button type="button" data-return-summary hidden
+                    class="items-center gap-2 font-heading text-sm font-bold uppercase tracking-[0.3px] underline underline-offset-4 hover:text-accent-600">
+              {{ _('Back to the summary') }}
+            </button>
+            <button type="button" class="btn-brand inline-flex items-center gap-2.5" data-next>
+              {{ _('Next') }} <i class="fa-solid fa-arrow-right text-sm" aria-hidden="true"></i>
+            </button>
+          </span>
+        </div>
+      </fieldset>
+
+      {# ─── 4 · Anything else ──────────────────────────────────────── #}
+      <fieldset class="ui-card flex flex-col gap-6 p-6 sm:p-9" data-step="4">
+        <legend class="sr-only">{{ _('Anything else') }}</legend>
+        <div class="flex items-center gap-4">
+          <span class="step-badge flex h-11 w-11 items-center justify-center rounded-full bg-accent pt-0.5 font-heading text-xl font-bold text-primary lg:hidden">4</span>
+          <h2 class="ui-h text-xl">{{ _('Anything else') }}</h2>
+        </div>
+        <p class="-mt-3 text-[15px] leading-[23px] text-primary/75">
+          {{ _('Everything here is optional. We read it before we say yes — it helps us prepare your event.') }}
+        </p>
+
+        {#
+          Checkboxes, not chips that write a sentence into the field below.
+          A ticked box stays ticked, unticks in one click, and shows its own
+          state -- the chips changed something they did not point at, and
+          twice clicked said it twice. What is ticked is composed into the
+          note on submit, so it is still one free-text answer in the record.
+        #}
+        <div class="flex flex-col gap-3.5">
+          <div class="flex flex-col gap-1">
+            <span class="ui-label">{{ _('Does any of this apply?') }}</span>
+            <span class="text-[13px] leading-[19px] text-primary/60">
+              {{ _('All optional — it helps us prepare.') }}
+            </span>
+          </div>
+          <div class="grid gap-2.5 sm:grid-cols-2">
+            {% for key, line in note_flags %}
+            <label class="flex cursor-pointer items-start gap-3 rounded-[14px] border-[1.5px] border-primary/20 bg-white px-4 py-3
+                          has-[:checked]:border-accent has-[:checked]:bg-accent/[.07]">
+              <input type="checkbox" name="note_{{ key }}" value="1" data-note-label="{{ line }}"
+                     class="mt-0.5 h-5 w-5 shrink-0 rounded-md border-2 border-primary accent-accent"
+                     {% if form.get('note_' ~ key) %}checked{% endif %}>
+              <span class="text-[13.5px] leading-[19px]">{{ line }}</span>
+            </label>
+            {% endfor %}
+          </div>
+        </div>
+
+        <div class="flex flex-col gap-3.5">
+          <div class="flex flex-col gap-1">
+            <label class="ui-label" for="additional_info">{{ _('Anything else?') }}</label>
+            <span class="text-[13px] leading-[19px] text-primary/60">
+              {{ _('The running order, set-up times, anything we should know beforehand.') }}
+            </span>
+          </div>
+          <textarea class="ui-input" id="additional_info" name="additional_info" rows="4"
+                    placeholder="{{ _('The running order, set-up times, anything we should know beforehand.') }}">{{ form.get('additional_info', '') }}</textarea>
+        </div>
+
+        <div class="flex flex-col gap-3.5 border-t border-primary/10 pt-6">
+          <div class="flex flex-col gap-1">
+            <label class="ui-label" for="billing_info">{{ _('Billing details') }}</label>
+            <span class="text-[13px] leading-[19px] text-primary/60">
+              {{ _('Only needed if the invoice should go to a different address or carry a reference.') }}
+            </span>
+          </div>
+          <textarea class="ui-input" id="billing_info" name="billing_info" rows="2"
+                    placeholder="{{ _('Different billing address, cost centre, reference…') }}">{{ form.get('billing_info', '') }}</textarea>
+        </div>
+
+        <div class="step-nav hidden justify-between border-t border-primary/10 pt-6">
+          <button type="button" class="btn-brand-outline inline-flex items-center gap-2.5" data-back>
+            <i class="fa-solid fa-arrow-left text-sm" aria-hidden="true"></i> {{ _('Back') }}
+          </button>
+          <span class="flex items-center gap-3">
+            <button type="button" data-return-summary hidden
+                    class="items-center gap-2 font-heading text-sm font-bold uppercase tracking-[0.3px] underline underline-offset-4 hover:text-accent-600">
+              {{ _('Back to the summary') }}
+            </button>
+            <button type="button" class="btn-brand inline-flex items-center gap-2.5" data-next>
+              {{ _('Next') }} <i class="fa-solid fa-arrow-right text-sm" aria-hidden="true"></i>
+            </button>
+          </span>
+        </div>
+      </fieldset>
+
+      {# ─── 5 · Insurance ──────────────────────────────────────────── #}
+      {# Its own step since 07.09.: it is the only question that can put an
+         obligation on the requester, and the only one with an upload. As the
+         tail of "Anything else" it was read past. #}
+      <fieldset class="ui-card flex flex-col gap-6 p-6 sm:p-9" data-step="5">
+        <legend class="sr-only">{{ _('Insurance') }}</legend>
+        <div class="flex items-center gap-4">
+          <span class="step-badge flex h-11 w-11 items-center justify-center rounded-full bg-accent pt-0.5 font-heading text-xl font-bold text-primary lg:hidden">5</span>
+          <h2 class="ui-h text-xl">{{ _('Do you have liability insurance?') }}</h2>
+        </div>
+        <p class="-mt-3 max-w-[70ch] text-[15px] leading-[23px] text-primary/75">
+          {{ _('We need proof of cover for events in our rooms. If you have it to hand you can attach it right away — otherwise you can send it on later.') }}
+        </p>
+
+        {% set insurance = form.get('liability_insurance', '') %}
+        <div class="flex flex-col gap-3.5 sm:flex-row">
+          {% for value, title, hint in [
+            ('yes', _('Yes, we are covered'), _('Proof now or later')),
+            ('no', _('No, we are not'), _('We will get in touch about it'))
+          ] %}
+          <label class="flex flex-1 cursor-pointer items-center gap-3.5 rounded-[16px] border-[1.5px] border-primary/25 bg-white px-[18px] py-[15px] transition-colors has-[:checked]:border-2 has-[:checked]:border-accent has-[:checked]:bg-accent/[.07] has-[:checked]:px-[17px] has-[:checked]:py-[14px]">
+            <input type="radio" name="liability_insurance" value="{{ value }}" data-insurance-choice data-label="{{ title }}"
+                   class="h-5 w-5 shrink-0 accent-accent"
+                   {% if insurance == value %}checked{% endif %}>
+            <span class="flex flex-col">
+              <span class="text-[15px] font-bold leading-[21px]">{{ title }}</span>
+              <span class="text-[13px] leading-[19px] text-primary/70">{{ hint }}</span>
+            </span>
+          </label>
+          {% endfor %}
+        </div>
+
+        {#
+          Revealed by the "yes" choice. Not hidden by default: without
+          JavaScript the field is simply there, and an unused file input
+          submits nothing.
+        #}
+        <div id="insurance-upload"
+             class="flex flex-col gap-3 rounded-[18px] border-2 border-dashed border-primary/[.28] bg-white/60 px-6 py-[22px]">
+          <div class="flex flex-wrap items-center gap-4">
+            <span class="flex h-[46px] w-[46px] shrink-0 items-center justify-center rounded-[14px] bg-accent/[.18]">
+              <i class="fa-solid fa-arrow-up-from-bracket text-lg" aria-hidden="true"></i>
+            </span>
+            <span class="flex min-w-0 flex-grow flex-col gap-0.5">
+              <label class="text-[15px] font-bold" for="insurance_document">
+                {{ _('Upload your certificate') }} <span class="font-medium text-primary/60">— {{ _('optional') }}</span>
+              </label>
+              <span class="text-[13px] leading-[19px] text-primary/70">{{ _('PDF, JPG or PNG, up to 10 MB') }}</span>
+            </span>
+            <input type="file" id="insurance_document" name="insurance_document"
+                   accept="application/pdf,image/jpeg,image/png,image/webp"
+                   class="max-w-full shrink-0 text-sm file:mr-3 file:cursor-pointer file:rounded-[25px] file:border-2 file:border-primary file:bg-transparent file:px-6 file:pb-[7px] file:pt-[11px] file:font-heading file:text-sm file:font-bold file:uppercase file:text-primary">
+          </div>
+          <p class="text-[13px] leading-5 text-primary/70">
+            {{ _('Nothing to hand? No problem — your confirmation email has a link you can use to send it on whenever you like.') }}
+          </p>
+        </div>
+        {% if errors.get('insurance_document') %}
+        <p class="text-sm font-semibold text-highlight">{{ errors['insurance_document'] }}</p>
+        {% endif %}
+
+        <div class="step-nav hidden justify-between border-t border-primary/10 pt-6">
+          <button type="button" class="btn-brand-outline inline-flex items-center gap-2.5" data-back>
+            <i class="fa-solid fa-arrow-left text-sm" aria-hidden="true"></i> {{ _('Back') }}
+          </button>
+          <span class="flex items-center gap-3">
+            <button type="button" data-return-summary hidden
+                    class="items-center gap-2 font-heading text-sm font-bold uppercase tracking-[0.3px] underline underline-offset-4 hover:text-accent-600">
+              {{ _('Back to the summary') }}
+            </button>
+            <button type="button" class="btn-brand inline-flex items-center gap-2.5" data-next>
+              {{ _('Next') }} <i class="fa-solid fa-arrow-right text-sm" aria-hidden="true"></i>
+            </button>
+          </span>
+        </div>
+      </fieldset>
+
+      {# ─── 6 · Check & send ───────────────────────────────────────── #}
+      <fieldset class="ui-card flex flex-col gap-6 p-6 sm:p-9" data-step="6">
+        <legend class="sr-only">{{ _('Check & send') }}</legend>
+        <div class="flex items-center gap-4">
+          <span class="step-badge flex h-11 w-11 items-center justify-center rounded-full bg-accent pt-0.5 font-heading text-xl font-bold text-primary lg:hidden">6</span>
+          <h2 class="ui-h text-xl">{{ _('Check & send') }}</h2>
+        </div>
+
+        {#
+          Filled from the fields when this step opens, so there is no second
+          copy of the answers to keep in step. Hidden until the script runs:
+          without JavaScript every step is visible anyway and a summary of
+          fields the visitor can see three inches above would be noise.
+        #}
+        <div id="summary" class="flex flex-col gap-5" hidden>
+          <p class="-mt-2 text-[15px] leading-[23px] text-primary/75">
+            {{ _('Have another look at your answers. “Change” takes you back to that step — nothing you typed is lost.') }}
+          </p>
+
+          {% macro summary_head(step, icon, title) %}
+          <div class="flex items-center justify-between gap-4 rounded-[14px] bg-accent/[.14] px-4 py-2.5">
+            <span class="flex items-center gap-2.5 font-heading text-[15px] font-bold uppercase tracking-[0.3px]">
+              <i class="fa-solid {{ icon }} text-sm" aria-hidden="true"></i> {{ title }}
+            </span>
+            <button type="button" data-goto="{{ step }}"
+                    class="font-heading text-[13px] font-bold uppercase tracking-[0.3px] underline underline-offset-[3px] hover:text-accent-600">
+              {{ _('Change') }}
+            </button>
+          </div>
+          {% endmacro %}
+
+          {% macro summary_row(key, label, keep=false, span=false) %}
+          <div data-sum="{{ key }}" {% if keep %}data-sum-keep{% endif %} {% if span %}class="sm:col-span-2"{% endif %} hidden>
+            <span class="block text-[12.5px] leading-[18px] text-primary/60">{{ label }}</span>
+            <span class="block text-[15px] leading-[22px]" data-sum-value></span>
+          </div>
+          {% endmacro %}
+
+          <div class="flex flex-col gap-3.5">
+            {{ summary_head(1, 'fa-user', _('Your details')) }}
+            <div class="grid gap-x-7 gap-y-3 px-1 sm:grid-cols-2">
+              {{ summary_row('name', _('Name')) }}
+              {{ summary_row('organization', _('Organisation')) }}
+              {{ summary_row('email', _('Email')) }}
+              {{ summary_row('phone', _('Phone')) }}
+              {{ summary_row('address', _('Address')) }}
+              {{ summary_row('contact_person', _('Contact person on the day')) }}
+            </div>
+          </div>
+
+          <div class="flex flex-col gap-3.5">
+            {{ summary_head(2, 'fa-calendar-days', _('Your event')) }}
+            <div class="grid gap-x-7 gap-y-3 px-1 sm:grid-cols-2">
+              {{ summary_row('event_title', _('Event title')) }}
+              {{ summary_row('period', _('Date')) }}
+              {{ summary_row('clock', _('Time')) }}
+              {{ summary_row('participants', _('Number of attendees')) }}
+            </div>
+          </div>
+
+          <div class="flex flex-col gap-3.5">
+            {{ summary_head(3, 'fa-house', _('Room & extras')) }}
+            <div class="grid gap-x-7 gap-y-3 px-1 sm:grid-cols-2">
+              {{ summary_row('room', _('Room')) }}
+              {{ summary_row('services', _('Extra services')) }}
+              {{ summary_row('equipment', _('Equipment'), span=true) }}
+            </div>
+          </div>
+
+          <div class="flex flex-col gap-3.5">
+            {{ summary_head(4, 'fa-comment', _('Anything else')) }}
+            <div class="flex flex-col gap-3 px-1">
+              <div data-sum="additional_info" data-sum-keep>
+                <span class="block text-[12.5px] leading-[18px] text-primary/60">{{ _('Anything we should know') }}</span>
+                <p class="mt-1.5 whitespace-pre-line rounded-xl text-[15px] leading-[22px]" data-sum-value data-sum-box></p>
+              </div>
+              {{ summary_row('billing_info', _('Billing details'), keep=true) }}
+            </div>
+          </div>
+
+          <div class="flex flex-col gap-3.5">
+            {{ summary_head(5, 'fa-shield-halved', _('Insurance')) }}
+            <div class="grid gap-x-7 gap-y-3 px-1 sm:grid-cols-2">
+              {{ summary_row('insurance', _('Liability insurance'), keep=true) }}
+              {{ summary_row('certificate', _('Certificate')) }}
+            </div>
+          </div>
+        </div>
+
+        {# What follows is on the page with or without JavaScript. #}
+        <div class="flex flex-col gap-2.5 rounded-[18px] bg-accent/[.14] px-6 py-5">
+          <span class="font-heading text-sm font-bold uppercase tracking-[0.3px]">{{ _('What happens after you send?') }}</span>
+          {% for line in [
+            _('You get a confirmation email straight away — with your reference and a link to view, change or cancel the request.'),
+            _('We check availability — usually within two working days.'),
+            _('You get our yes or no by email. Only with the yes is your date firmly reserved.')
+          ] %}
+          <span class="flex gap-3 text-sm leading-[22px]">
+            <span class="font-bold text-accent-600">{{ loop.index }}</span><span>{{ line }}</span>
+          </span>
+          {% endfor %}
+        </div>
+
+        {#
+          The consent has its own band above the row, where it has to be read,
+          instead of being squeezed between two buttons. `required` carries it
+          without JavaScript; the script greys the submit as well, and the
+          server refuses either way -- that is the check that counts.
+        #}
+        {# The privacy policy URL is a branding setting. Without one, the
+           sentence still reads correctly -- it just carries no link. #}
+        {% if brand.privacy_url %}
+        {% set policy_link %}<a href="{{ brand.privacy_url }}" target="_blank" rel="noopener"
+             class="font-semibold underline underline-offset-2 hover:text-accent-600">{{ _('privacy policy') }}</a>{% endset %}
+        {% else %}
+        {% set policy_link %}{{ _('privacy policy') }}{% endset %}
+        {% endif %}
+        <label class="flex cursor-pointer items-start gap-3 rounded-[14px] bg-accent/[.12] px-5 py-4">
+          <input type="checkbox" name="privacy_consent" value="1" required data-consent
+                 class="mt-0.5 h-5 w-5 shrink-0 rounded-md border-2 border-primary accent-accent"
+                 {% if form.get('privacy_consent') %}checked{% endif %}>
+          <span class="text-[13.5px] leading-5">
+            {{ _('I have read the %(policy)s and agree that %(org)s may process our details to handle this request.')|format(policy=policy_link, org=brand.name|e)|safe }}
+          </span>
+        </label>
+        {% if errors.get('privacy_consent') %}
+        <p class="-mt-3 text-sm font-semibold text-highlight">{{ errors['privacy_consent'] }}</p>
+        {% endif %}
+
+        <div class="flex flex-col-reverse items-stretch gap-4 border-t border-primary/10 pt-5 sm:flex-row sm:items-center sm:justify-between">
+          <button type="button" data-back
+                  class="hidden items-center gap-2 self-start font-heading text-sm font-bold uppercase tracking-[0.3px] underline underline-offset-4 hover:text-accent-600">
+            <i class="fa-solid fa-arrow-left text-xs" aria-hidden="true"></i> {{ _('Back') }}
+          </button>
+          <span class="flex flex-col items-stretch gap-1.5 sm:items-end">
+            <button type="submit" class="btn-brand" data-submit>{{ _('Send request') }}</button>
+            <span data-consent-hint hidden class="text-[12.5px] leading-4 text-primary/60">
+              {{ _('Please confirm the privacy policy first.') }}
+            </span>
+          </span>
+        </div>
+      </fieldset>
+    </div>
+  </form>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  // Progressive enhancement only. Without this the page is a plain form that
+  // still works: every fieldset is visible and the server validates.
+  (function () {
+    const form = document.getElementById('booking-form');
+    if (!form) return;
+
+    const T = {
+      none: {{ _('Not given') | tojson }},
+      wholeDay: {{ _('Whole day') | tojson }},
+      oclock: {{ _('%(from)s – %(to)s') | tojson }},
+    };
+
+    function selectedRoomId() {
+      const checked = form.querySelector('input[name="room_id"]:checked');
+      return checked ? checked.value : '';
+    }
+
+    // Only the chosen room's equipment and services are relevant.
+    function showRoomBlocks() {
+      const selected = selectedRoomId();
+      form.querySelectorAll('.room-equipment, .room-services').forEach(function (block) {
+        block.hidden = block.dataset.room !== selected;
+      });
+    }
+
+    form.querySelectorAll('input[name="room_id"]').forEach(function (radio) {
+      radio.addEventListener('change', showRoomBlocks);
+    });
+    showRoomBlocks();
+
+    // ── Wizard ───────────────────────────────────────────────────────
+    // Everything above works with all steps visible. This part hides all but
+    // one; it only runs when scripting is on, so the no-JS page is unchanged.
+    const steps = Array.from(form.querySelectorAll('fieldset[data-step]'));
+    const rail = document.getElementById('step-rail');
+    const dots = document.getElementById('step-dots');
+    if (!steps.length) return;
+
+    const railItems = rail ? Array.from(rail.querySelectorAll('[data-rail-step]')) : [];
+    const dotItems = dots ? Array.from(dots.querySelectorAll('[data-dot-step]')) : [];
+    let current = 1;
+    let furthest = 1;
+
+    // Reveal the wizard chrome only now, so it never shows without behaviour.
+    form.querySelectorAll('.step-nav').forEach(function (nav) {
+      nav.classList.remove('hidden');
+      nav.classList.add('flex');
+    });
+    form.querySelectorAll('[data-back]').forEach(function (button) {
+      button.classList.remove('hidden');
+      button.classList.add('inline-flex');
+    });
+    if (dots) { dots.classList.remove('hidden'); dots.classList.add('flex'); }
+
+    const DOT_ACTIVE = ['bg-accent', 'w-6'];
+    const DOT_IDLE = ['bg-primary/25', 'w-2.5'];
+
+    function paintRail() {
+      railItems.forEach(function (item, index) {
+        const n = index + 1;
+        const dot = item.querySelector('.rail-dot');
+        const title = item.querySelector('.rail-title');
+        const hint = item.querySelector('.rail-hint');
+        item.setAttribute('aria-current', n === current ? 'step' : 'false');
+        // Only steps already reached are reachable by clicking.
+        item.disabled = n > furthest;
+        item.classList.toggle('cursor-pointer', n <= furthest);
+        dot.className = 'rail-dot flex h-9 w-9 shrink-0 items-center justify-center rounded-full pt-0.5 font-heading text-base font-bold';
+        if (n < current) {
+          dot.classList.add('bg-primary', 'text-surface');
+          dot.innerHTML = '<i class="fa-solid fa-check text-sm" aria-hidden="true"></i>';
+        } else if (n === current) {
+          dot.classList.add('bg-accent', 'text-primary', 'shadow-[0_3px_6px_rgba(0,0,0,.14)]');
+          dot.textContent = n;
+        } else {
+          dot.classList.add('border-2', 'border-dashed', 'border-primary/30', 'text-primary/35');
+          dot.textContent = n;
+        }
+        title.className = 'rail-title font-heading text-base uppercase tracking-[0.3px] '
+          + (n === current ? 'font-bold text-primary'
+             : n < current ? 'font-semibold text-primary' : 'font-semibold text-primary/40');
+        hint.className = 'rail-hint text-[12.5px] leading-[18px] '
+          + (n <= current ? 'text-primary/60' : 'text-primary/30');
+      });
+      dotItems.forEach(function (dot, index) {
+        const on = index + 1 === current;
+        dot.classList.remove(...(on ? DOT_IDLE : DOT_ACTIVE));
+        dot.classList.add(...(on ? DOT_ACTIVE : DOT_IDLE));
+      });
+    }
+
+    // ── The summary ──────────────────────────────────────────────────
+    // Read off the fields every time the last step opens. Keeping a second
+    // copy of the answers in sync is the bug this avoids.
+    const summary = document.getElementById('summary');
+
+    function field(name) {
+      const el = form.querySelector('[name="' + name + '"]');
+      return el ? el.value.trim() : '';
+    }
+
+    function formatDate(value) {
+      if (!value) return '';
+      const parsed = new Date(value + 'T00:00');
+      if (isNaN(parsed)) return value;
+      return parsed.toLocaleDateString(document.documentElement.lang || 'de', {
+        weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
+      });
+    }
+
+    function chosenLabels(selector, attribute) {
+      const room = form.querySelector(selector + '[data-room="' + selectedRoomId() + '"]');
+      if (!room) return [];
+      return Array.from(room.querySelectorAll('[' + attribute + ']'));
+    }
+
+    const readers = {
+      name: function () {
+        return [field('academic_title'), field('first_name'), field('last_name')]
+          .filter(Boolean).join(' ');
+      },
+      organization: function () { return field('organization'); },
+      email: function () { return field('email'); },
+      phone: function () { return field('phone'); },
+      address: function () { return field('address'); },
+      contact_person: function () { return field('contact_person'); },
+      event_title: function () { return field('event_title'); },
+      period: function () {
+        const start = formatDate(field('start_date'));
+        const end = formatDate(field('end_date'));
+        return end && end !== start ? start + ' – ' + end : start;
+      },
+      clock: function () {
+        const whole = form.querySelector('[name="whole_day"]');
+        if (whole && whole.checked) return T.wholeDay;
+        const from = field('start_time');
+        const to = field('end_time');
+        if (from && to) return T.oclock.replace('%(from)s', from).replace('%(to)s', to);
+        return from || to || '';
+      },
+      participants: function () { return field('participants'); },
+      room: function () {
+        const checked = form.querySelector('input[name="room_id"]:checked');
+        const label = checked ? checked.closest('label') : null;
+        const name = label ? label.querySelector('[data-room-name]') : null;
+        return name ? name.textContent.trim() : '';
+      },
+      equipment: function () {
+        return chosenLabels('.room-equipment', 'data-equipment-name')
+          .filter(function (input) { return Number(input.value) > 0; })
+          .map(function (input) { return input.value + ' × ' + input.dataset.equipmentName; })
+          .join(' · ');
+      },
+      services: function () {
+        return chosenLabels('.room-services', 'data-service-name')
+          .filter(function (input) { return input.checked; })
+          .map(function (input) { return input.dataset.serviceName; })
+          .join(' · ');
+      },
+      additional_info: function () {
+        const ticked = Array.from(form.querySelectorAll('[data-note-label]'))
+          .filter(function (box) { return box.checked; })
+          .map(function (box) { return box.dataset.noteLabel; });
+        return ticked.concat(field('additional_info') || []).join('\n');
+      },
+      billing_info: function () { return field('billing_info'); },
+      insurance: function () {
+        const chosen = form.querySelector('[data-insurance-choice]:checked');
+        return chosen ? chosen.dataset.label : '';
+      },
+      certificate: function () {
+        const file = document.getElementById('insurance_document');
+        return file && file.files && file.files.length ? file.files[0].name : '';
+      },
+    };
+
+    function fillSummary() {
+      if (!summary) return;
+      Object.keys(readers).forEach(function (key) {
+        const row = summary.querySelector('[data-sum="' + key + '"]');
+        if (!row) return;
+        const value = readers[key]() || '';
+        const target = row.querySelector('[data-sum-value]');
+        // An optional answer left blank on purpose still gets a line, so
+        // nobody has to wonder whether it went missing.
+        row.hidden = !value && !row.hasAttribute('data-sum-keep');
+        target.textContent = value || T.none;
+        target.classList.toggle('font-semibold', !!value);
+        target.classList.toggle('text-primary/45', !value);
+        if (target.hasAttribute('data-sum-box')) {
+          ['bg-primary/5', 'px-4', 'py-3'].forEach(function (cls) {
+            target.classList.toggle(cls, !!value);
+          });
+        }
+      });
+    }
+
+    if (summary) summary.hidden = false;
+
+    // ── Consent ──────────────────────────────────────────────────────
+    const consent = form.querySelector('[data-consent]');
+    const submit = form.querySelector('[data-submit]');
+    const consentHint = form.querySelector('[data-consent-hint]');
+    if (consent && submit) {
+      const syncConsent = function () {
+        submit.disabled = !consent.checked;
+        submit.classList.toggle('opacity-45', !consent.checked);
+        submit.classList.toggle('cursor-not-allowed', !consent.checked);
+        if (consentHint) consentHint.hidden = consent.checked;
+      };
+      consent.addEventListener('change', syncConsent);
+      syncConsent();
+    }
+
+    // ── Coming back from the summary ─────────────────────────────────
+    // Someone who jumped in from "Ändern" wants to go back to where they
+    // were, not to walk the remaining steps again.
+    let cameFromSummary = false;
+    const returnButtons = Array.from(form.querySelectorAll('[data-return-summary]'));
+
+    function paintReturn() {
+      returnButtons.forEach(function (button) {
+        button.hidden = !cameFromSummary;
+        button.classList.toggle('inline-flex', cameFromSummary);
+      });
+    }
+
+    function show(n, focus) {
+      current = n;
+      furthest = Math.max(furthest, n);
+      steps.forEach(function (step) {
+        step.hidden = Number(step.dataset.step) !== n;
+      });
+      if (n === steps.length) { fillSummary(); cameFromSummary = false; }
+      paintReturn();
+      // 'hidden' stays; the lg: variant wins at that breakpoint.
+      if (rail) rail.classList.add('lg:flex');
+      paintRail();
+      if (focus !== false) {
+        const heading = steps[n - 1].querySelector('h2');
+        if (heading) heading.scrollIntoView({ block: 'nearest' });
+      }
+    }
+
+    // Native validity per step, so the browser's own messages do the work.
+    function stepIsValid(n) {
+      const fields = steps[n - 1].querySelectorAll('input, select, textarea');
+      for (const field of fields) {
+        // A hidden room block belongs to another room; never block on it.
+        if (field.closest('[hidden]')) continue;
+        if (!field.checkValidity()) { field.reportValidity(); return false; }
+      }
+      return true;
+    }
+
+    form.querySelectorAll('[data-next]').forEach(function (button) {
+      button.addEventListener('click', function () {
+        if (!stepIsValid(current)) return;
+        show(Math.min(current + 1, steps.length));
+      });
+    });
+    form.querySelectorAll('[data-back]').forEach(function (button) {
+      button.addEventListener('click', function () { show(Math.max(current - 1, 1)); });
+    });
+    railItems.forEach(function (item) {
+      item.addEventListener('click', function () {
+        const target = Number(item.dataset.railStep);
+        if (target <= furthest) show(target);
+      });
+    });
+
+    // "Change" in the summary: back to that step, in the first field.
+    form.querySelectorAll('[data-goto]').forEach(function (button) {
+      button.addEventListener('click', function () {
+        const target = Number(button.dataset.goto);
+        cameFromSummary = true;
+        show(target);
+        const first = steps[target - 1].querySelector('input:not([type="hidden"]), select, textarea');
+        if (first) first.focus({ preventScroll: true });
+      });
+    });
+
+    returnButtons.forEach(function (button) {
+      button.addEventListener('click', function () { show(steps.length); });
+    });
+
+    // A server-side error re-renders the whole form; open the step it is on so
+    // the message is not hidden behind a step the visitor cannot see.
+    const firstError = form.querySelector('.text-highlight');
+    const errorStep = firstError ? firstError.closest('fieldset[data-step]') : null;
+    if (errorStep) {
+      furthest = steps.length;
+      show(Number(errorStep.dataset.step), false);
+    } else {
+      show(1, false);
+    }
+  })();
+
+  // The upload only makes sense once someone has said they are covered. It
+  // starts visible so the no-JavaScript form still offers it; this hides it
+  // until the answer calls for it.
+  (function () {
+    const upload = document.getElementById('insurance-upload');
+    const choices = document.querySelectorAll('[data-insurance-choice]');
+    if (!upload || !choices.length) return;
+
+    function sync() {
+      const chosen = document.querySelector('[data-insurance-choice]:checked');
+      const show = !!chosen && chosen.value === 'yes';
+      upload.hidden = !show;
+      // A file left behind by a change of mind would otherwise still upload.
+      if (!show) {
+        const field = document.getElementById('insurance_document');
+        if (field) field.value = '';
+      }
+    }
+
+    choices.forEach(function (choice) { choice.addEventListener('change', sync); });
+    sync();
+  })();
+</script>
+{% endblock %}

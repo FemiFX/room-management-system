@@ -1,0 +1,11 @@
+{{ _('We are sorry — we cannot accept your booking request.') }}
+
+{{ _('Reference') }}: {{ public_ref }}
+{{ _('Event') }}: {{ title }}
+{{ _('Room') }}: {{ room_name }}
+{{ _('From') }}: {{ start_at }}
+{{ _('Until') }}: {{ end_at }}
+{% if staff_note %}
+{{ _('Reason') }}: {{ staff_note }}
+{% endif %}
+{{ _('You are welcome to submit a new request for a different room or time.') }}

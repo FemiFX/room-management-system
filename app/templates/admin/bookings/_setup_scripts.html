@@ -1,0 +1,115 @@
+<script>
+(function () {
+  // Shared by the room page and the catalogue page: the tab strip, and the
+  // four catalogue dialogs. Both pages open the same dialogs against the same
+  // endpoints -- what differs is only which page you were standing on.
+  const T = {
+    confirmDelete: {{ _('Delete %(name)s?') | tojson }},
+  };
+  const fill = (id, value) => { const el = document.getElementById(id); if (el) el.value = value; };
+  const on = (id, event, handler) => { document.getElementById(id)?.addEventListener(event, handler); };
+
+  // ── Tabs ───────────────────────────────────────────────────────────
+  // Plain show/hide: the whole page is server-rendered, so switching costs
+  // nothing and the chosen tab rides in the hash across a reload.
+  const buttons = document.querySelectorAll('[data-tab-btn]');
+  const ON = ['border-turf-green-600', 'font-semibold', 'text-gray-900', 'dark:border-golden-bronze-300', 'dark:text-parchment'];
+  const OFF = ['border-transparent', 'font-medium', 'text-gray-500', 'hover:text-gray-900', 'dark:text-parchment/60', 'dark:hover:text-parchment'];
+
+  function show(key) {
+    let found = false;
+    document.querySelectorAll('[data-tab-panel]').forEach(function (panel) {
+      const match = panel.dataset.tabPanel === key;
+      panel.hidden = !match;
+      if (match) found = true;
+    });
+    if (!found) return false;
+    buttons.forEach(function (button) {
+      const selected = button.dataset.tabBtn === key;
+      button.setAttribute('aria-selected', selected ? 'true' : 'false');
+      button.classList.remove(...(selected ? OFF : ON));
+      button.classList.add(...(selected ? ON : OFF));
+    });
+    return true;
+  }
+
+  buttons.forEach(function (button) {
+    button.addEventListener('click', function () {
+      if (show(button.dataset.tabBtn)) history.replaceState(null, '', '#' + button.dataset.tabBtn);
+    });
+  });
+  if (location.hash) show(location.hash.slice(1));
+
+  // ── Equipment types ────────────────────────────────────────────────
+  // Every reload below keeps the hash, so it comes back to the same tab.
+  on('form-equipment-create', 'submit', async (event) => {
+    event.preventDefault();
+    const res = await apiPost('/api/v1/equipment', formToObject('form-equipment-create'));
+    res.ok ? location.reload() : setModalError('modal-equipment-create', await parseApiError(res));
+  });
+
+  document.querySelectorAll('[data-edit-equipment]').forEach((button) => {
+    button.addEventListener('click', () => {
+      fill('eq-edit-id', button.dataset.editEquipment);
+      fill('eq-edit-name', button.dataset.name);
+      fill('eq-edit-category', button.dataset.category);
+      fill('eq-edit-notes', button.dataset.notes);
+      openModal('modal-equipment-edit');
+    });
+  });
+
+  on('form-equipment-edit', 'submit', async (event) => {
+    event.preventDefault();
+    const id = document.getElementById('eq-edit-id').value;
+    const data = formToObject('form-equipment-edit');
+    delete data.id;
+    const res = await apiPatch(`/api/v1/equipment/${id}`, data);
+    res.ok ? location.reload() : setModalError('modal-equipment-edit', await parseApiError(res));
+  });
+
+  document.querySelectorAll('[data-delete-equipment]').forEach((button) => {
+    button.addEventListener('click', async () => {
+      if (!confirm(T.confirmDelete.replace('%(name)s', button.dataset.name))) return;
+      const res = await apiDelete(`/api/v1/equipment/${button.dataset.deleteEquipment}`);
+      // A 400 here means the type is in a room or on a booking; say which.
+      res.ok ? location.reload() : alert(await parseApiError(res));
+    });
+  });
+
+  // ── Services ───────────────────────────────────────────────────────
+  on('form-service-create', 'submit', async (event) => {
+    event.preventDefault();
+    const data = formToObject('form-service-create');
+    // An empty code is not a code: leaving it out lets the server derive one.
+    if (!data.code) delete data.code;
+    const res = await apiPost('/api/v1/booking-services', data);
+    res.ok ? location.reload() : setModalError('modal-service-create', await parseApiError(res));
+  });
+
+  document.querySelectorAll('[data-edit-service]').forEach((button) => {
+    button.addEventListener('click', () => {
+      fill('svc-edit-id', button.dataset.editService);
+      fill('svc-edit-name', button.dataset.name);
+      fill('svc-edit-description', button.dataset.description);
+      fill('svc-edit-sort', button.dataset.sort);
+      openModal('modal-service-edit');
+    });
+  });
+
+  on('form-service-edit', 'submit', async (event) => {
+    event.preventDefault();
+    const id = document.getElementById('svc-edit-id').value;
+    // `code` is deliberately absent: bookings reference it, so it is stable.
+    const res = await apiPatch(`/api/v1/booking-services/${id}`, formToObject('form-service-edit'));
+    res.ok ? location.reload() : setModalError('modal-service-edit', await parseApiError(res));
+  });
+
+  document.querySelectorAll('[data-delete-service]').forEach((button) => {
+    button.addEventListener('click', async () => {
+      if (!confirm(T.confirmDelete.replace('%(name)s', button.dataset.name))) return;
+      const res = await apiDelete(`/api/v1/booking-services/${button.dataset.deleteService}`);
+      res.ok ? location.reload() : alert(await parseApiError(res));
+    });
+  });
+})();
+</script>

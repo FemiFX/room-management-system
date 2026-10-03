@@ -1,0 +1,405 @@
+{% extends "admin/layout.html" %}
+
+{% block title %}{{ party.name }}{% endblock %}
+{% block page_title %}{{ party.name }}{% endblock %}
+{% block page_subtitle %}{{ party.party_type.value | capitalize }} · {% if party.is_active %}{{ _('Active') }}{% else %}{{ _('Inactive') }}{% endif %}{% endblock %}
+
+{% block admin_content %}
+{% set can_assign_leases = not party.nc_user_id %}
+<div class="space-y-6">
+
+    <div class="flex items-center justify-between gap-3">
+        <div class="flex items-center gap-3">
+            <a href="/parties" class="text-sm text-gray-400 dark:text-parchment/50 hover:text-gray-600 dark:hover:text-parchment/80">
+                <i class="fa-solid fa-arrow-left mr-1"></i> Parties
+            </a>
+            {{ party_type_badge(party.party_type.value) }}
+            {% if not party.is_active %}
+            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400">Inactive</span>
+            {% endif %}
+        </div>
+        <button onclick="openEditModal()"
+                class="btn-secondary inline-flex items-center gap-2 text-sm"
+                data-id="{{ party.id }}"
+                data-name="{{ party.name | e }}"
+                data-type="{{ party.party_type.value }}"
+                data-email="{{ party.email or '' }}"
+                data-phone="{{ party.phone or '' }}"
+                data-street="{{ party.street or '' }}"
+                data-postal="{{ party.postal_code or '' }}"
+                data-city="{{ party.city or '' }}"
+                data-notes="{{ party.notes or '' }}"
+                data-active="{{ 'true' if party.is_active else 'false' }}">
+            <i class="fa-solid fa-pen text-xs"></i> Edit
+        </button>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+        {# Contact info #}
+        <div class="card p-6">
+            <h3 class="text-sm font-semibold text-gray-700 dark:text-parchment mb-4">Contact Information</h3>
+            <dl class="space-y-3 text-sm">
+                {% if party.email %}
+                <div class="flex items-start gap-3">
+                    <i class="fa-solid fa-envelope w-4 text-gray-400 dark:text-parchment/50 mt-0.5 text-xs"></i>
+                    <a href="mailto:{{ party.email }}" class="text-gray-700 dark:text-parchment hover:text-turf-green-600 dark:hover:text-golden-bronze-300">{{ party.email }}</a>
+                </div>
+                {% endif %}
+                {% if party.phone %}
+                <div class="flex items-start gap-3">
+                    <i class="fa-solid fa-phone w-4 text-gray-400 dark:text-parchment/50 mt-0.5 text-xs"></i>
+                    <span class="text-gray-700 dark:text-parchment">{{ party.phone }}</span>
+                </div>
+                {% endif %}
+                {% if party.street or party.city %}
+                <div class="flex items-start gap-3">
+                    <i class="fa-solid fa-location-dot w-4 text-gray-400 dark:text-parchment/50 mt-0.5 text-xs"></i>
+                    <div class="text-gray-700 dark:text-parchment">
+                        {% if party.street %}<p>{{ party.street }}</p>{% endif %}
+                        {% if party.postal_code or party.city %}<p>{{ party.postal_code }} {{ party.city }}</p>{% endif %}
+                    </div>
+                </div>
+                {% endif %}
+                {% if party.notes %}
+                <div class="pt-2 border-t border-gray-100 dark:border-carbon-700">
+                    <p class="text-xs text-gray-400 dark:text-parchment/50 mb-1 font-medium">Notes</p>
+                    <p class="text-gray-700 dark:text-parchment/90 text-xs leading-relaxed">{{ party.notes }}</p>
+                </div>
+                {% endif %}
+                {% if not party.email and not party.phone and not party.street and not party.city and not party.notes %}
+                <p class="text-gray-400 dark:text-parchment/40 text-xs">No contact details recorded.</p>
+                {% endif %}
+            </dl>
+        </div>
+
+        {# Leases + Keys #}
+        <div class="lg:col-span-2 space-y-4">
+            <div class="card overflow-hidden">
+                <div class="px-6 py-4 border-b border-gray-100 dark:border-carbon-700 flex items-center justify-between">
+                    <h3 class="text-sm font-semibold text-gray-700 dark:text-parchment flex items-center gap-2">
+                        <i class="fa-solid fa-file-contract text-teal-500 text-sm"></i>
+                        Leases
+                        <span class="text-xs font-normal text-gray-400 dark:text-parchment/50">({{ party.leases | length }})</span>
+                    </h3>
+                    <div class="flex items-center gap-3">
+                        <a href="/leases" class="text-xs text-turf-green-600 dark:text-golden-bronze-300 hover:underline">All leases</a>
+                        {% if can_assign_leases %}
+                        <button onclick="openLeaseModal()" class="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold rounded-lg bg-turf-green-600/10 text-turf-green-600 dark:bg-golden-bronze-300/10 dark:text-golden-bronze-300 hover:bg-turf-green-600/20 transition-colors">
+                            <i class="fa-solid fa-plus text-[9px]"></i> New Lease
+                        </button>
+                        {% endif %}
+                    </div>
+                </div>
+                {% if party.leases %}
+                <table class="w-full text-sm">
+                    <thead>
+                        <tr class="bg-gray-50/60 dark:bg-carbon-700/30 border-b border-gray-100 dark:border-carbon-700">
+                            <th class="text-left px-6 py-2.5 text-xs font-semibold text-gray-500 dark:text-parchment/60 uppercase tracking-wide">Room</th>
+                            <th class="text-left px-4 py-2.5 text-xs font-semibold text-gray-500 dark:text-parchment/60 uppercase tracking-wide hidden sm:table-cell">Period</th>
+                            <th class="text-left px-4 py-2.5 text-xs font-semibold text-gray-500 dark:text-parchment/60 uppercase tracking-wide hidden md:table-cell">Rent</th>
+                            <th class="text-left px-4 py-2.5 text-xs font-semibold text-gray-500 dark:text-parchment/60 uppercase tracking-wide">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-50 dark:divide-carbon-700/50">
+                        {% for lease in party.leases | sort(attribute='start_date', reverse=True) %}
+                        <tr class="hover:bg-gray-50/40 dark:hover:bg-carbon-700/20">
+                            <td class="px-6 py-3">
+                                {% if lease.room %}
+                                <a href="/rooms/{{ lease.room.id }}" class="font-mono text-xs font-semibold bg-gray-100 dark:bg-carbon-700 text-gray-700 dark:text-parchment px-1.5 py-0.5 rounded hover:bg-gray-200">{{ lease.room.room_code }}</a>
+                                {% else %}<span class="text-gray-400">—</span>{% endif %}
+                            </td>
+                            <td class="px-4 py-3 hidden sm:table-cell text-xs text-gray-600 dark:text-parchment/80">
+                                {{ lease.start_date.strftime('%d.%m.%Y') }} — {% if lease.end_date %}{{ lease.end_date.strftime('%d.%m.%Y') }}{% else %}open{% endif %}
+                            </td>
+                            <td class="px-4 py-3 hidden md:table-cell text-xs text-gray-600 dark:text-parchment/80">
+                                {{ lease.currency }} {{ "%.2f"|format(lease.monthly_rent) }}
+                            </td>
+                            <td class="px-4 py-3">{{ lease_status_badge(lease.status.value) }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <div class="py-8 text-center text-sm text-gray-400 dark:text-parchment/40">No leases found.</div>
+                {% endif %}
+            </div>
+
+            {# Active Key Assignments #}
+            {% set active_keys = party.key_assignments | selectattr('returned_at', 'none') | list %}
+            {% if active_keys %}
+            <div class="card overflow-hidden">
+                <div class="px-6 py-4 border-b border-gray-100 dark:border-carbon-700">
+                    <h3 class="text-sm font-semibold text-gray-700 dark:text-parchment flex items-center gap-2">
+                        <i class="fa-solid fa-key text-amber-500 text-sm"></i>
+                        Keys Held
+                        <span class="text-xs font-normal text-gray-400 dark:text-parchment/50">({{ active_keys | length }})</span>
+                    </h3>
+                </div>
+                <ul class="divide-y divide-gray-50 dark:divide-carbon-700/50">
+                    {% for ka in active_keys %}
+                    <li class="flex items-center justify-between px-6 py-3 text-sm">
+                        <div>
+                            <span class="font-mono text-xs font-semibold bg-gray-100 dark:bg-carbon-700 text-gray-700 dark:text-parchment px-1.5 py-0.5 rounded">{{ ka.key.key_code if ka.key else '—' }}</span>
+                            {% if ka.room %}<a href="/rooms/{{ ka.room.id }}" class="ml-2 text-xs text-gray-500 dark:text-parchment/60 hover:underline">{{ ka.room.room_code }}</a>{% endif %}
+                        </div>
+                        <span class="text-xs text-gray-400 dark:text-parchment/50">issued {{ ka.issued_at.strftime('%d.%m.%Y') if ka.issued_at else '—' }}</span>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+
+            {% if party.party_type.value == 'team' %}
+            <div class="card overflow-hidden">
+                <div class="px-6 py-4 border-b border-gray-100 dark:border-carbon-700">
+                    <h3 class="text-sm font-semibold text-gray-700 dark:text-parchment flex items-center gap-2">
+                        <i class="fa-solid fa-users text-indigo-500 text-sm"></i>
+                        Internal Rooms
+                        <span class="text-xs font-normal text-gray-400 dark:text-parchment/50">({{ party.internal_room_assignments | length }})</span>
+                    </h3>
+                </div>
+                {% if party.internal_room_assignments %}
+                <table class="w-full text-sm">
+                    <thead>
+                        <tr class="bg-gray-50/60 dark:bg-carbon-700/30 border-b border-gray-100 dark:border-carbon-700">
+                            <th class="text-left px-6 py-2.5 text-xs font-semibold text-gray-500 dark:text-parchment/60 uppercase tracking-wide">Room</th>
+                            <th class="text-left px-4 py-2.5 text-xs font-semibold text-gray-500 dark:text-parchment/60 uppercase tracking-wide">From</th>
+                            <th class="text-left px-4 py-2.5 text-xs font-semibold text-gray-500 dark:text-parchment/60 uppercase tracking-wide">To</th>
+                            <th class="text-left px-4 py-2.5 text-xs font-semibold text-gray-500 dark:text-parchment/60 uppercase tracking-wide hidden md:table-cell">Notes</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-50 dark:divide-carbon-700/50">
+                        {% for ia in party.internal_room_assignments | sort(attribute='start_date', reverse=True) %}
+                        <tr class="hover:bg-gray-50/40 dark:hover:bg-carbon-700/20">
+                            <td class="px-6 py-3">
+                                {% if ia.room %}
+                                <a href="/rooms/{{ ia.room.id }}" class="font-mono text-xs font-semibold bg-gray-100 dark:bg-carbon-700 text-gray-700 dark:text-parchment px-1.5 py-0.5 rounded hover:bg-gray-200">{{ ia.room.room_code }}</a>
+                                {% else %}
+                                <span class="text-gray-400">—</span>
+                                {% endif %}
+                            </td>
+                            <td class="px-4 py-3 text-xs text-gray-600 dark:text-parchment/80">{{ ia.start_date.strftime('%d.%m.%Y') }}</td>
+                            <td class="px-4 py-3 text-xs text-gray-600 dark:text-parchment/80">{% if ia.end_date %}{{ ia.end_date.strftime('%d.%m.%Y') }}{% else %}<span class="text-indigo-600 dark:text-indigo-300 font-medium">active</span>{% endif %}</td>
+                            <td class="px-4 py-3 text-xs text-gray-500 dark:text-parchment/60 hidden md:table-cell">{{ ia.notes or '—' }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <div class="py-8 text-center text-sm text-gray-400 dark:text-parchment/40">No internal rooms assigned.</div>
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+{# ─── Edit Party Modal ─────────────────────────────────────────────── #}
+<dialog id="modal-party-edit" class="rounded-xl shadow-2xl p-0 w-full max-w-lg bg-white dark:bg-carbon-800 backdrop:bg-black/50">
+    <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-carbon-700">
+        <h2 class="text-base font-semibold text-gray-900 dark:text-parchment">Edit Party</h2>
+        <button type="button" onclick="closeModal('modal-party-edit')" class="w-8 h-8 flex items-center justify-center rounded-lg text-gray-400 hover:bg-gray-100 dark:hover:bg-carbon-700 hover:text-gray-600 transition-colors">&times;</button>
+    </div>
+    <form id="form-party-edit" class="px-6 py-5 space-y-4" novalidate>
+        <input type="hidden" id="pe-id" name="_id">
+        <div class="grid grid-cols-2 gap-4">
+            <div class="col-span-2">
+                <label class="form-label" for="pe-name">Name <span class="text-red-500">*</span></label>
+                <input id="pe-name" name="name" type="text" required class="form-input">
+            </div>
+            <div class="col-span-2 sm:col-span-1">
+                <label class="form-label" for="pe-type">Type</label>
+                <select id="pe-type" name="party_type" class="form-input">
+                    <option value="person">Person</option>
+                    <option value="organization">Organization</option>
+                    <option value="team">Team</option>
+                </select>
+            </div>
+            <div class="col-span-2 sm:col-span-1">
+                <label class="form-label" for="pe-phone">Phone</label>
+                <input id="pe-phone" name="phone" type="text" class="form-input">
+            </div>
+            <div class="col-span-2">
+                <label class="form-label" for="pe-email">Email</label>
+                <input id="pe-email" name="email" type="email" class="form-input">
+            </div>
+            <div class="col-span-2 sm:col-span-1">
+                <label class="form-label" for="pe-street">Street</label>
+                <input id="pe-street" name="street" type="text" class="form-input">
+            </div>
+            <div class="col-span-1 sm:col-span-1">
+                <label class="form-label" for="pe-postal">Postal Code</label>
+                <input id="pe-postal" name="postal_code" type="text" class="form-input">
+            </div>
+            <div class="col-span-2 sm:col-span-1">
+                <label class="form-label" for="pe-city">City</label>
+                <input id="pe-city" name="city" type="text" class="form-input">
+            </div>
+            <div class="col-span-2">
+                <label class="form-label" for="pe-notes">Notes</label>
+                <textarea id="pe-notes" name="notes" rows="2" class="form-input resize-none"></textarea>
+            </div>
+            <div class="col-span-2 flex items-center gap-2">
+                <input id="pe-active" name="is_active" type="checkbox" class="rounded border-gray-300 text-turf-green-600">
+                <label for="pe-active" class="text-sm text-gray-700 dark:text-parchment">Active</label>
+            </div>
+        </div>
+        <p id="err-party-edit" class="text-sm text-red-600 dark:text-red-400 hidden"></p>
+    </form>
+    <div class="flex justify-end gap-3 px-6 py-4 border-t border-gray-100 dark:border-carbon-700">
+        <button type="button" onclick="closeModal('modal-party-edit')" class="btn-secondary">Cancel</button>
+        <button type="submit" form="form-party-edit" class="btn-primary">Save</button>
+    </div>
+</dialog>
+
+{# ─── Create Lease Modal ───────────────────────────────────────────── #}
+{% if can_assign_leases %}
+<dialog id="modal-lease-create" class="rounded-xl shadow-2xl p-0 w-full max-w-lg bg-white dark:bg-carbon-800 backdrop:bg-black/50">
+    <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-carbon-700">
+        <h2 class="text-base font-semibold text-gray-900 dark:text-parchment">New Lease for {{ party.name }}</h2>
+        <button type="button" onclick="closeModal('modal-lease-create')" class="w-8 h-8 flex items-center justify-center rounded-lg text-gray-400 hover:bg-gray-100 dark:hover:bg-carbon-700 hover:text-gray-600 transition-colors">&times;</button>
+    </div>
+    <form id="form-lease-create" class="px-6 py-5 space-y-4" novalidate>
+        <div class="grid grid-cols-2 gap-4">
+            <div class="col-span-2">
+                <label class="form-label" for="lc-room">Room <span class="text-red-500">*</span></label>
+                <select id="lc-room" name="room_id" class="form-input" required>
+                    <option value="">Loading rooms…</option>
+                </select>
+            </div>
+            <div class="col-span-2">
+                <label class="form-label" for="lc-ref">Contract Reference</label>
+                <input id="lc-ref" name="contract_reference" type="text" class="form-input" placeholder="e.g. K-2024-001">
+            </div>
+            <div class="col-span-2 sm:col-span-1">
+                <label class="form-label" for="lc-start">Start Date <span class="text-red-500">*</span></label>
+                <input id="lc-start" name="start_date" type="date" required class="form-input">
+            </div>
+            <div class="col-span-2 sm:col-span-1">
+                <label class="form-label" for="lc-end">End Date</label>
+                <input id="lc-end" name="end_date" type="date" class="form-input">
+            </div>
+            <div class="col-span-2 sm:col-span-1">
+                <label class="form-label" for="lc-rent">Monthly Rent <span class="text-red-500">*</span></label>
+                <input id="lc-rent" name="monthly_rent" type="number" step="0.01" min="0" required class="form-input" placeholder="0.00">
+            </div>
+            <div class="col-span-2 sm:col-span-1">
+                <label class="form-label" for="lc-deposit">Deposit</label>
+                <input id="lc-deposit" name="deposit_amount" type="number" step="0.01" min="0" class="form-input" placeholder="0.00">
+            </div>
+            <div class="col-span-2 sm:col-span-1">
+                <label class="form-label" for="lc-status">Status</label>
+                <select id="lc-status" name="status" class="form-input">
+                    <option value="draft">Draft</option>
+                    <option value="active">Active</option>
+                </select>
+            </div>
+            <div class="col-span-2 sm:col-span-1">
+                <label class="form-label" for="lc-currency">Currency</label>
+                <input id="lc-currency" name="currency" type="text" class="form-input" value="EUR" maxlength="3">
+            </div>
+            <div class="col-span-2">
+                <label class="form-label" for="lc-notes">Notes</label>
+                <textarea id="lc-notes" name="notes" rows="2" class="form-input resize-none"></textarea>
+            </div>
+        </div>
+        <p id="err-lease-create" class="text-sm text-red-600 dark:text-red-400 hidden"></p>
+    </form>
+    <div class="flex justify-end gap-3 px-6 py-4 border-t border-gray-100 dark:border-carbon-700">
+        <button type="button" onclick="closeModal('modal-lease-create')" class="btn-secondary">Cancel</button>
+        <button type="submit" form="form-lease-create" class="btn-primary">Create</button>
+    </div>
+</dialog>
+{% endif %}
+
+{% endblock %}
+
+
+{% block page_scripts %}
+<script>
+(function () {
+    const partyId = {{ party.id }};
+    let roomsLoaded = false;
+
+    // ── Edit Party ──────────────────────────────────────────────────────
+    function openEditModal() {
+        const btn = document.querySelector('[data-id="{{ party.id }}"][data-name]');
+        document.getElementById('pe-id').value = btn.dataset.id;
+        document.getElementById('pe-name').value = btn.dataset.name;
+        document.getElementById('pe-type').value = btn.dataset.type;
+        document.getElementById('pe-email').value = btn.dataset.email;
+        document.getElementById('pe-phone').value = btn.dataset.phone;
+        document.getElementById('pe-street').value = btn.dataset.street;
+        document.getElementById('pe-postal').value = btn.dataset.postal;
+        document.getElementById('pe-city').value = btn.dataset.city;
+        document.getElementById('pe-notes').value = btn.dataset.notes;
+        document.getElementById('pe-active').checked = btn.dataset.active === 'true';
+        clearModalError('modal-party-edit');
+        openModal('modal-party-edit');
+    }
+    window.openEditModal = openEditModal;
+
+    document.getElementById('form-party-edit').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const form = e.target;
+        const optional = ['email', 'phone', 'street', 'postal_code', 'city', 'notes'];
+        const data = formToObject(form, optional);
+        const id = document.getElementById('pe-id').value;
+        delete data._id;
+        setSubmitting('form-party-edit', true);
+        clearModalError('modal-party-edit');
+        const res = await apiPatch(`/api/v1/parties/${id}`, data);
+        setSubmitting('form-party-edit', false);
+        if (res.ok) {
+            location.reload();
+        } else {
+            setModalError('modal-party-edit', await parseApiError(res));
+        }
+    });
+
+    // ── Create Lease ────────────────────────────────────────────────────
+    const leaseCreateForm = document.getElementById('form-lease-create');
+    if (leaseCreateForm) {
+        function openLeaseModal() {
+            if (!roomsLoaded) {
+                populateSelect(
+                    document.getElementById('lc-room'),
+                    '/api/v1/rooms',
+                    r => `${r.room_code}${r.name ? ' — ' + r.name : ''}`,
+                    r => r.id,
+                );
+                roomsLoaded = true;
+            }
+            clearModalError('modal-lease-create');
+            openModal('modal-lease-create');
+        }
+        window.openLeaseModal = openLeaseModal;
+
+        leaseCreateForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const form = e.target;
+            const optional = ['contract_reference', 'end_date', 'deposit_amount', 'notes'];
+            const data = formToObject(form, optional);
+            data.party_id = partyId;
+            if (!data.room_id) { setModalError('modal-lease-create', 'Please select a room.'); return; }
+            if (!data.start_date) { setModalError('modal-lease-create', 'Start date is required.'); return; }
+            if (!data.monthly_rent) { setModalError('modal-lease-create', 'Monthly rent is required.'); return; }
+            // Coerce numeric types
+            data.room_id = parseInt(data.room_id);
+            data.monthly_rent = parseFloat(data.monthly_rent);
+            if (data.deposit_amount) data.deposit_amount = parseFloat(data.deposit_amount);
+            setSubmitting('form-lease-create', true);
+            clearModalError('modal-lease-create');
+            const res = await apiPost('/api/v1/leases', data);
+            setSubmitting('form-lease-create', false);
+            if (res.ok) {
+                location.reload();
+            } else {
+                setModalError('modal-lease-create', await parseApiError(res));
+            }
+        });
+    }
+})();
+</script>
+{% endblock %}

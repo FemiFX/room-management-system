@@ -1,0 +1,53 @@
+{% extends "admin/layout.html" %}
+
+{% block title %}{{ _('Action Center') }}{% endblock %}
+{% block page_title %}{{ _('Action Center') }}{% endblock %}
+{% block page_subtitle %}{{ _('Items requiring action') }}{% endblock %}
+
+{% block admin_content %}
+<div class="space-y-6">
+    <div class="card overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-100 dark:border-carbon-700 flex items-center justify-between">
+            <h3 class="text-base font-semibold text-gray-900 dark:text-parchment flex items-center gap-2">
+                <i class="fa-solid fa-bolt text-amber-500 text-sm"></i>
+                Open Actions
+            </h3>
+        </div>
+        {% if action_items %}
+        <ul class="divide-y divide-gray-100 dark:divide-carbon-700">
+            {% for item in action_items %}
+            <li class="flex items-center gap-4 px-6 py-4 border-l-4
+                {% if item.severity == 'warning' %}border-l-amber-400 bg-amber-50/40 dark:bg-amber-900/10
+                {% elif item.severity == 'error' %}border-l-red-400 bg-red-50/40 dark:bg-red-900/10
+                {% else %}border-l-blue-400 bg-blue-50/30 dark:bg-blue-900/10{% endif %}">
+                <div class="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0
+                    {% if item.severity == 'warning' %}bg-amber-100 dark:bg-amber-900/30
+                    {% elif item.severity == 'error' %}bg-red-100 dark:bg-red-900/30
+                    {% else %}bg-blue-100 dark:bg-blue-900/30{% endif %}">
+                    <span class="text-lg font-bold
+                        {% if item.severity == 'warning' %}text-amber-600 dark:text-amber-400
+                        {% elif item.severity == 'error' %}text-red-600 dark:text-red-400
+                        {% else %}text-blue-600 dark:text-blue-400{% endif %}">{{ item.count }}</span>
+                </div>
+                <div class="flex-1 min-w-0">
+                    <p class="text-sm font-medium text-gray-800 dark:text-parchment">{{ item.message }}</p>
+                    <p class="text-xs text-gray-400 dark:text-parchment/50 mt-0.5 font-mono">{{ item.code }}</p>
+                </div>
+                {% if item.code == 'leases_expiring' %}
+                <a href="/leases?status=expiring" class="btn-secondary text-xs px-3 py-1.5">View</a>
+                {% elif item.code == 'keys_unreturned' or item.code == 'keys_recovery' %}
+                <a href="/keys" class="btn-secondary text-xs px-3 py-1.5">View</a>
+                {% endif %}
+            </li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <div class="py-12 text-center">
+            <i class="fa-solid fa-circle-check text-3xl text-green-300 dark:text-green-700 mb-3 block"></i>
+            <p class="text-sm font-medium text-gray-700 dark:text-parchment">All clear</p>
+            <p class="text-xs text-gray-400 dark:text-parchment/50 mt-1">No action items at this time.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,1 @@
+{{ _('New public booking request') }} — {{ public_ref }}

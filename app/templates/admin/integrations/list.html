@@ -1,0 +1,154 @@
+{% extends "admin/layout.html" %}
+
+{% block title %}{{ _('Integrations') }}{% endblock %}
+{% block page_title %}{{ _('Integrations') }}{% endblock %}
+{% block page_subtitle %}{{ _('External system configuration and sync') }}{% endblock %}
+
+{% block admin_content %}
+<div class="space-y-6">
+    <div class="card p-6 max-w-3xl">
+        <div class="flex items-start justify-between gap-4 mb-5">
+            <div>
+                <h3 class="text-base font-semibold text-gray-900 dark:text-parchment">Nextcloud</h3>
+                <p class="text-sm text-gray-500 dark:text-parchment/60 mt-1">Configure source credentials and run person sync on demand.</p>
+            </div>
+            <button id="btn-nextcloud-sync-now" class="btn-secondary inline-flex items-center gap-2 text-sm">
+                <i class="fa-solid fa-rotate text-xs"></i> Sync Now
+            </button>
+        </div>
+
+        <form id="form-nextcloud-settings" class="space-y-4" novalidate>
+            <div class="flex items-center gap-2">
+                <input id="nc-enabled" name="enabled" type="checkbox" class="rounded border-gray-300 text-turf-green-600">
+                <label for="nc-enabled" class="text-sm text-gray-700 dark:text-parchment">Enable hourly sync</label>
+            </div>
+
+            <div>
+                <label class="form-label" for="nc-url">Nextcloud URL <span class="text-red-500">*</span></label>
+                <input id="nc-url" name="url" type="url" class="form-input" placeholder="https://cloud.example.org">
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label class="form-label" for="nc-admin-user">Admin/User <span class="text-red-500">*</span></label>
+                    <input id="nc-admin-user" name="admin_user" type="text" class="form-input" placeholder="admin">
+                </div>
+                <div>
+                    <label class="form-label" for="nc-app-password">App Password</label>
+                    <input id="nc-app-password" name="app_password" type="password" class="form-input" placeholder="Leave empty to keep current">
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                    <label class="form-label" for="nc-ocs-version">OCS Version</label>
+                    <input id="nc-ocs-version" name="ocs_version" type="text" class="form-input" placeholder="v2">
+                </div>
+                <div>
+                    <label class="form-label" for="nc-timeout-s">Timeout (s)</label>
+                    <input id="nc-timeout-s" name="timeout_s" type="number" min="1" max="300" class="form-input" value="30">
+                </div>
+                <div>
+                    <label class="form-label" for="nc-page-size">Page Size</label>
+                    <input id="nc-page-size" name="page_size" type="number" min="1" max="1000" class="form-input" value="100">
+                </div>
+            </div>
+
+            <p id="nextcloud-password-state" class="text-xs text-gray-500 dark:text-parchment/60"></p>
+            <p id="err-nextcloud-settings" class="text-sm text-red-600 dark:text-red-400 hidden"></p>
+            <p id="ok-nextcloud-settings" class="text-sm text-green-600 dark:text-green-400 hidden"></p>
+            <div class="flex justify-end">
+                <button type="submit" form="form-nextcloud-settings" class="btn-primary">Save Settings</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block page_scripts %}
+<script>
+(function () {
+    const byId = (id) => document.getElementById(id);
+    const form = byId('form-nextcloud-settings');
+    const okEl = byId('ok-nextcloud-settings');
+    const errEl = byId('err-nextcloud-settings');
+
+    function setOk(msg) {
+        if (!okEl) return;
+        okEl.textContent = msg || '';
+        okEl.classList.toggle('hidden', !msg);
+    }
+
+    function setErr(msg) {
+        if (!errEl) return;
+        errEl.textContent = msg || '';
+        errEl.classList.toggle('hidden', !msg);
+    }
+
+    async function loadSettings() {
+        const res = await fetch('/api/v1/admin/integrations/nextcloud', { headers: { 'x-csrf-token': getCsrf() } });
+        if (!res.ok) return;
+        const data = await res.json();
+        byId('nc-enabled').checked = !!data.enabled;
+        byId('nc-url').value = data.url || '';
+        byId('nc-admin-user').value = data.admin_user || '';
+        byId('nc-ocs-version').value = data.ocs_version || 'v2';
+        byId('nc-timeout-s').value = String(data.timeout_s || 30);
+        byId('nc-page-size').value = String(data.page_size || 100);
+        byId('nextcloud-password-state').textContent = data.has_app_password
+            ? 'An app password is already configured. Leave password empty to keep it.'
+            : 'No app password saved yet.';
+    }
+
+    form?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        setOk('');
+        setErr('');
+        const payload = {
+            enabled: byId('nc-enabled').checked,
+            url: byId('nc-url').value.trim(),
+            admin_user: byId('nc-admin-user').value.trim(),
+            app_password: byId('nc-app-password').value,
+            ocs_version: byId('nc-ocs-version').value.trim() || 'v2',
+            timeout_s: parseInt(byId('nc-timeout-s').value || '30', 10),
+            page_size: parseInt(byId('nc-page-size').value || '100', 10),
+        };
+        if (!payload.url || !payload.admin_user) {
+            setErr('URL and admin user are required.');
+            return;
+        }
+        setSubmitting('form-nextcloud-settings', true);
+        const res = await apiPatch('/api/v1/admin/integrations/nextcloud', payload);
+        setSubmitting('form-nextcloud-settings', false);
+        if (!res.ok) {
+            setErr(await parseApiError(res));
+            return;
+        }
+        byId('nc-app-password').value = '';
+        setOk('Settings saved.');
+        await loadSettings();
+    });
+
+    byId('btn-nextcloud-sync-now')?.addEventListener('click', async () => {
+        setOk('');
+        setErr('');
+        const btn = byId('btn-nextcloud-sync-now');
+        if (!btn) return;
+        btn.disabled = true;
+        btn.textContent = 'Syncing…';
+        const res = await apiPost('/api/v1/admin/integrations/nextcloud/sync-now', {});
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fa-solid fa-rotate text-xs"></i> Sync Now';
+        if (!res.ok) {
+            setErr(await parseApiError(res));
+            return;
+        }
+        const body = await res.json();
+        const s = body.stats || {};
+        setOk(`Sync complete: ${s.synced || 0} active, ${s.created || 0} created, ${s.updated || 0} updated, ${s.deactivated || 0} deactivated.`);
+    });
+
+    loadSettings();
+})();
+</script>
+{% endblock %}

@@ -1,0 +1,11 @@
+{% extends "email/base_email.html" %}
+{% block body %}
+<p>{{ _('We are sorry — we cannot accept your booking request.') }}</p>
+{% include "email/_booking_details.html" %}
+{% if staff_note %}
+<p style="margin-top:16px;padding:12px 14px;background:{{ brand.surface_hex }};border-radius:6px;">
+  <strong>{{ _('Reason') }}:</strong><br>{{ staff_note }}
+</p>
+{% endif %}
+<p>{{ _('You are welcome to submit a new request for a different room or time.') }}</p>
+{% endblock %}

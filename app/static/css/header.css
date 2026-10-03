@@ -1,0 +1,52 @@
+.dropdown {
+    display: none;
+}
+
+.dropdown.open {
+    display: block;
+}
+
+.notification-badge {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    background-color: var(--turf-green);
+    color: white;
+    font-size: 0.75rem;
+    height: 20px;
+    width: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 9999px;
+}
+
+html.dark .notification-badge {
+    background-color: var(--golden-bronze);
+    color: #1f1e1d;
+}
+
+.admin-header {
+    z-index: 50;
+}
+
+.header-title-group {
+    max-width: min(20vw, 500px);
+    min-width: 120px;
+}
+
+.header-subtitle {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
+    line-height: 1.4;
+}
+
+@media (max-width: 768px) {
+    .header-title-group {
+        max-width: min(50vw, 300px);
+    }
+}

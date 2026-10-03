@@ -1,0 +1,13 @@
+{% extends "email/base_email.html" %}
+{% block body %}
+<p>{{ _('Good news — your booking has been confirmed.') }}</p>
+{% include "email/_booking_details.html" %}
+{% if manage_url %}
+<p style="margin-top:20px;">
+  <a href="{{ manage_url }}"
+     style="display:inline-block;padding:13px 26px 11px;background:{{ brand.accent_hex }};color:{{ brand.primary_hex }};font-weight:bold;text-transform:uppercase;letter-spacing:.04em;font-family:'Century Gothic','Trebuchet MS',Helvetica,Arial,sans-serif;font-size:14px;text-decoration:none;border-radius:25px;">
+    {{ _('View your booking') }}
+  </a>
+</p>
+{% endif %}
+{% endblock %}

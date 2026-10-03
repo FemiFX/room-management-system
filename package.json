@@ -1,0 +1,12 @@
+{
+  "name": "room-management-system",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "build": "tailwindcss -i app/static/src/css/main.css -o app/static/dist/css/main.css --minify",
+    "watch": "tailwindcss -i app/static/src/css/main.css -o app/static/dist/css/main.css --watch"
+  },
+  "devDependencies": {
+    "tailwindcss": "^3.4.0"
+  }
+}

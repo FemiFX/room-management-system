@@ -1,0 +1,111 @@
+<header class="admin-header bg-white dark:bg-carbon-800 border-b border-gray-200 dark:border-carbon-700 px-6 py-4 sticky top-0 z-30">
+    <div class="flex items-center justify-between">
+        <div class="flex items-center space-x-3">
+            <button id="openSidebar" class="lg:hidden text-gray-600 hover:text-gray-800" aria-label="Open menu">
+                <i class="fa-solid fa-bars"></i>
+            </button>
+            <div class="header-title-group">
+                <h2 class="text-xl font-semibold text-gray-900 dark:text-parchment">{{ _page_title }}</h2>
+                <p class="text-sm text-gray-500 dark:text-parchment/70 header-subtitle">{{ _page_subtitle }}</p>
+            </div>
+        </div>
+
+        {{ _nav_extra }}
+
+        <div class="flex items-center gap-3">
+            <button id="search-toggle" class="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-carbon-700 text-gray-500 dark:text-parchment/80 border border-gray-200 dark:border-carbon-600" aria-label="{{ _('Search') }}">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <span class="text-sm hidden sm:inline">{{ _('Search') }}</span>
+            </button>
+
+            <button id="themeToggle" aria-label="{{ _('Toggle theme') }}" class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-carbon-700">
+                <i class="fa-solid fa-moon text-gray-500 dark:text-parchment/80" id="themeIcon"></i>
+            </button>
+
+            <div class="relative">
+                <button id="notification-button" class="relative p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-carbon-700 transition-colors" aria-label="{{ _('Notifications') }}">
+                    <i class="fas fa-bell text-gray-500 hover:text-gray-700 dark:text-parchment/80 dark:hover:text-parchment text-lg"></i>
+                    <span id="notification-badge" class="notification-badge" {% if not unread_count %}style="display:none"{% endif %}>{{ unread_count or 0 }}</span>
+                </button>
+                <div id="notification-dropdown" class="hidden absolute right-0 mt-2 w-96 bg-white dark:bg-carbon-800 border border-gray-200 dark:border-carbon-700 rounded-xl shadow-xl z-50 overflow-hidden">
+                    <div class="px-5 py-3.5 flex items-center justify-between bg-gray-50 dark:bg-carbon-700/50 border-b border-gray-200 dark:border-carbon-700">
+                        <div class="flex items-center gap-2.5">
+                            <h3 class="text-sm font-bold text-gray-900 dark:text-parchment">{{ _('Notifications') }}</h3>
+                            {% if unread_count %}
+                                <span class="inline-flex items-center justify-center px-2 py-0.5 text-[10px] font-bold rounded-full bg-turf-green-600 text-white dark:bg-golden-bronze-300 dark:text-carbon-800">{{ unread_count }}</span>
+                            {% endif %}
+                        </div>
+                        <button id="mark-all-read" class="text-xs font-medium text-turf-green-600 dark:text-golden-bronze-300 hover:underline">{{ _('Mark all read') }}</button>
+                    </div>
+                    <div id="notifications-list" class="max-h-[26rem] overflow-y-auto">
+                        {% if notifications and notifications|length > 0 %}
+                            {% for notification in notifications %}
+                                <div class="notification-item flex items-start gap-3 px-5 py-3.5 border-l-4 transition-colors hover:bg-gray-50 dark:hover:bg-carbon-700/30 {% if notification.status.value == 'unread' %}border-l-turf-green-600 dark:border-l-golden-bronze-300 bg-turf-green-600/[0.04] dark:bg-golden-bronze-300/[0.04]{% else %}border-l-transparent{% endif %} {% if not loop.last %}border-b border-gray-100 dark:border-carbon-700/60{% endif %}" data-notification-id="{{ notification.id }}">
+                                    <div class="flex-1 min-w-0">
+                                        <div class="flex items-center justify-between gap-2 mb-0.5">
+                                            <p class="text-sm font-semibold text-gray-900 dark:text-parchment truncate">{{ notification.title }}</p>
+                                            <span class="flex-shrink-0 text-[11px] text-gray-400 dark:text-parchment/50">{{ notification.time_ago }}</span>
+                                        </div>
+                                        <p class="text-[13px] text-gray-600 dark:text-parchment/70 leading-snug">{{ notification.message }}{% if notification.link %} <a href="{{ notification.link }}" class="text-turf-green-600 dark:text-golden-bronze-300 hover:underline font-medium">{{ _('View') }} &rarr;</a>{% endif %}</p>
+                                    </div>
+                                    {% if notification.status.value == 'unread' %}
+                                        <button class="notification-read flex-shrink-0 mt-0.5 w-7 h-7 flex items-center justify-center rounded-full text-gray-400 hover:bg-turf-green-600/10 hover:text-turf-green-600 dark:hover:bg-golden-bronze-300/10 dark:hover:text-golden-bronze-300 transition-colors" data-notification-id="{{ notification.id }}" title="{{ _('Mark as read') }}" aria-label="{{ _('Mark as read') }}">
+                                            <i class="fa-solid fa-check text-xs"></i>
+                                        </button>
+                                    {% endif %}
+                                </div>
+                            {% endfor %}
+                        {% else %}
+                            <div class="py-10 text-center">
+                                <i class="fa-regular fa-bell-slash text-3xl text-gray-300 dark:text-parchment/30 mb-3 block"></i>
+                                <p class="text-sm text-gray-500 dark:text-parchment/60">{{ _('No notifications') }}</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                    {% if notifications and notifications|length > 0 %}
+                        <a href="/notifications" class="block px-5 py-3 text-center text-xs font-semibold text-turf-green-600 dark:text-golden-bronze-300 hover:bg-gray-50 dark:hover:bg-carbon-700/50 border-t border-gray-200 dark:border-carbon-700 transition-colors">
+                            {{ _('View all notifications') }} &rarr;
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="relative flex-shrink-0">
+                <button id="userMenuButton" class="flex items-center gap-1.5 p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-carbon-700" aria-haspopup="true" aria-expanded="false">
+                    <div class="w-8 h-8 rounded-full bg-turf-green-600 dark:bg-golden-bronze-300 text-white dark:text-carbon-800 text-sm font-semibold flex items-center justify-center shadow-sm">
+                        {{ user_initials|default('U') }}
+                    </div>
+                    <i id="user-dropdown-icon" class="fa-solid fa-chevron-down text-gray-400 dark:text-parchment/60 text-[10px]"></i>
+                </button>
+                <div id="userMenu" class="dropdown absolute right-0 mt-2 w-56 bg-white dark:bg-carbon-700 border border-gray-200 dark:border-carbon-600 rounded-xl shadow-lg py-2 z-50">
+                    <div class="px-4 py-3 border-b border-gray-200 dark:border-carbon-600">
+                        <p class="text-sm font-semibold text-gray-900 dark:text-parchment">{{ user_name|default('User') }}</p>
+                        <p class="text-xs text-gray-500 dark:text-parchment/70 truncate">{{ user_email|default('') }}</p>
+                        <span class="inline-flex items-center mt-1.5 px-2 py-0.5 rounded text-[10px] font-medium bg-deep-space-100 text-deep-space-700 dark:bg-golden-bronze-300/20 dark:text-golden-bronze-300">
+                            {{ user_role|default('viewer') }}
+                        </span>
+                    </div>
+                    <div class="py-1">
+                        <a href="/dashboard" class="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 dark:text-parchment hover:bg-gray-50 dark:hover:bg-carbon-600">
+                            <i class="fa-solid fa-gauge-high text-gray-400 dark:text-parchment/60 w-4"></i>
+                            {{ _('Dashboard') }}
+                        </a>
+                        <a href="/preferences" class="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 dark:text-parchment hover:bg-gray-50 dark:hover:bg-carbon-600">
+                            <i class="fa-solid fa-gear text-gray-400 dark:text-parchment/60 w-4"></i>
+                            {{ _('Preferences') }}
+                        </a>
+                    </div>
+                    <div class="border-t border-gray-200 dark:border-carbon-600 py-1">
+                        <form method="post" action="/auth/logout">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                            <button type="submit" class="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30">
+                                <i class="fa-solid fa-right-from-bracket w-4"></i>
+                                {{ _('Log out') }}
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>

@@ -1,0 +1,105 @@
+{#
+  Month grid, shared by the public, member and admin calendars.
+
+  Server-rendered on purpose: prev/next are links, so it works without
+  JavaScript and needs no calendar library -- the reference app pulled
+  Syncfusion from a CDN, which is the third-party dependency we removed from
+  the public page for privacy.
+
+  `show_titles` is the disclosure switch. When false the grid says a room is
+  busy and nothing else, matching what the availability API withholds.
+#}
+{% macro _entry(entry, show_titles, link_bookings) %}
+  {% set tone = {
+    'pending':  'bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-200',
+    'approved': 'bg-turf-green-100 text-turf-green-800 dark:bg-turf-green-800/40 dark:text-turf-green-100',
+  }.get(entry.status, 'bg-carbon-100 text-carbon-700 dark:bg-carbon-700 dark:text-parchment/80') %}
+  {% set body %}
+    <span class="block truncate font-medium">
+      {% if show_titles and entry.title %}{{ entry.title }}{% else %}{{ _('Booked') }}{% endif %}
+    </span>
+    <span class="block truncate text-[10px] opacity-80">
+      {% if entry.whole_day %}{{ _('All day') }}{% else %}{{ entry.start_label }}–{{ entry.end_label }}{% endif %}
+      · {{ entry.room_name }}
+    </span>
+  {% endset %}
+  {% if link_bookings %}
+    <a href="/bookings/{{ entry.booking_id }}"
+       class="mb-1 block rounded px-1.5 py-1 text-[11px] leading-tight {{ tone }} hover:opacity-80">{{ body }}</a>
+  {% else %}
+    <span class="mb-1 block rounded px-1.5 py-1 text-[11px] leading-tight {{ tone }}">{{ body }}</span>
+  {% endif %}
+{% endmacro %}
+
+{% macro calendar_month(month, base_url, show_titles=false, link_bookings=false) %}
+<div class="card overflow-hidden">
+  <div class="flex flex-wrap items-center justify-between gap-3 border-b border-carbon/10 px-4 py-3 dark:border-parchment/10">
+    <h2 class="text-base font-semibold text-carbon dark:text-parchment">{{ month.label }}</h2>
+    <div class="flex items-center gap-2">
+      <a href="{{ base_url }}?year={{ month.previous[0] }}&month={{ month.previous[1] }}"
+         class="btn-secondary text-xs" rel="prev">&larr; {{ _('Previous') }}</a>
+      <a href="{{ base_url }}" class="btn-secondary text-xs">{{ _('Today') }}</a>
+      <a href="{{ base_url }}?year={{ month.next[0] }}&month={{ month.next[1] }}"
+         class="btn-secondary text-xs" rel="next">{{ _('Next') }} &rarr;</a>
+    </div>
+  </div>
+
+  <div class="overflow-x-auto">
+    <table class="w-full min-w-[46rem] table-fixed border-collapse text-sm">
+      <thead>
+        <tr class="bg-carbon-50/60 dark:bg-deep-space-800/40">
+          {% for label in [_('Mon'), _('Tue'), _('Wed'), _('Thu'), _('Fri'), _('Sat'), _('Sun')] %}
+            <th class="border border-carbon/10 px-2 py-2 text-xs font-semibold uppercase tracking-wide text-carbon/60 dark:border-parchment/10 dark:text-parchment/60">
+              {{ label }}
+            </th>
+          {% endfor %}
+        </tr>
+      </thead>
+      <tbody>
+        {% for week in month.weeks %}
+        <tr>
+          {% for cell in week %}
+          <td class="h-28 align-top border border-carbon/10 p-1.5 dark:border-parchment/10
+                     {{ 'bg-carbon-50/40 dark:bg-deep-space-900/40' if not cell.in_month }}">
+            <div class="mb-1 flex items-center justify-between">
+              <span class="text-xs {{ 'font-semibold text-carbon dark:text-parchment' if cell.in_month else 'text-carbon/40 dark:text-parchment/30' }}">
+                {{ cell.day.day }}
+              </span>
+              {% if cell.is_today %}
+                <span class="rounded-full bg-turf-green-600 px-1.5 py-0.5 text-[10px] font-semibold text-white">
+                  {{ _('Today') }}
+                </span>
+              {% endif %}
+            </div>
+
+            {% for entry in cell.entries[:3] %}
+              {{ _entry(entry, show_titles, link_bookings) }}
+            {% endfor %}
+
+            {#
+              A plain "+3 more" count made the fourth booking on a busy day
+              unreachable -- there is no day view to click through to. <details>
+              discloses them in place, with no JavaScript and no extra route.
+            #}
+            {% if cell.entries | length > 3 %}
+              <details class="group">
+                <summary class="cursor-pointer list-none px-1.5 text-[10px] text-carbon/60 hover:text-carbon dark:text-parchment/60 dark:hover:text-parchment">
+                  <span class="group-open:hidden">{{ _('+%(count)s more')|format(count=cell.entries | length - 3) }}</span>
+                  <span class="hidden group-open:inline">{{ _('Show fewer') }}</span>
+                </summary>
+                <div class="mt-1">
+                  {% for entry in cell.entries[3:] %}
+                    {{ _entry(entry, show_titles, link_bookings) }}
+                  {% endfor %}
+                </div>
+              </details>
+            {% endif %}
+          </td>
+          {% endfor %}
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endmacro %}

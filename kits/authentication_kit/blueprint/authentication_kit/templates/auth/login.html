@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="flex items-center justify-center min-h-[60vh]">
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-2xl">
+    <div class="card mb-0">
+      <h1 class="text-xl font-bold m-0 mb-2">Anmeldung</h1>
+      <p class="text-sm text-muted mb-4">Wähle den gewünschten Anmeldeweg für diese Instanz.</p>
+      {% if oidc_enabled %}
+      <a class="btn w-full justify-center" href="/auth/oidc">Mit OIDC anmelden</a>
+      {% else %}
+      <p class="text-sm text-muted">OIDC ist für diese Instanz deaktiviert.</p>
+      {% endif %}
+    </div>
+
+    <div class="card mb-0">
+      <h2 class="text-base font-semibold m-0 mb-4">Entwickler-Login</h2>
+      {% if dev_auth_enabled %}
+      <form method="post" action="/auth/dev-login" class="form-stack">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+        <label class="form-label">Anzeigename
+          <input class="form-input" type="text" name="display_name" value="Local Admin" required>
+        </label>
+        <label class="form-label">E-Mail
+          <input class="form-input" type="email" name="email" value="admin@example.com">
+        </label>
+        <label class="form-label">Rolle
+          <select class="form-input" name="role">
+            {% for role in roles %}
+            <option value="{{ role }}" {% if role == "super_admin" %}selected{% endif %}>{{ role }}</option>
+            {% endfor %}
+          </select>
+        </label>
+        <div><button class="btn" type="submit">Lokal anmelden</button></div>
+      </form>
+      {% else %}
+      <p class="text-sm text-muted">Dev-Login ist deaktiviert. Setze <code class="font-mono bg-line/40 px-1 rounded">POSTBUCH_DEV_AUTH_ENABLED=true</code> in der Entwicklungsumgebung.</p>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

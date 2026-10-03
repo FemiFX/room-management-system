@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+
+{% block title %}{{ _('Sign In') }}{% endblock %}
+
+{% block body_class %}bg-gray-50 dark:bg-carbon-900 min-h-screen{% endblock %}
+
+{% block content %}
+<div class="min-h-screen flex items-center justify-center p-4">
+    <div class="w-full max-w-md">
+        <div class="text-center mb-8">
+            <div class="w-12 h-12 rounded-full bg-turf-green-600 text-white font-bold text-lg flex items-center justify-center mx-auto mb-4">R</div>
+            <h1 class="text-2xl font-semibold text-gray-900 dark:text-parchment">{{ _('Room Management') }}</h1>
+            <p class="text-sm text-gray-500 dark:text-parchment/60 mt-1">{{ _('Sign in to your account') }}</p>
+        </div>
+
+        <div class="card p-8">
+            {% if error_message %}
+            <div role="alert" class="mb-6 flex items-start gap-3 rounded-xl border border-red-200/80 bg-red-50/80 p-4 shadow-sm ring-1 ring-red-100/50 dark:border-red-900/40 dark:bg-red-950/30 dark:ring-red-900/20">
+                <div class="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-red-100 text-red-600 dark:bg-red-900/50 dark:text-red-300">
+                    <i class="fa-solid fa-circle-exclamation text-base"></i>
+                </div>
+                <div class="flex-1 min-w-0 pt-0.5">
+                    <p class="text-sm font-semibold text-red-900 dark:text-red-100">{{ _('Sign-in failed') }}</p>
+                    <p class="mt-1 text-sm leading-relaxed text-red-700/90 dark:text-red-200/80">{{ error_message }}</p>
+                </div>
+            </div>
+            {% endif %}
+            <div class="mb-4">
+                <label class="form-label" for="language-select">{{ _('Language') }}</label>
+                <select id="language-select" class="form-input">
+                    {% for language in supported_languages %}
+                    <option value="{{ language }}" {% if language == current_language %}selected{% endif %}>{{ language | upper }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            {% if oidc_enabled %}
+            <a href="/auth/oidc" class="btn-primary w-full flex items-center justify-center gap-2 mb-6">
+                <i class="fa-solid fa-arrow-right-to-bracket"></i>
+                {{ _('Sign in with SSO') }}
+            </a>
+            {% endif %}
+
+            {% if dev_auth_enabled %}
+            {% if oidc_enabled %}<div class="relative my-6"><div class="absolute inset-0 flex items-center"><div class="w-full border-t border-gray-200 dark:border-carbon-600"></div></div><div class="relative flex justify-center text-xs text-gray-400 dark:text-parchment/50"><span class="bg-white dark:bg-carbon-700 px-3">{{ _('or developer login') }}</span></div></div>{% endif %}
+
+            <form method="post" action="/auth/dev-login" class="space-y-4">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+
+                <div>
+                    <label class="form-label" for="dev-email">{{ _('Email') }}</label>
+                    <input id="dev-email" class="form-input" type="email" name="email" value="admin@example.com" placeholder="admin@example.com">
+                </div>
+
+                <div>
+                    <label class="form-label" for="dev-name">{{ _('Display Name') }} <span class="text-red-500">*</span></label>
+                    <input id="dev-name" class="form-input" type="text" name="display_name" value="Developer Admin" required>
+                </div>
+
+                <div>
+                    <label class="form-label" for="dev-role">{{ _('Role') }}</label>
+                    <select id="dev-role" class="form-input" name="role">
+                        {% for role in roles %}
+                        <option value="{{ role }}" {% if role == 'super_admin' %}selected{% endif %}>{{ role }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <button type="submit" class="btn-primary w-full mt-2">
+                    <i class="fa-solid fa-flask mr-1"></i>
+                    {{ _('Developer Login') }}
+                </button>
+            </form>
+            {% endif %}
+
+            {% if not oidc_enabled and not dev_auth_enabled %}
+            <div class="text-center py-8">
+                <i class="fa-solid fa-lock text-3xl text-gray-300 dark:text-parchment/30 mb-3 block"></i>
+                <p class="text-sm text-gray-500 dark:text-parchment/60">{{ _('Authentication is not configured.') }}</p>
+            </div>
+            {% endif %}
+        </div>
+
+        {# The only page an anonymous visitor can reach is this one, so it is
+           the only place a link to the public booking site can do any good.
+           Without it /book is reachable solely by typing the URL. #}
+        <p class="text-center text-sm text-gray-500 dark:text-parchment/60 mt-6">
+            {{ _('Booking a room as a guest?') }}
+            <a href="/book" class="font-medium text-turf-green-600 hover:text-turf-green-700 dark:text-golden-bronze-300 dark:hover:text-golden-bronze-200">{{ _('No account needed') }}</a>
+        </p>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.getElementById('language-select')?.addEventListener('change', async function (event) {
+    const value = event.target.value;
+    await fetch('/api/v1/set-language', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            // set-language now requires CSRF like every other mutation.
+            'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]')?.content || '',
+        },
+        body: JSON.stringify({ language: value }),
+    });
+    window.location.reload();
+});
+</script>
+{% endblock %}

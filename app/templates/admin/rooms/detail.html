@@ -1,0 +1,764 @@
+{% extends "admin/layout.html" %}
+
+{% block title %}{{ room.room_code }} — {{ room.name }}{% endblock %}
+{% block page_title %}{{ room.name }}{% endblock %}
+{% block page_subtitle %}
+    {{ room.floor.name if room.floor else '' }}{% if room.floor and room.floor.building %} · {{ room.floor.building.name }}{% endif %}
+{% endblock %}
+
+{% block admin_content %}
+<div class="space-y-6">
+
+    {# ─── Header row ──────────────────────────────────────────────── #}
+    <div class="flex items-center justify-between">
+        <div class="flex items-center gap-3">
+            <a href="/rooms" class="text-sm text-gray-400 dark:text-parchment/50 hover:text-gray-600 dark:hover:text-parchment/80">
+                <i class="fa-solid fa-arrow-left mr-1"></i> {{ _('Rooms') }}
+            </a>
+            <span class="font-mono text-sm font-semibold bg-gray-100 dark:bg-carbon-700 text-gray-700 dark:text-parchment px-2.5 py-1 rounded">{{ room.room_code }}</span>
+            {{ room_status_badge(status) }}
+            {% if active_internal_assignment %}
+            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300">Internally Assigned</span>
+            {% endif %}
+        </div>
+        <button onclick="openRoomEditModal()"
+                class="btn-secondary inline-flex items-center gap-2 text-sm"
+                data-id="{{ room.id }}"
+                data-name="{{ room.name | e }}"
+                data-usage="{{ room.usage_type or '' }}"
+                data-mode="{{ room.occupancy_mode.value }}"
+                data-rentable="{{ 'true' if room.rentable else 'false' }}"
+                data-bookable="{{ 'true' if room.bookable else 'false' }}"
+                data-public-bookable="{{ 'true' if room.public_bookable else 'false' }}"
+                data-capacity="{{ room.capacity or '' }}"
+                data-cleaning-rate="{{ room.cleaning_rate_daily or '' }}"
+                data-public-description="{{ room.public_description or '' }}"
+                data-active="{{ 'true' if room.is_active else 'false' }}"
+                data-area="{{ room.area_sqm or '' }}"
+                data-meter="{{ room.meter_number or '' }}"
+                data-internet="{{ 'true' if room.has_internet else 'false' }}">
+            <i class="fa-solid fa-pen text-xs"></i> Edit
+        </button>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+        {# ─── Left column ─────────────────────────────────────────── #}
+        <div class="lg:col-span-2 space-y-6">
+
+            {# Metadata #}
+            <div class="card p-6">
+                <h3 class="text-sm font-semibold text-gray-700 dark:text-parchment mb-4">Room Details</h3>
+                <dl class="grid grid-cols-2 sm:grid-cols-3 gap-x-6 gap-y-4 text-sm">
+                    <div>
+                        <dt class="text-xs text-gray-400 dark:text-parchment/50 uppercase tracking-wide font-medium mb-0.5">Usage Type</dt>
+                        <dd class="text-gray-800 dark:text-parchment">{{ room.usage_type or '—' }}</dd>
+                    </div>
+                    <div>
+                        <dt class="text-xs text-gray-400 dark:text-parchment/50 uppercase tracking-wide font-medium mb-0.5">Occupancy Mode</dt>
+                        <dd>{{ occupancy_mode_badge(room.occupancy_mode.value) }}</dd>
+                    </div>
+                    <div>
+                        <dt class="text-xs text-gray-400 dark:text-parchment/50 uppercase tracking-wide font-medium mb-0.5">Active</dt>
+                        <dd>
+                            {% if room.is_active %}
+                            <span class="inline-flex items-center gap-1 text-green-600 dark:text-green-400 text-xs font-medium"><i class="fa-solid fa-circle-check"></i> Yes</span>
+                            {% else %}
+                            <span class="inline-flex items-center gap-1 text-red-500 text-xs font-medium"><i class="fa-solid fa-circle-xmark"></i> No</span>
+                            {% endif %}
+                        </dd>
+                    </div>
+                    {% if room.area_sqm %}
+                    <div>
+                        <dt class="text-xs text-gray-400 dark:text-parchment/50 uppercase tracking-wide font-medium mb-0.5">Area</dt>
+                        <dd class="text-gray-800 dark:text-parchment">{{ room.area_sqm }} m²</dd>
+                    </div>
+                    {% endif %}
+                    {% if room.length_m and room.width_m %}
+                    <div>
+                        <dt class="text-xs text-gray-400 dark:text-parchment/50 uppercase tracking-wide font-medium mb-0.5">Dimensions</dt>
+                        <dd class="text-gray-800 dark:text-parchment">{{ room.length_m }} × {{ room.width_m }}{% if room.height_m %} × {{ room.height_m }}{% endif %} m</dd>
+                    </div>
+                    {% endif %}
+                    {% if room.meter_number %}
+                    <div>
+                        <dt class="text-xs text-gray-400 dark:text-parchment/50 uppercase tracking-wide font-medium mb-0.5">Meter No.</dt>
+                        <dd class="font-mono text-xs text-gray-700 dark:text-parchment bg-gray-100 dark:bg-carbon-700 px-1.5 py-0.5 rounded">{{ room.meter_number }}</dd>
+                    </div>
+                    {% endif %}
+                    <div>
+                        <dt class="text-xs text-gray-400 dark:text-parchment/50 uppercase tracking-wide font-medium mb-0.5">Internet</dt>
+                        <dd>
+                            {% if room.has_internet %}
+                            <span class="text-green-600 dark:text-green-400 text-xs font-medium"><i class="fa-solid fa-wifi mr-1"></i>Yes</span>
+                            {% else %}
+                            <span class="text-gray-400 text-xs">No</span>
+                            {% endif %}
+                        </dd>
+                    </div>
+                </dl>
+            </div>
+
+            {# Internal Assignment #}
+            {% if room.occupancy_mode.value in ['internal', 'mixed'] %}
+            <div class="card p-6 border-l-4 border-l-indigo-400">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-sm font-semibold text-gray-700 dark:text-parchment flex items-center gap-2">
+                        <i class="fa-solid fa-users text-indigo-500 text-sm"></i> Internal Assignment
+                    </h3>
+                    <div class="flex items-center gap-2">
+                        <button onclick="openInternalAssignModal()"
+                                class="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold rounded-lg bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300 hover:bg-indigo-200 dark:hover:bg-indigo-900/50 transition-colors">
+                            <i class="fa-solid fa-user-plus text-[9px]"></i>
+                            {% if active_internal_assignment %}Change Team{% else %}Assign Team{% endif %}
+                        </button>
+                        {% if active_internal_assignment %}
+                        <button onclick="openInternalEndModal()"
+                                class="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold rounded-lg bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/40 transition-colors">
+                            <i class="fa-solid fa-link-slash text-[9px]"></i> End Assignment
+                        </button>
+                        {% endif %}
+                    </div>
+                </div>
+                {% if active_internal_assignment %}
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm">
+                    <div>
+                        <p class="text-xs text-gray-400 dark:text-parchment/50 font-medium mb-0.5">Team</p>
+                        <p class="font-medium text-gray-800 dark:text-parchment">
+                            {% if active_internal_assignment.party %}
+                            <a href="/parties/{{ active_internal_assignment.party.id }}" class="hover:text-turf-green-600 dark:hover:text-golden-bronze-300">{{ active_internal_assignment.party.name }}</a>
+                            {% else %}—{% endif %}
+                        </p>
+                    </div>
+                    <div>
+                        <p class="text-xs text-gray-400 dark:text-parchment/50 font-medium mb-0.5">Start</p>
+                        <p class="text-gray-700 dark:text-parchment/90">{{ active_internal_assignment.start_date.strftime('%d.%m.%Y') }}</p>
+                    </div>
+                    <div>
+                        <p class="text-xs text-gray-400 dark:text-parchment/50 font-medium mb-0.5">Assigned By</p>
+                        <p class="text-gray-700 dark:text-parchment/90">{{ active_internal_assignment.assigned_by.display_name if active_internal_assignment.assigned_by else '—' }}</p>
+                    </div>
+                    <div>
+                        <p class="text-xs text-gray-400 dark:text-parchment/50 font-medium mb-0.5">Assigned On</p>
+                        <p class="text-gray-700 dark:text-parchment/90">{{ active_internal_assignment.created_at.strftime('%d.%m.%Y') if active_internal_assignment.created_at else '—' }}</p>
+                    </div>
+                </div>
+                {% if active_internal_assignment.notes %}
+                <p class="mt-3 text-xs text-gray-600 dark:text-parchment/80">{{ active_internal_assignment.notes }}</p>
+                {% endif %}
+                {% else %}
+                <p class="text-sm text-gray-500 dark:text-parchment/60">No team currently assigned.</p>
+                {% endif %}
+
+                {% if internal_assignment_history %}
+                <div class="mt-4 pt-4 border-t border-gray-100 dark:border-carbon-700">
+                    <p class="text-[11px] font-semibold text-gray-500 dark:text-parchment/60 uppercase tracking-wide mb-2">History</p>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-xs">
+                            <thead>
+                                <tr class="text-left text-gray-400 dark:text-parchment/50">
+                                    <th class="py-1.5 pr-3">Team</th>
+                                    <th class="py-1.5 pr-3">From</th>
+                                    <th class="py-1.5 pr-3">To</th>
+                                    <th class="py-1.5">Notes</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-50 dark:divide-carbon-700/50">
+                                {% for ia in internal_assignment_history %}
+                                <tr>
+                                    <td class="py-1.5 pr-3 text-gray-700 dark:text-parchment">{{ ia.party.name if ia.party else '—' }}</td>
+                                    <td class="py-1.5 pr-3 text-gray-600 dark:text-parchment/80">{{ ia.start_date.strftime('%d.%m.%Y') }}</td>
+                                    <td class="py-1.5 pr-3 text-gray-600 dark:text-parchment/80">{% if ia.end_date %}{{ ia.end_date.strftime('%d.%m.%Y') }}{% else %}<span class="text-indigo-600 dark:text-indigo-300 font-medium">active</span>{% endif %}</td>
+                                    <td class="py-1.5 text-gray-500 dark:text-parchment/70 truncate max-w-[18rem]">{{ ia.notes or '—' }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+            {% endif %}
+
+            {# Active Lease #}
+            {% if active_lease %}
+            <div class="card p-6 border-l-4 border-l-teal-400">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-sm font-semibold text-gray-700 dark:text-parchment flex items-center gap-2">
+                        <i class="fa-solid fa-file-contract text-teal-500 text-sm"></i> Active Lease
+                    </h3>
+                    <a href="/leases" class="text-xs text-turf-green-600 dark:text-golden-bronze-300 hover:underline">View all leases &rarr;</a>
+                </div>
+                <div class="grid grid-cols-2 sm:grid-cols-3 gap-4 text-sm">
+                    <div>
+                        <p class="text-xs text-gray-400 dark:text-parchment/50 font-medium mb-0.5">Tenant</p>
+                        <p class="font-medium text-gray-800 dark:text-parchment">{{ active_lease.party.name if active_lease.party else '—' }}</p>
+                    </div>
+                    <div>
+                        <p class="text-xs text-gray-400 dark:text-parchment/50 font-medium mb-0.5">Period</p>
+                        <p class="text-gray-700 dark:text-parchment/90">{{ active_lease.start_date.strftime('%d.%m.%Y') }} — {% if active_lease.end_date %}{{ active_lease.end_date.strftime('%d.%m.%Y') }}{% else %}<span class="text-gray-400">open-ended</span>{% endif %}</p>
+                    </div>
+                    <div>
+                        <p class="text-xs text-gray-400 dark:text-parchment/50 font-medium mb-0.5">Monthly Rent</p>
+                        <p class="font-semibold text-gray-800 dark:text-parchment">{{ active_lease.currency }} {{ "%.2f"|format(active_lease.monthly_rent) }}</p>
+                    </div>
+                    {% if active_lease.contract_reference %}
+                    <div>
+                        <p class="text-xs text-gray-400 dark:text-parchment/50 font-medium mb-0.5">Contract Ref.</p>
+                        <p class="font-mono text-xs bg-gray-100 dark:bg-carbon-700 px-1.5 py-0.5 rounded">{{ active_lease.contract_reference }}</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+
+            {# Current Booking #}
+            {% if current_booking %}
+            <div class="card p-6 border-l-4 border-l-blue-400">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-sm font-semibold text-gray-700 dark:text-parchment flex items-center gap-2">
+                        <i class="fa-solid fa-calendar-check text-blue-500 text-sm"></i> Active Booking
+                    </h3>
+                </div>
+                <div class="grid grid-cols-2 gap-4 text-sm">
+                    <div>
+                        <p class="text-xs text-gray-400 dark:text-parchment/50 font-medium mb-0.5">Title</p>
+                        <p class="font-medium text-gray-800 dark:text-parchment">{{ current_booking.title or '(untitled)' }}</p>
+                    </div>
+                    <div>
+                        <p class="text-xs text-gray-400 dark:text-parchment/50 font-medium mb-0.5">Time</p>
+                        <p class="text-gray-700 dark:text-parchment/90">{{ current_booking.start_at.strftime('%d.%m.%Y %H:%M') }} — {{ current_booking.end_at.strftime('%H:%M') }}</p>
+                    </div>
+                </div>
+            </div>
+            {% elif next_booking %}
+            <div class="card p-6 border-l-4 border-l-amber-300">
+                <h3 class="text-sm font-semibold text-gray-700 dark:text-parchment flex items-center gap-2 mb-3">
+                    <i class="fa-solid fa-calendar text-amber-500 text-sm"></i> Next Booking
+                </h3>
+                <p class="text-sm text-gray-700 dark:text-parchment/90">{{ next_booking.title or '(untitled)' }} — {{ next_booking.start_at.strftime('%d.%m.%Y %H:%M') }}</p>
+            </div>
+            {% endif %}
+
+            {# Equipment #}
+            {% if room.room_equipment %}
+            <div class="card overflow-hidden">
+                <div class="px-6 py-4 border-b border-gray-100 dark:border-carbon-700">
+                    <h3 class="text-sm font-semibold text-gray-700 dark:text-parchment flex items-center gap-2">
+                        <i class="fa-solid fa-couch text-gray-400 text-sm"></i> Equipment
+                    </h3>
+                </div>
+                <ul class="divide-y divide-gray-50 dark:divide-carbon-700/50">
+                    {% for re in room.room_equipment %}
+                    <li class="flex items-center justify-between px-6 py-3 text-sm">
+                        <span class="text-gray-800 dark:text-parchment">{{ re.equipment.name if re.equipment else re.equipment_id }}</span>
+                        <div class="flex items-center gap-3 text-gray-400 dark:text-parchment/50">
+                            {% if re.fixed %}<span class="text-xs bg-gray-100 dark:bg-carbon-700 px-1.5 py-0.5 rounded">fixed</span>{% endif %}
+                            <span class="text-xs font-mono">×{{ re.quantity }}</span>
+                        </div>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+
+        </div>
+
+        {# ─── Right column ────────────────────────────────────────── #}
+        <div class="space-y-6">
+
+            {# Keys #}
+            <div class="card overflow-hidden">
+                <div class="px-5 py-4 border-b border-gray-100 dark:border-carbon-700 flex items-center justify-between">
+                    <h3 class="text-sm font-semibold text-gray-700 dark:text-parchment flex items-center gap-2">
+                        <i class="fa-solid fa-key text-amber-500 text-sm"></i> Keys
+                    </h3>
+                    <div class="flex items-center gap-3">
+                        <button onclick="openRoomKeyCreateModal()" class="text-xs text-turf-green-600 dark:text-golden-bronze-300 hover:underline">Add key</button>
+                        <a href="/keys" class="text-xs text-turf-green-600 dark:text-golden-bronze-300 hover:underline">All keys</a>
+                    </div>
+                </div>
+                {% if room_keys %}
+                <ul class="divide-y divide-gray-50 dark:divide-carbon-700/50">
+                    {% for key in room_keys %}
+                    <li class="px-5 py-3 text-sm">
+                        <p class="font-mono text-xs font-semibold text-gray-700 dark:text-parchment">{{ key.key_code }}</p>
+                        <p class="text-xs text-gray-400 dark:text-parchment/50 mt-0.5">
+                            {% set assigned_qty = key.total_quantity - key.available_quantity %}
+                            {{ assigned_qty }} out · {{ key.available_quantity }} available
+                        </p>
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% else %}
+                <div class="px-5 py-6 text-center text-sm text-gray-400 dark:text-parchment/40">
+                    <i class="fa-solid fa-key text-2xl text-gray-200 dark:text-parchment/20 mb-2 block"></i>
+                    No keys assigned
+                </div>
+                {% endif %}
+                {% if key_assignments %}
+                <div class="px-5 py-3 border-t border-gray-100 dark:border-carbon-700/50 bg-gray-50/60 dark:bg-carbon-700/30">
+                    <p class="text-[11px] font-semibold text-gray-500 dark:text-parchment/60 uppercase tracking-wide mb-2">Currently Out</p>
+                    <ul class="space-y-1">
+                        {% for ka in key_assignments %}
+                        <li class="text-xs text-gray-500 dark:text-parchment/60">
+                            <span class="font-mono text-gray-700 dark:text-parchment">{{ ka.key.key_code if ka.key else '—' }}</span>
+                            to {{ ka.party.name if ka.party else '—' }}
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                {% endif %}
+            </div>
+
+            {# Internet Connections #}
+            {% if room.internet_connections %}
+            <div class="card overflow-hidden">
+                <div class="px-5 py-4 border-b border-gray-100 dark:border-carbon-700">
+                    <h3 class="text-sm font-semibold text-gray-700 dark:text-parchment flex items-center gap-2">
+                        <i class="fa-solid fa-wifi text-blue-400 text-sm"></i> Internet
+                    </h3>
+                </div>
+                <ul class="divide-y divide-gray-50 dark:divide-carbon-700/50">
+                    {% for conn in room.internet_connections %}
+                    <li class="px-5 py-3 text-sm flex items-center justify-between">
+                        <div>
+                            <p class="font-medium text-gray-700 dark:text-parchment">{{ conn.medium.value | upper }}</p>
+                            {% if conn.provider %}<p class="text-xs text-gray-400 dark:text-parchment/50">{{ conn.provider }}{% if conn.channel %} · Ch {{ conn.channel }}{% endif %}</p>{% endif %}
+                        </div>
+                        {% if not conn.active %}<span class="text-xs text-gray-400 dark:text-parchment/40">inactive</span>{% endif %}
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+
+            {# Documents #}
+            <div class="card overflow-hidden">
+                <div class="px-5 py-4 border-b border-gray-100 dark:border-carbon-700 flex items-center justify-between">
+                    <h3 class="text-sm font-semibold text-gray-700 dark:text-parchment flex items-center gap-2">
+                        <i class="fa-solid fa-file text-gray-400 text-sm"></i> Documents
+                    </h3>
+                    <div class="flex items-center gap-3">
+                        <button onclick="openRoomDocUploadModal()" class="text-xs text-turf-green-600 dark:text-golden-bronze-300 hover:underline">Upload</button>
+                        <a href="/documents" class="text-xs text-turf-green-600 dark:text-golden-bronze-300 hover:underline">All docs</a>
+                    </div>
+                </div>
+                {% if room.documents %}
+                <ul class="divide-y divide-gray-50 dark:divide-carbon-700/50">
+                    {% for doc in room.documents %}
+                    <li class="flex items-center justify-between px-5 py-3 text-sm">
+                        <div class="min-w-0 flex-1">
+                            <p class="truncate text-gray-700 dark:text-parchment font-medium">{{ doc.title }}</p>
+                            <p class="text-xs text-gray-400 dark:text-parchment/50">{{ doc.document_type.value }}</p>
+                        </div>
+                        <a href="/documents/{{ doc.id }}" class="flex-shrink-0 ml-3 text-xs text-turf-green-600 dark:text-golden-bronze-300 hover:underline">View</a>
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% else %}
+                <div class="px-5 py-6 text-center text-sm text-gray-400 dark:text-parchment/40">
+                    <i class="fa-solid fa-file text-2xl text-gray-200 dark:text-parchment/20 mb-2 block"></i>
+                    No documents yet
+                </div>
+                {% endif %}
+            </div>
+
+        </div>
+    </div>
+</div>
+
+{# ─── Edit Room Modal ──────────────────────────────────────────────── #}
+<dialog id="modal-room-edit" class="rounded-xl shadow-2xl p-0 w-full max-w-lg bg-white dark:bg-carbon-800 backdrop:bg-black/50">
+    <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-carbon-700">
+        <h2 class="text-base font-semibold text-gray-900 dark:text-parchment">Edit Room</h2>
+        <button type="button" onclick="closeModal('modal-room-edit')" class="w-8 h-8 flex items-center justify-center rounded-lg text-gray-400 hover:bg-gray-100 dark:hover:bg-carbon-700 hover:text-gray-600 transition-colors">&times;</button>
+    </div>
+    <form id="form-room-edit" class="px-6 py-5 space-y-4" novalidate>
+        <input type="hidden" id="re-id">
+        <div class="grid grid-cols-2 gap-4">
+            <div class="col-span-2">
+                <label class="form-label" for="re-name">Name <span class="text-red-500">*</span></label>
+                <input id="re-name" name="name" type="text" required class="form-input">
+            </div>
+            <div class="col-span-2 sm:col-span-1">
+                <label class="form-label" for="re-usage">Usage Type</label>
+                <input id="re-usage" name="usage_type" type="text" class="form-input" placeholder="e.g. office, meeting room">
+            </div>
+            <div class="col-span-2 sm:col-span-1">
+                <label class="form-label" for="re-mode">Occupancy Mode</label>
+                <select id="re-mode" name="occupancy_mode" class="form-input">
+                    <option value="leasable">Leasable</option>
+                    <option value="bookable">Bookable</option>
+                    <option value="internal">Internal</option>
+                    <option value="mixed">Mixed</option>
+                </select>
+            </div>
+            <div class="col-span-2 sm:col-span-1">
+                <label class="form-label" for="re-area">Area (m²)</label>
+                <input id="re-area" name="area_sqm" type="number" step="0.01" min="0" class="form-input">
+            </div>
+            <div class="col-span-2 sm:col-span-1">
+                <label class="form-label" for="re-capacity">{{ _('Capacity') }}</label>
+                <input id="re-capacity" name="capacity" type="number" min="1" class="form-input">
+            </div>
+            <div class="col-span-2 sm:col-span-1">
+                <label class="form-label" for="re-cleaning">{{ _('Cleaning rate (per day)') }}</label>
+                <input id="re-cleaning" name="cleaning_rate_daily" type="number" step="0.01" min="0" class="form-input">
+            </div>
+            <div class="col-span-2">
+                <label class="form-label" for="re-public-desc">{{ _('Public description') }}</label>
+                <textarea id="re-public-desc" name="public_description" rows="2" class="form-input"></textarea>
+            </div>
+            <div class="col-span-2 sm:col-span-1">
+                <label class="form-label" for="re-meter">Meter Number</label>
+                <input id="re-meter" name="meter_number" type="text" class="form-input font-mono">
+            </div>
+            <div class="col-span-2 flex flex-wrap items-center gap-5">
+                <div class="flex items-center gap-2">
+                    <input id="re-rentable" name="rentable" type="checkbox" class="rounded border-gray-300 text-turf-green-600">
+                    <label for="re-rentable" class="text-sm text-gray-700 dark:text-parchment">Rentable</label>
+                </div>
+                <div class="flex items-center gap-2">
+                    <input id="re-bookable" name="bookable" type="checkbox" class="rounded border-gray-300 text-turf-green-600">
+                    <label for="re-bookable" class="text-sm text-gray-700 dark:text-parchment">{{ _('Bookable internally') }}</label>
+                </div>
+                <div class="flex items-center gap-2">
+                    <input id="re-public-bookable" name="public_bookable" type="checkbox" class="rounded border-gray-300 text-turf-green-600">
+                    <label for="re-public-bookable" class="text-sm text-gray-700 dark:text-parchment">{{ _('Bookable publicly') }}</label>
+                </div>
+                <div class="flex items-center gap-2">
+                    <input id="re-active" name="is_active" type="checkbox" class="rounded border-gray-300 text-turf-green-600">
+                    <label for="re-active" class="text-sm text-gray-700 dark:text-parchment">Active</label>
+                </div>
+                <div class="flex items-center gap-2">
+                    <input id="re-internet" name="has_internet" type="checkbox" class="rounded border-gray-300 text-blue-500">
+                    <label for="re-internet" class="text-sm text-gray-700 dark:text-parchment">Has Internet</label>
+                </div>
+            </div>
+        </div>
+        <p id="err-room-edit" class="text-sm text-red-600 dark:text-red-400 hidden"></p>
+    </form>
+    <div class="flex justify-end gap-3 px-6 py-4 border-t border-gray-100 dark:border-carbon-700">
+        <button type="button" onclick="closeModal('modal-room-edit')" class="btn-secondary">Cancel</button>
+        <button type="submit" form="form-room-edit" class="btn-primary">Save</button>
+    </div>
+</dialog>
+
+{# ─── Assign Internal Team Modal ───────────────────────────────────── #}
+<dialog id="modal-room-internal-assign" class="rounded-xl shadow-2xl p-0 w-full max-w-md bg-white dark:bg-carbon-800 backdrop:bg-black/50">
+    <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-carbon-700">
+        <h2 class="text-base font-semibold text-gray-900 dark:text-parchment">Assign Internal Team</h2>
+        <button type="button" onclick="closeModal('modal-room-internal-assign')" class="w-8 h-8 flex items-center justify-center rounded-lg text-gray-400 hover:bg-gray-100 dark:hover:bg-carbon-700 hover:text-gray-600 transition-colors">&times;</button>
+    </div>
+    <form id="form-room-internal-assign" class="px-6 py-5 space-y-4" novalidate>
+        <div>
+            <label class="form-label" for="ria-party">Team <span class="text-red-500">*</span></label>
+            <select id="ria-party" name="party_id" class="form-input" required>
+                <option value="">Loading teams…</option>
+            </select>
+        </div>
+        <div>
+            <label class="form-label" for="ria-start">Start Date <span class="text-red-500">*</span></label>
+            <input id="ria-start" name="start_date" type="date" required class="form-input">
+        </div>
+        <div>
+            <label class="form-label" for="ria-notes">Notes</label>
+            <textarea id="ria-notes" name="notes" rows="2" class="form-input resize-none"></textarea>
+        </div>
+        <p id="err-room-internal-assign" class="text-sm text-red-600 dark:text-red-400 hidden"></p>
+    </form>
+    <div class="flex justify-end gap-3 px-6 py-4 border-t border-gray-100 dark:border-carbon-700">
+        <button type="button" onclick="closeModal('modal-room-internal-assign')" class="btn-secondary">Cancel</button>
+        <button type="submit" form="form-room-internal-assign" class="btn-primary">Assign</button>
+    </div>
+</dialog>
+
+{# ─── End Internal Assignment Modal ────────────────────────────────── #}
+<dialog id="modal-room-internal-end" class="rounded-xl shadow-2xl p-0 w-full max-w-md bg-white dark:bg-carbon-800 backdrop:bg-black/50">
+    <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-carbon-700">
+        <h2 class="text-base font-semibold text-gray-900 dark:text-parchment">End Internal Assignment</h2>
+        <button type="button" onclick="closeModal('modal-room-internal-end')" class="w-8 h-8 flex items-center justify-center rounded-lg text-gray-400 hover:bg-gray-100 dark:hover:bg-carbon-700 hover:text-gray-600 transition-colors">&times;</button>
+    </div>
+    <form id="form-room-internal-end" class="px-6 py-5 space-y-4" novalidate>
+        <input type="hidden" id="rie-id" value="{{ active_internal_assignment.id if active_internal_assignment else '' }}">
+        <div>
+            <label class="form-label" for="rie-end">End Date <span class="text-red-500">*</span></label>
+            <input id="rie-end" name="end_date" type="date" required class="form-input">
+        </div>
+        <div>
+            <label class="form-label" for="rie-notes">Notes</label>
+            <textarea id="rie-notes" name="notes" rows="2" class="form-input resize-none"></textarea>
+        </div>
+        <p id="err-room-internal-end" class="text-sm text-red-600 dark:text-red-400 hidden"></p>
+    </form>
+    <div class="flex justify-end gap-3 px-6 py-4 border-t border-gray-100 dark:border-carbon-700">
+        <button type="button" onclick="closeModal('modal-room-internal-end')" class="btn-secondary">Cancel</button>
+        <button type="submit" form="form-room-internal-end" class="btn-danger">End Assignment</button>
+    </div>
+</dialog>
+
+{# ─── Upload Document For Room Modal ───────────────────────────────── #}
+<dialog id="modal-room-doc-upload" class="rounded-xl shadow-2xl p-0 w-full max-w-lg bg-white dark:bg-carbon-800 backdrop:bg-black/50">
+    <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-carbon-700">
+        <h2 class="text-base font-semibold text-gray-900 dark:text-parchment">Upload Document</h2>
+        <button type="button" onclick="closeModal('modal-room-doc-upload')" class="w-8 h-8 flex items-center justify-center rounded-lg text-gray-400 hover:bg-gray-100 dark:hover:bg-carbon-700 hover:text-gray-600 transition-colors">&times;</button>
+    </div>
+    <form id="form-room-doc-upload" class="px-6 py-5 space-y-4" novalidate>
+        <input type="hidden" name="room_id" value="{{ room.id }}">
+        <div class="grid grid-cols-2 gap-4">
+            <div class="col-span-2">
+                <label class="form-label" for="rdu-title">Title <span class="text-red-500">*</span></label>
+                <input id="rdu-title" name="title" type="text" required class="form-input" placeholder="e.g. Handover protocol">
+            </div>
+            <div class="col-span-2 sm:col-span-1">
+                <label class="form-label" for="rdu-type">Document Type <span class="text-red-500">*</span></label>
+                <select id="rdu-type" name="document_type" class="form-input" required>
+                    <option value="contract">Contract</option>
+                    <option value="floorplan">Floorplan</option>
+                    <option value="handover_protocol">Handover Protocol</option>
+                    <option value="invoice">Invoice</option>
+                    <option value="photo">Photo</option>
+                    <option value="inspection">Inspection</option>
+                    <option value="other">Other</option>
+                </select>
+            </div>
+            <div class="col-span-2 sm:col-span-1 flex items-end">
+                <p class="text-xs text-gray-500 dark:text-parchment/60">
+                    Linked to <span class="font-mono font-semibold">{{ room.room_code }}</span>
+                </p>
+            </div>
+            <div class="col-span-2">
+                <label class="form-label" for="rdu-file">File <span class="text-red-500">*</span></label>
+                <input id="rdu-file" name="file" type="file" required class="form-input text-sm cursor-pointer">
+            </div>
+            <div class="col-span-2">
+                <label class="form-label" for="rdu-notes">Notes</label>
+                <textarea id="rdu-notes" name="notes" rows="2" class="form-input resize-none"></textarea>
+            </div>
+        </div>
+        <p id="err-room-doc-upload" class="text-sm text-red-600 dark:text-red-400 hidden"></p>
+    </form>
+    <div class="flex justify-end gap-3 px-6 py-4 border-t border-gray-100 dark:border-carbon-700">
+        <button type="button" onclick="closeModal('modal-room-doc-upload')" class="btn-secondary">Cancel</button>
+        <button type="submit" form="form-room-doc-upload" class="btn-primary">Upload</button>
+    </div>
+</dialog>
+
+{# ─── Add Key To Room Modal ────────────────────────────────────────── #}
+<dialog id="modal-room-key-create" class="rounded-xl shadow-2xl p-0 w-full max-w-md bg-white dark:bg-carbon-800 backdrop:bg-black/50">
+    <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-carbon-700">
+        <h2 class="text-base font-semibold text-gray-900 dark:text-parchment">Add Key to Room</h2>
+        <button type="button" onclick="closeModal('modal-room-key-create')" class="w-8 h-8 flex items-center justify-center rounded-lg text-gray-400 hover:bg-gray-100 dark:hover:bg-carbon-700 hover:text-gray-600 transition-colors">&times;</button>
+    </div>
+    <form id="form-room-key-create" class="px-6 py-5 space-y-4" novalidate>
+        <div>
+            <label class="form-label" for="rk-code">Key Code <span class="text-red-500">*</span></label>
+            <input id="rk-code" name="key_code" type="text" required class="form-input font-mono" placeholder="e.g. K-{{ room.room_code }}-1">
+        </div>
+        <div>
+            <label class="form-label" for="rk-desc">Description</label>
+            <input id="rk-desc" name="description" type="text" class="form-input" placeholder="Optional description">
+        </div>
+        <div>
+            <label class="form-label" for="rk-location">Hanging Location</label>
+            <input id="rk-location" name="hanging_location" type="text" class="form-input" placeholder="e.g. Security desk">
+        </div>
+        <div>
+            <label class="form-label" for="rk-total">Total Quantity <span class="text-red-500">*</span></label>
+            <input id="rk-total" name="total_quantity" type="number" min="1" step="1" required class="form-input" value="1">
+        </div>
+        <div class="flex items-center gap-4">
+            <div class="flex items-center gap-2">
+                <input id="rk-master" name="master_key" type="checkbox" class="rounded border-gray-300 text-amber-500">
+                <label for="rk-master" class="text-sm text-gray-700 dark:text-parchment">Master key</label>
+            </div>
+            <div class="flex items-center gap-2">
+                <input id="rk-active" name="is_active" type="checkbox" class="rounded border-gray-300 text-turf-green-600" checked>
+                <label for="rk-active" class="text-sm text-gray-700 dark:text-parchment">Active</label>
+            </div>
+        </div>
+        <p id="err-room-key-create" class="text-sm text-red-600 dark:text-red-400 hidden"></p>
+    </form>
+    <div class="flex justify-end gap-3 px-6 py-4 border-t border-gray-100 dark:border-carbon-700">
+        <button type="button" onclick="closeModal('modal-room-key-create')" class="btn-secondary">Cancel</button>
+        <button type="submit" form="form-room-key-create" class="btn-primary">Create</button>
+    </div>
+</dialog>
+
+{% endblock %}
+
+
+{% block page_scripts %}
+<script>
+(function () {
+    let teamOptionsLoaded = false;
+    function localDateInputValue() {
+        const dt = new Date();
+        dt.setMinutes(dt.getMinutes() - dt.getTimezoneOffset());
+        return dt.toISOString().slice(0, 10);
+    }
+
+    window.openRoomEditModal = function() {
+        const btn = document.querySelector('[data-id="{{ room.id }}"][data-name]');
+        document.getElementById('re-id').value = btn.dataset.id;
+        document.getElementById('re-name').value = btn.dataset.name;
+        document.getElementById('re-usage').value = btn.dataset.usage;
+        document.getElementById('re-mode').value = btn.dataset.mode;
+        document.getElementById('re-area').value = btn.dataset.area;
+        document.getElementById('re-meter').value = btn.dataset.meter;
+        document.getElementById('re-rentable').checked = btn.dataset.rentable === 'true';
+        document.getElementById('re-bookable').checked = btn.dataset.bookable === 'true';
+        document.getElementById('re-public-bookable').checked = btn.dataset.publicBookable === 'true';
+        document.getElementById('re-capacity').value = btn.dataset.capacity || '';
+        document.getElementById('re-cleaning').value = btn.dataset.cleaningRate || '';
+        document.getElementById('re-public-desc').value = btn.dataset.publicDescription || '';
+        document.getElementById('re-active').checked = btn.dataset.active === 'true';
+        document.getElementById('re-internet').checked = btn.dataset.internet === 'true';
+        clearModalError('modal-room-edit');
+        openModal('modal-room-edit');
+    };
+
+    document.getElementById('form-room-edit').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const id = document.getElementById('re-id').value;
+        const optional = ['usage_type', 'area_sqm', 'meter_number'];
+        const data = formToObject(e.target, optional);
+        delete data._id;
+        if (!data.name) { setModalError('modal-room-edit', 'Name is required.'); return; }
+        if (data.area_sqm) data.area_sqm = parseFloat(data.area_sqm);
+        setSubmitting('form-room-edit', true);
+        clearModalError('modal-room-edit');
+        const res = await apiPatch(`/api/v1/rooms/${id}`, data);
+        setSubmitting('form-room-edit', false);
+        if (res.ok) { location.reload(); }
+        else { setModalError('modal-room-edit', await parseApiError(res)); }
+    });
+
+    async function loadTeamOptions() {
+        if (teamOptionsLoaded) return;
+        const select = document.getElementById('ria-party');
+        try {
+            const res = await fetch('/api/v1/parties', { headers: { 'x-csrf-token': getCsrf() } });
+            if (!res.ok) throw new Error('Failed to load parties');
+            const parties = await res.json();
+            const teams = parties.filter((p) => p.party_type === 'team' && p.is_active);
+            select.innerHTML = '';
+            const blank = document.createElement('option');
+            blank.value = '';
+            blank.textContent = teams.length ? '— select team —' : 'No active teams';
+            select.appendChild(blank);
+            teams.forEach((team) => {
+                const opt = document.createElement('option');
+                opt.value = String(team.id);
+                opt.textContent = team.name;
+                select.appendChild(opt);
+            });
+            teamOptionsLoaded = true;
+        } catch (err) {
+            console.error(err);
+            select.innerHTML = '<option value="">Failed to load teams</option>';
+        }
+    }
+
+    window.openInternalAssignModal = async function() {
+        await loadTeamOptions();
+        document.getElementById('form-room-internal-assign').reset();
+        document.getElementById('ria-start').value = localDateInputValue();
+        clearModalError('modal-room-internal-assign');
+        openModal('modal-room-internal-assign');
+    };
+
+    window.openInternalEndModal = function() {
+        document.getElementById('form-room-internal-end').reset();
+        document.getElementById('rie-end').value = localDateInputValue();
+        clearModalError('modal-room-internal-end');
+        openModal('modal-room-internal-end');
+    };
+
+    document.getElementById('form-room-internal-assign')?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const data = formToObject(e.target, ['notes']);
+        if (!data.party_id) { setModalError('modal-room-internal-assign', 'Please select a team.'); return; }
+        if (!data.start_date) { setModalError('modal-room-internal-assign', 'Start date is required.'); return; }
+        data.room_id = {{ room.id }};
+        data.party_id = parseInt(data.party_id, 10);
+        setSubmitting('form-room-internal-assign', true);
+        clearModalError('modal-room-internal-assign');
+        const res = await apiPost('/api/v1/internal-room-assignments', data);
+        setSubmitting('form-room-internal-assign', false);
+        if (res.ok) { location.reload(); return; }
+        setModalError('modal-room-internal-assign', await parseApiError(res));
+    });
+
+    document.getElementById('form-room-internal-end')?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const assignmentId = document.getElementById('rie-id').value;
+        const data = formToObject(e.target, ['notes']);
+        if (!assignmentId) { setModalError('modal-room-internal-end', 'No active assignment found.'); return; }
+        if (!data.end_date) { setModalError('modal-room-internal-end', 'End date is required.'); return; }
+        setSubmitting('form-room-internal-end', true);
+        clearModalError('modal-room-internal-end');
+        const res = await apiPost(`/api/v1/internal-room-assignments/${assignmentId}/end`, data);
+        setSubmitting('form-room-internal-end', false);
+        if (res.ok) { location.reload(); return; }
+        setModalError('modal-room-internal-end', await parseApiError(res));
+    });
+
+    window.openRoomKeyCreateModal = function() {
+        document.getElementById('form-room-key-create').reset();
+        document.getElementById('rk-total').value = '1';
+        document.getElementById('rk-active').checked = true;
+        clearModalError('modal-room-key-create');
+        openModal('modal-room-key-create');
+    };
+
+    document.getElementById('form-room-key-create').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const data = formToObject(e.target, ['description', 'hanging_location']);
+        if (!data.key_code) {
+            setModalError('modal-room-key-create', 'Key code is required.');
+            return;
+        }
+        data.total_quantity = parseInt(data.total_quantity, 10);
+        if (!Number.isInteger(data.total_quantity) || data.total_quantity < 1) {
+            setModalError('modal-room-key-create', 'Total quantity must be at least 1.');
+            return;
+        }
+        data.room_id = {{ room.id }};
+        setSubmitting('form-room-key-create', true);
+        clearModalError('modal-room-key-create');
+        const res = await apiPost('/api/v1/keys', data);
+        setSubmitting('form-room-key-create', false);
+        if (res.ok) {
+            location.reload();
+            return;
+        }
+        setModalError('modal-room-key-create', await parseApiError(res));
+    });
+
+    window.openRoomDocUploadModal = function() {
+        document.getElementById('form-room-doc-upload').reset();
+        clearModalError('modal-room-doc-upload');
+        openModal('modal-room-doc-upload');
+    };
+
+    document.getElementById('form-room-doc-upload').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const form = e.target;
+        const title = form.querySelector('[name="title"]').value.trim();
+        if (!title) { setModalError('modal-room-doc-upload', 'Title is required.'); return; }
+        const fileInput = form.querySelector('[name="file"]');
+        if (!fileInput.files.length) { setModalError('modal-room-doc-upload', 'Please choose a file.'); return; }
+        const fd = new FormData(form);
+        if (!fd.get('notes')) fd.delete('notes');
+        setSubmitting('form-room-doc-upload', true);
+        clearModalError('modal-room-doc-upload');
+        const res = await apiPostForm('/api/v1/documents/upload', fd);
+        setSubmitting('form-room-doc-upload', false);
+        if (res.ok) { location.reload(); return; }
+        setModalError('modal-room-doc-upload', await parseApiError(res));
+    });
+})();
+</script>
+{% endblock %}

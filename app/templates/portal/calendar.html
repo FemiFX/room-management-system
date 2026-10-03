@@ -1,0 +1,14 @@
+{% extends "portal/layout.html" %}
+{% from "public/_calendar.html" import render_calendar_month %}
+{% block title %}{{ _('Availability') }}{% endblock %}
+
+{% block portal_content %}
+<div class="flex flex-col gap-7">
+  <div class="flex flex-col gap-2.5">
+    <h1 class="ui-h text-[28px] leading-[32px] [hyphens:auto] sm:text-4xl sm:leading-tight">{{ _('Availability') }}</h1>
+    <p class="text-primary/80">{{ _('When internal rooms are already taken.') }}</p>
+  </div>
+  {# Members see intervals only, same as /api/v1/portal/availability. #}
+  {{ render_calendar_month(month, '/portal/calendar', cta_url='/portal/book', cta_label=_('Book a room')) }}
+</div>
+{% endblock %}

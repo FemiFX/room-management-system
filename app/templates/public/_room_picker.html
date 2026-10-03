@@ -1,0 +1,116 @@
+{#
+  The room chooser, shared by the request form and the edit form so the two
+  cannot drift apart.
+
+  Everything here comes from the room's catalogue in the admin: the rows are
+  its Ausstattung, the number field's maximum is the quantity set on the room
+  page, and the services are the ones switched on for THAT room. Nothing is
+  listed that the server would not accept.
+
+  Every room's block is rendered and all but the chosen one hidden, so the
+  field names carry the room id: two rooms that both hold folding chairs would
+  otherwise post the same `equipment_6` twice, and the reader would take
+  whichever came last -- someone asking for 60 chairs in one room got none.
+#}
+{% macro room_picker(rooms, room_services, selected_equipment, selected_services, checked_room_id) %}
+<div role="radiogroup" aria-label="{{ _('Room') }}" class="flex flex-col gap-3">
+  {% for room in rooms %}
+  {#
+    A row, not a tile: the name gets the full width, so no room can be called
+    something too long for its column, and a fourth room is one row more
+    rather than a new grid decision.
+
+    The square carries the capacity. It was the brand's E/O/T letterforms,
+    which say nothing about the room and would repeat themselves from the
+    fourth room on; how many people fit is what anyone is choosing between.
+  #}
+  <label class="relative flex cursor-pointer items-center gap-4 rounded-[16px] border-[1.5px] border-primary/25 bg-white p-4
+                has-[:checked]:border-2 has-[:checked]:border-accent has-[:checked]:bg-accent/[.06] has-[:checked]:p-[15px]">
+    <input type="radio" name="room_id" value="{{ room.id }}" required class="peer sr-only"
+           {% if room.id == checked_room_id %}checked{% endif %}>
+    {% if room.capacity %}
+    <span class="flex h-[52px] w-[52px] shrink-0 flex-col items-center justify-center gap-0.5 rounded-[13px] bg-primary text-surface
+                 peer-checked:bg-accent peer-checked:text-primary">
+      <span class="font-heading text-lg font-bold leading-none">{{ room.capacity }}</span>
+      <span class="text-[9.5px] font-semibold uppercase leading-none tracking-[0.4px]">{{ _('Pers.') }}</span>
+    </span>
+    {% endif %}
+    <span class="flex min-w-0 flex-grow flex-col gap-1">
+      <span data-room-name class="font-heading text-[16px] font-bold uppercase leading-[20px] [hyphens:auto] break-words">{{ room.name }}</span>
+      {% if room.public_description %}
+      <span class="text-[13.5px] leading-5 text-primary/75">{{ room.public_description }}</span>
+      {% elif room.capacity %}
+      <span class="text-[13px] text-primary/60">{{ _('Up to %(count)s people')|format(count=room.capacity) }}</span>
+      {% endif %}
+    </span>
+    <span class="h-[22px] w-[22px] shrink-0 rounded-full border-2 border-primary/35 peer-checked:border-[6px] peer-checked:border-accent"></span>
+  </label>
+  {% endfor %}
+</div>
+
+{% for room in rooms %}
+  {% set installed = room.room_equipment | selectattr('fixed') | list %}
+  {% set loose = room.room_equipment | rejectattr('fixed') | list %}
+  {% if installed or loose %}
+  <div class="room-equipment flex flex-col gap-4" data-room="{{ room.id }}" hidden>
+    {#
+      Permanently installed kit is part of the room, not something to order
+      three of. It is worth saying it is there, so it reads as a list.
+    #}
+    {% if installed %}
+    <div class="flex flex-col gap-2.5">
+      <p class="font-heading text-sm font-bold uppercase text-primary">{{ _('Already in the room') }}</p>
+      <div class="flex flex-wrap gap-2">
+        {% for link in installed %}
+        <span class="inline-flex items-center gap-1.5 rounded-full border-[1.5px] border-primary/20 bg-white px-3.5 py-1.5 text-[13px]">
+          {{ link.equipment.name }}
+          {% if link.quantity > 1 %}<span class="text-primary/55">× {{ link.quantity }}</span>{% endif %}
+        </span>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+
+    {% if loose %}
+    <div class="flex flex-col gap-2.5">
+      <p class="font-heading text-sm font-bold uppercase text-primary">{{ _('Request equipment') }}</p>
+      <div class="grid gap-3.5 sm:grid-cols-2 lg:grid-cols-3">
+        {% for link in loose %}
+        <label class="flex items-center justify-between gap-3 rounded-[14px] border-[1.5px] border-primary/20 bg-white px-4 py-3.5">
+          <span class="flex flex-col">
+            <span class="text-sm font-semibold">{{ link.equipment.name }}</span>
+            <span class="text-xs text-primary/60">{{ _('%(count)s available')|format(count=link.quantity) }}</span>
+          </span>
+          <input class="ui-input w-20 text-center font-heading font-bold" type="number" min="0" max="{{ link.quantity }}"
+                 name="equipment_{{ room.id }}_{{ link.equipment_id }}" data-equipment-name="{{ link.equipment.name }}"
+                 value="{{ selected_equipment.get(link.equipment_id, 0) }}">
+        </label>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+  </div>
+  {% endif %}
+{% endfor %}
+
+{% for room in rooms %}
+  {% if room_services.get(room.id) %}
+  <div class="room-services flex flex-col gap-3" data-room="{{ room.id }}" hidden>
+    <p class="font-heading text-sm font-bold uppercase text-primary">{{ _('Extra services') }}</p>
+    <div class="grid gap-3.5 sm:grid-cols-2">
+      {% for service in room_services[room.id] %}
+      <label class="flex cursor-pointer items-center gap-3 rounded-[14px] border-[1.5px] border-primary/20 bg-white px-4 py-3.5">
+        <input type="checkbox" name="service_{{ room.id }}_{{ service.id }}" value="1" data-service-name="{{ service.name }}"
+               class="h-5 w-5 rounded-md border-2 border-primary accent-accent"
+               {% if service.id in selected_services %}checked{% endif %}>
+        <span class="flex flex-col">
+          <span class="text-sm font-semibold">{{ service.name }}</span>
+          {% if service.description %}<span class="text-xs text-primary/60">{{ service.description }}</span>{% endif %}
+        </span>
+      </label>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+{% endfor %}
+{% endmacro %}

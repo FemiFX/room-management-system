@@ -1,0 +1,22 @@
+{% extends "email/base_email.html" %}
+{% block body %}
+<p>{{ _('Thank you — we have received your booking request and will review it shortly.') }}</p>
+{% include "email/_booking_details.html" %}
+<p>{{ _('Your request is not confirmed yet. We will email you once a decision has been made.') }}</p>
+{% if manage_url %}
+<p style="margin-top:20px;">
+  <a href="{{ manage_url }}"
+     style="display:inline-block;padding:13px 26px 11px;background:{{ brand.accent_hex }};color:{{ brand.primary_hex }};font-weight:bold;text-transform:uppercase;letter-spacing:.04em;font-family:'Century Gothic','Trebuchet MS',Helvetica,Arial,sans-serif;font-size:14px;text-decoration:none;border-radius:25px;">
+    {{ _('View or change your request') }}
+  </a>
+</p>
+<p style="font-size:13px;color:rgba({{ brand.primary_rgb }},0.6);">
+  {{ _('Keep this link private — anyone who has it can view and change your request.') }}
+</p>
+{% endif %}
+{% if cleaning_charge %}
+<p style="font-size:13px;color:rgba({{ brand.primary_rgb }},0.6);">
+  {{ _('The cleaning charge shown is indicative. Invoicing is handled separately.') }}
+</p>
+{% endif %}
+{% endblock %}

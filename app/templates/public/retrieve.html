@@ -1,0 +1,51 @@
+{% extends "public/layout.html" %}
+{% block title %}{{ _('Find my booking') }}{% endblock %}
+
+{% block public_content %}
+<div class="mx-auto w-full max-w-xl px-4 pb-24 pt-16 sm:px-6">
+{% if sent %}
+  {#
+    Deliberately identical whether or not the reference exists: anything else
+    is an enumeration oracle over the reference space.
+  #}
+  <div class="ui-card flex flex-col items-center gap-5 p-8 text-center sm:p-12">
+    <span class="flex h-16 w-16 items-center justify-center rounded-full bg-accent/20">
+      <i class="fa-solid fa-envelope text-2xl text-accent-600" aria-hidden="true"></i>
+    </span>
+    <h1 class="ui-h text-3xl">{{ _('Check your inbox') }}</h1>
+    <p class="max-w-sm text-primary/85">
+      {{ _('If that reference and email match a booking, we have sent a link to that address.') }}
+    </p>
+  </div>
+{% else %}
+  <div class="ui-card flex flex-col gap-6 p-8 sm:p-12">
+    <div class="flex flex-col gap-2.5 text-center">
+      <h1 class="ui-h text-3xl">{{ _('Find my booking') }}</h1>
+      <p class="text-[15px] text-primary/80">
+        {{ _('Lost the link? No problem. Enter your reference and the email you booked with — we will send it again.') }}
+      </p>
+    </div>
+    {% if errors.get('__all__') %}
+      <p class="rounded-2xl bg-highlight/10 px-5 py-4 text-sm font-semibold text-highlight" role="alert">
+        {{ errors['__all__'] }}
+      </p>
+    {% endif %}
+    <form method="post" action="/book/retrieve" class="flex flex-col gap-5">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+      <div>
+        <label class="ui-label mb-1.5" for="public_ref">{{ _('Reference') }}</label>
+        <input class="ui-input" id="public_ref" name="public_ref" required placeholder="RB-XXXXXXXX">
+      </div>
+      <div>
+        <label class="ui-label mb-1.5" for="email">{{ _('Email') }}</label>
+        <input class="ui-input" id="email" name="email" type="email" required>
+      </div>
+      <button type="submit" class="btn-brand mt-1 self-center">{{ _('Email me the link') }}</button>
+      <p class="text-center text-xs leading-5 text-primary/60">
+        {{ _('For privacy we only ever send the link by email — this page never says whether a booking exists.') }}
+      </p>
+    </form>
+  </div>
+{% endif %}
+</div>
+{% endblock %}

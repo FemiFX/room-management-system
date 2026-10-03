@@ -1,0 +1,1 @@
+{{ _('Your booking request could not be accepted') }} — {{ public_ref }}

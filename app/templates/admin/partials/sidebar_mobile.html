@@ -1,0 +1,47 @@
+<div id="sidebarOverlay" class="fixed inset-0 bg-black bg-opacity-40 z-40 hidden lg:hidden"></div>
+<aside id="mobileSidebar" class="fixed inset-y-0 left-0 z-50 w-64 bg-white border-r border-gray-200 transform -translate-x-full transition-transform duration-200 lg:hidden dark:bg-carbon-800 dark:border-carbon-700">
+    <div class="px-6 py-5 border-b border-gray-200 dark:border-carbon-700 flex items-center justify-between">
+        <div class="flex items-center space-x-3">
+            <h1 class="text-base font-semibold text-gray-900 dark:text-parchment">{{ _('Room Management') }}</h1>
+        </div>
+        <button id="closeSidebar" class="text-gray-500 hover:text-gray-700" aria-label="{{ _('Close menu') }}">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+    </div>
+    <nav class="pt-4 px-3 space-y-1">
+        {% if nav_sections %}
+            {% for section in nav_sections %}
+                {% if section.is_header %}
+                    <div class="px-4 pt-3 pb-1 text-xs uppercase tracking-wide text-gray-400 dark:text-parchment/50 font-medium">
+                        {{ section.label }}
+                    </div>
+                {% else %}
+                    <div class="mb-1">
+                        {% if section.single %}
+                            <a href="{{ section.url }}"{% if section.target %} target="{{ section.target }}" rel="noopener"{% endif %} class="sidebar-item {% if section.active %}active{% endif %} flex items-center w-full px-4 py-2 rounded-lg text-sm text-gray-800 dark:text-parchment hover:bg-gray-50 dark:hover:bg-carbon-700 font-medium">
+                                <i class="fa-solid {{ fa_icon(section.icon) }} mr-3 w-4 text-center text-gray-500 dark:text-parchment/70"></i>
+                                <span>{{ section.label }}</span>
+                                {% if section.badge %}
+                                <span class="ml-auto rounded-full bg-turf-green-600/15 px-2 py-0.5 text-[11px] font-bold text-turf-green-700 dark:bg-golden-bronze-300/20 dark:text-golden-bronze-300">{{ section.badge }}</span>
+                                {% endif %}
+                            </a>
+                        {% else %}
+                            <button class="sidebar-item flex items-center justify-between w-full px-4 py-2 rounded-lg text-sm text-gray-800 dark:text-parchment hover:bg-gray-50 dark:hover:bg-carbon-700 font-medium" data-toggle="mobile-{{ section.id }}" data-target="mobile-section-{{ section.id }}">
+                                <div class="flex items-center">
+                                    <i class="fa-solid {{ fa_icon(section.icon) }} mr-3 w-4 text-center text-gray-500 dark:text-parchment/70"></i>
+                                    <span>{{ section.label }}</span>
+                                </div>
+                                <i class="fa-solid fa-chevron-down text-gray-400 text-xs {% if section.open %}rotate-180 transform{% endif %}"></i>
+                            </button>
+                            <div id="mobile-section-{{ section.id }}" class="submenu {% if section.open %}open{% endif %} mt-1 ml-7 pl-3 border-l border-gray-200 dark:border-carbon-600">
+                                {% for child in section.children %}
+                                    <a href="{{ child.url }}" class="block py-2 px-2 text-sm font-medium rounded {% if child.active %}active text-turf-green-600 dark:text-golden-bronze-300 font-semibold{% else %}text-gray-600 dark:text-parchment/80 hover:text-gray-900 dark:hover:text-parchment{% endif %}">{{ child.label }}</a>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                {% endif %}
+            {% endfor %}
+        {% endif %}
+    </nav>
+</aside>

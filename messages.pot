@@ -1,0 +1,2859 @@
+# Translations template for PROJECT.
+# Copyright (C) 2026 ORGANIZATION
+# This file is distributed under the same license as the PROJECT project.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PROJECT VERSION\n"
+"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
+"POT-Creation-Date: 2026-09-10 16:40+0200\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.17.0\n"
+
+#: app/templates/admin/partials/sidebar_desktop.html:7
+#: app/templates/admin/partials/sidebar_mobile.html:5
+#: app/templates/auth/login.html:12 app/templates/base.html:6
+msgid "Room Management"
+msgstr ""
+
+#: app/templates/admin/action_center.html:3
+#: app/templates/admin/action_center.html:4 app/views/deps.py:48
+msgid "Action Center"
+msgstr ""
+
+#: app/templates/admin/action_center.html:5
+msgid "Items requiring action"
+msgstr ""
+
+#: app/templates/admin/dashboard.html:3 app/templates/admin/dashboard.html:4
+#: app/templates/admin/layout.html:8
+#: app/templates/admin/partials/admin_header.html:91 app/views/deps.py:43
+msgid "Dashboard"
+msgstr ""
+
+#: app/templates/admin/dashboard.html:5
+msgid "Operational overview"
+msgstr ""
+
+#: app/templates/admin/dashboard.html:13
+msgid "Total Rooms"
+msgstr ""
+
+#: app/templates/admin/bookings/catalogue.html:139
+#: app/templates/admin/dashboard.html:21
+#: app/templates/admin/partials/badges.html:15
+#: app/templates/admin/parties/detail.html:5
+#: app/templates/admin/parties/list.html:71
+msgid "Active"
+msgstr ""
+
+#: app/templates/admin/dashboard.html:25
+msgid "of"
+msgstr ""
+
+#: app/templates/admin/dashboard.html:25 app/templates/admin/rooms/list.html:6
+msgid "total"
+msgstr ""
+
+#: app/templates/admin/dashboard.html:30
+#: app/templates/admin/partials/badges.html:4
+#: app/templates/admin/rooms/list.html:15
+#: app/templates/admin/rooms/list.html:38
+msgid "Occupied"
+msgstr ""
+
+#: app/templates/admin/dashboard.html:34
+msgid "active leases"
+msgstr ""
+
+#: app/templates/admin/dashboard.html:39
+#: app/templates/admin/partials/badges.html:5
+#: app/templates/admin/rooms/list.html:16
+#: app/templates/admin/rooms/list.html:39
+msgid "Booked Now"
+msgstr ""
+
+#: app/templates/admin/dashboard.html:43
+msgid "right now"
+msgstr ""
+
+#: app/templates/admin/dashboard.html:48
+msgid "Expiring"
+msgstr ""
+
+#: app/templates/admin/dashboard.html:52
+msgid "leases in 30 days"
+msgstr ""
+
+#: app/templates/admin/dashboard.html:57
+msgid "Keys Out"
+msgstr ""
+
+#: app/templates/admin/dashboard.html:61 app/templates/admin/dashboard.html:95
+msgid "unreturned"
+msgstr ""
+
+#: app/templates/admin/dashboard.html:67
+msgid "Quick Links"
+msgstr ""
+
+#: app/templates/admin/bookings/_toolbar.html:47
+#: app/templates/admin/bookings/calendar.html:143
+#: app/templates/admin/buildings/list.html:41
+#: app/templates/admin/buildings/list.html:89
+#: app/templates/admin/dashboard.html:74
+#: app/templates/admin/rooms/detail.html:16
+#: app/templates/admin/rooms/list.html:4 app/templates/admin/rooms/list.html:5
+#: app/views/deps.py:59
+msgid "Rooms"
+msgstr ""
+
+#: app/templates/admin/dashboard.html:75
+msgid "active"
+msgstr ""
+
+#: app/templates/admin/dashboard.html:84 app/templates/admin/leases/list.html:3
+#: app/templates/admin/leases/list.html:4 app/views/deps.py:70
+msgid "Leases"
+msgstr ""
+
+#: app/templates/admin/dashboard.html:85
+msgid "occupied"
+msgstr ""
+
+#: app/templates/admin/dashboard.html:94 app/templates/admin/keys/list.html:3
+#: app/templates/admin/keys/list.html:4 app/views/deps.py:124
+msgid "Keys"
+msgstr ""
+
+#: app/templates/admin/bookings/_toolbar.html:57
+#: app/templates/admin/bookings/calendar.html:5
+#: app/templates/admin/bookings/calendar.html:6
+#: app/templates/admin/bookings/list.html:5
+#: app/templates/admin/bookings/list.html:6
+#: app/templates/admin/bookings/list.html:23
+#: app/templates/admin/dashboard.html:104 app/views/deps.py:86
+msgid "Bookings"
+msgstr ""
+
+#: app/templates/admin/dashboard.html:105
+msgid "active now"
+msgstr ""
+
+#: app/templates/admin/infrastructure.html:3
+#: app/templates/admin/infrastructure.html:4 app/views/deps.py:129
+msgid "Infrastructure"
+msgstr ""
+
+#: app/templates/admin/infrastructure.html:5
+msgid "Internet connections and utility meters"
+msgstr ""
+
+#: app/templates/admin/notifications.html:3
+#: app/templates/admin/notifications.html:4
+#: app/templates/admin/partials/admin_header.html:26
+#: app/templates/admin/partials/admin_header.html:33 app/views/deps.py:141
+msgid "Notifications"
+msgstr ""
+
+#: app/templates/admin/notifications.html:5
+msgid "Inbox and alert history"
+msgstr ""
+
+#: app/templates/admin/partials/admin_header.html:95
+#: app/templates/admin/preferences.html:3
+#: app/templates/admin/preferences.html:4 app/views/deps.py:152
+msgid "Preferences"
+msgstr ""
+
+#: app/templates/admin/preferences.html:5
+#: app/templates/admin/preferences.html:11
+msgid "General settings"
+msgstr ""
+
+#: app/templates/admin/preferences.html:14
+msgid "These settings control your admin interface language."
+msgstr ""
+
+#: app/templates/admin/preferences.html:19
+msgid "Preferred Language"
+msgstr ""
+
+#: app/templates/admin/preferences.html:28
+msgid "This affects all admin pages after saving."
+msgstr ""
+
+#: app/templates/admin/bookings/_setup_modals.html:55
+#: app/templates/admin/bookings/_setup_modals.html:107
+#: app/templates/admin/preferences.html:35
+msgid "Save"
+msgstr ""
+
+#: app/templates/admin/preferences.html:71
+msgid "Preferences saved."
+msgstr ""
+
+#: app/templates/admin/audit_logs/list.html:3
+#: app/templates/admin/audit_logs/list.html:4 app/views/deps.py:165
+msgid "Audit Log"
+msgstr ""
+
+#: app/templates/admin/audit_logs/list.html:5
+msgid "Who did what, and when"
+msgstr ""
+
+#: app/templates/admin/bookings/_booking_create.html:5
+#: app/templates/admin/bookings/_toolbar.html:30
+#: app/templates/admin/bookings/list.html:199
+msgid "New Booking"
+msgstr ""
+
+#: app/templates/admin/bookings/_booking_create.html:11
+#: app/templates/admin/bookings/list.html:77 app/templates/public/form.html:82
+#: app/templates/public/manage_edit.html:47
+msgid "Title"
+msgstr ""
+
+#: app/templates/admin/bookings/_booking_create.html:12
+msgid "e.g. Team Meeting"
+msgstr ""
+
+#: app/templates/admin/bookings/_booking_create.html:15
+#: app/templates/admin/bookings/detail.html:81
+#: app/templates/admin/bookings/list.html:79
+#: app/templates/email/_booking_details.html:12
+#: app/templates/email/member_booking_cancelled.txt:5
+#: app/templates/email/member_booking_confirmed.txt:5
+#: app/templates/email/public_booking_approved.txt:5
+#: app/templates/email/public_booking_cancelled.txt:5
+#: app/templates/email/public_booking_manage_link.txt:5
+#: app/templates/email/public_booking_modified.txt:5
+#: app/templates/email/public_booking_received.txt:5
+#: app/templates/email/public_booking_rejected.txt:5
+#: app/templates/email/staff_new_public_request.txt:5
+#: app/templates/portal/book.html:26 app/templates/portal/book.html:27
+#: app/templates/public/_room_picker.html:16 app/templates/public/form.html:424
+#: app/templates/public/manage.html:30
+msgid "Room"
+msgstr ""
+
+#: app/templates/admin/bookings/_booking_create.html:17
+#: app/templates/admin/bookings/_booking_create.html:23
+msgid "Loading…"
+msgstr ""
+
+#: app/templates/admin/bookings/_booking_create.html:21
+#: app/templates/admin/bookings/detail.html:200
+#: app/templates/admin/bookings/list.html:51
+msgid "Party"
+msgstr ""
+
+#: app/templates/admin/bookings/_booking_create.html:27
+msgid "Start"
+msgstr ""
+
+#: app/templates/admin/bookings/_booking_create.html:31
+msgid "End"
+msgstr ""
+
+#: app/templates/admin/bookings/_booking_create.html:35
+#: app/templates/admin/bookings/detail.html:102
+msgid "Attendees"
+msgstr ""
+
+#: app/templates/admin/bookings/_booking_create.html:39
+#: app/templates/admin/bookings/detail.html:209
+msgid "Purpose"
+msgstr ""
+
+#: app/templates/admin/bookings/_booking_create.html:40
+msgid "e.g. Weekly standup"
+msgstr ""
+
+#: app/templates/admin/bookings/_booking_create.html:43
+#: app/templates/admin/bookings/_setup_modals.html:26
+#: app/templates/admin/bookings/_setup_modals.html:49
+#: app/templates/admin/bookings/detail.html:214
+#: app/templates/admin/parties/list.html:146
+msgid "Notes"
+msgstr ""
+
+#: app/templates/admin/bookings/_booking_create.html:50
+#: app/templates/admin/bookings/_decide.html:25
+#: app/templates/admin/bookings/_setup_modals.html:31
+#: app/templates/admin/bookings/_setup_modals.html:54
+#: app/templates/admin/bookings/_setup_modals.html:83
+#: app/templates/admin/bookings/_setup_modals.html:106
+#: app/templates/admin/parties/list.html:153
+#: app/templates/admin/parties/list.html:169
+#: app/templates/portal/bookings.html:36
+msgid "Cancel"
+msgstr ""
+
+#: app/templates/admin/bookings/_booking_create.html:51
+#: app/templates/admin/bookings/_setup_modals.html:32
+#: app/templates/admin/bookings/_setup_modals.html:84
+#: app/templates/admin/parties/list.html:154
+msgid "Create"
+msgstr ""
+
+#: app/templates/admin/bookings/_decide.html:8
+#: app/templates/admin/bookings/_decide.html:26
+#: app/templates/admin/bookings/detail.html:428
+msgid "Reject booking"
+msgstr ""
+
+#: app/templates/admin/bookings/_decide.html:15
+msgid "The reason is included in the email the requester receives."
+msgstr ""
+
+#: app/templates/admin/bookings/_decide.html:18
+#: app/templates/admin/bookings/detail.html:433
+#: app/templates/email/public_booking_rejected.html:7
+#: app/templates/email/public_booking_rejected.txt:9
+msgid "Reason"
+msgstr ""
+
+#: app/templates/admin/bookings/_setup_modals.html:15
+msgid "Add equipment"
+msgstr ""
+
+#: app/templates/admin/bookings/_setup_modals.html:18
+#: app/templates/admin/bookings/_setup_modals.html:41
+#: app/templates/admin/bookings/_setup_modals.html:63
+#: app/templates/admin/bookings/_setup_modals.html:93
+#: app/templates/admin/bookings/catalogue.html:50
+#: app/templates/admin/bookings/catalogue.html:135
+#: app/templates/admin/buildings/list.html:86
+#: app/templates/admin/parties/list.html:43
+#: app/templates/admin/parties/list.html:126 app/templates/public/form.html:402
+msgid "Name"
+msgstr ""
+
+#: app/templates/admin/bookings/_setup_modals.html:19
+msgid "e.g. Projector"
+msgstr ""
+
+#: app/templates/admin/bookings/_setup_modals.html:22
+#: app/templates/admin/bookings/_setup_modals.html:45
+msgid "Category"
+msgstr ""
+
+#: app/templates/admin/bookings/_setup_modals.html:37
+msgid "Edit equipment"
+msgstr ""
+
+#: app/templates/admin/bookings/_setup_modals.html:60
+msgid "Add service"
+msgstr ""
+
+#: app/templates/admin/bookings/_setup_modals.html:64
+msgid "e.g. Technician"
+msgstr ""
+
+#: app/templates/admin/bookings/_setup_modals.html:67
+#: app/templates/admin/bookings/catalogue.html:136
+msgid "Code"
+msgstr ""
+
+#: app/templates/admin/bookings/_setup_modals.html:70
+msgid ""
+"A stable key. The name can change later; this cannot. Leave it empty and "
+"one is derived from the name."
+msgstr ""
+
+#: app/templates/admin/bookings/_setup_modals.html:74
+#: app/templates/admin/bookings/_setup_modals.html:97
+msgid "Description"
+msgstr ""
+
+#: app/templates/admin/bookings/_setup_modals.html:78
+#: app/templates/admin/bookings/_setup_modals.html:101
+msgid "Sort order"
+msgstr ""
+
+#: app/templates/admin/bookings/_setup_modals.html:89
+msgid "Edit service"
+msgstr ""
+
+#: app/templates/admin/bookings/_setup_scripts.html:7
+#, python-format
+msgid "Delete %(name)s?"
+msgstr ""
+
+#: app/templates/admin/bookings/_toolbar.html:12
+#: app/templates/admin/bookings/_toolbar.html:42
+#: app/templates/admin/partials/admin_header.html:49
+#: app/templates/admin/partials/listing.html:13
+#: app/templates/admin/parties/list.html:78
+#: app/templates/admin/rooms/list.html:66
+msgid "View"
+msgstr ""
+
+#: app/templates/admin/bookings/_toolbar.html:17
+msgid "List"
+msgstr ""
+
+#: app/templates/admin/bookings/_toolbar.html:23
+msgid "Calendar"
+msgstr ""
+
+#: app/templates/admin/bookings/_toolbar.html:27
+msgid "Setup"
+msgstr ""
+
+#: app/templates/admin/bookings/_toolbar.html:53
+#: app/templates/admin/bookings/catalogue.html:5
+#: app/templates/admin/bookings/catalogue.html:6
+msgid "Catalogue"
+msgstr ""
+
+#: app/templates/admin/bookings/calendar.html:7
+#: app/templates/admin/bookings/list.html:7
+msgid "List and calendar across every room"
+msgstr ""
+
+#: app/templates/admin/bookings/calendar.html:50
+#: app/templates/admin/bookings/calendar.html:155
+#: app/templates/admin/partials/badges.html:27
+#: app/templates/portal/bookings.html:26 app/templates/public/manage.html:14
+msgid "Pending"
+msgstr ""
+
+#: app/templates/admin/bookings/calendar.html:50
+#: app/templates/admin/bookings/calendar.html:156
+#: app/templates/admin/bookings/list.html:219
+#: app/templates/admin/partials/badges.html:28
+#: app/templates/portal/bookings.html:28 app/templates/public/manage.html:16
+msgid "Approved"
+msgstr ""
+
+#: app/templates/admin/bookings/calendar.html:50
+#: app/templates/admin/bookings/calendar.html:157
+#: app/templates/admin/partials/badges.html:31
+#: app/templates/portal/bookings.html:30 app/templates/public/manage.html:18
+msgid "Completed"
+msgstr ""
+
+#: app/templates/admin/bookings/calendar.html:75
+#: app/templates/admin/bookings/calendar.html:102
+msgid "Open booking"
+msgstr ""
+
+#: app/templates/admin/bookings/calendar.html:79
+msgid "Close"
+msgstr ""
+
+#: app/templates/admin/bookings/calendar.html:100
+#: app/templates/admin/bookings/calendar.html:152
+msgid "Drag a booking to move it."
+msgstr ""
+
+#: app/templates/admin/bookings/calendar.html:125
+#: app/templates/admin/bookings/list.html:224
+msgid "A title is required."
+msgstr ""
+
+#: app/templates/admin/bookings/calendar.html:126
+#: app/templates/admin/bookings/list.html:225
+msgid "Select a room."
+msgstr ""
+
+#: app/templates/admin/bookings/calendar.html:127
+#: app/templates/admin/bookings/list.html:226
+msgid "Select a party."
+msgstr ""
+
+#: app/templates/admin/bookings/calendar.html:128
+#: app/templates/admin/bookings/list.html:227
+msgid "A start and an end are required."
+msgstr ""
+
+#: app/templates/admin/bookings/calendar.html:140
+msgid "Month"
+msgstr ""
+
+#: app/templates/admin/bookings/calendar.html:141
+msgid "Week"
+msgstr ""
+
+#: app/templates/admin/bookings/calendar.html:142
+msgid "Day"
+msgstr ""
+
+#: app/templates/admin/bookings/calendar.html:144
+#: app/templates/partials/calendar_month.html:41
+#: app/templates/partials/calendar_month.html:70
+#: app/templates/public/_calendar.html:23
+#: app/templates/public/_calendar.html:51
+msgid "Today"
+msgstr ""
+
+#: app/templates/admin/bookings/calendar.html:145
+msgid "Booking moved"
+msgstr ""
+
+#: app/templates/admin/bookings/calendar.html:146
+msgid "That slot is already taken."
+msgstr ""
+
+#: app/templates/admin/bookings/calendar.html:147
+msgid "Could not move the booking."
+msgstr ""
+
+#: app/templates/admin/bookings/calendar.html:148
+#: app/templates/admin/bookings/calendar.html:153
+msgid "This booking cannot be moved."
+msgstr ""
+
+#: app/templates/admin/bookings/calendar.html:149
+#: app/templates/admin/bookings/detail.html:98
+#, python-format
+msgid "%(count)s h"
+msgstr ""
+
+#: app/templates/admin/bookings/calendar.html:150
+#, python-format
+msgid "%(count)s attending"
+msgstr ""
+
+#: app/templates/admin/bookings/calendar.html:151
+#: app/templates/admin/bookings/list.html:121
+msgid "No party"
+msgstr ""
+
+#: app/templates/admin/bookings/calendar.html:160
+#: app/templates/admin/partials/badges.html:41
+msgid "Public"
+msgstr ""
+
+#: app/templates/admin/bookings/calendar.html:161
+#: app/templates/admin/bookings/detail.html:68
+#: app/templates/admin/bookings/list.html:55
+#: app/templates/admin/bookings/list.html:127
+#: app/templates/admin/partials/badges.html:40
+#: app/templates/admin/partials/badges.html:62
+#: app/templates/portal/layout.html:89
+msgid "Internal"
+msgstr ""
+
+#: app/templates/admin/bookings/calendar.html:162
+#: app/templates/admin/partials/badges.html:39
+msgid "Staff"
+msgstr ""
+
+#: app/templates/admin/bookings/catalogue.html:7
+msgid "Every equipment type and service — what exists at all, not where it stands"
+msgstr ""
+
+#: app/templates/admin/bookings/catalogue.html:18
+#: app/templates/admin/bookings/detail.html:245
+#: app/templates/admin/bookings/setup.html:59 app/templates/portal/book.html:76
+#: app/templates/public/form.html:426 app/templates/public/manage.html:43
+msgid "Equipment"
+msgstr ""
+
+#: app/templates/admin/bookings/catalogue.html:23
+#: app/templates/admin/bookings/setup.html:121
+#: app/templates/public/_room_picker.html:99 app/templates/public/form.html:425
+msgid "Extra services"
+msgstr ""
+
+#: app/templates/admin/bookings/catalogue.html:34
+#: app/templates/admin/bookings/catalogue.html:36
+msgid "Search equipment…"
+msgstr ""
+
+#: app/templates/admin/bookings/catalogue.html:40
+#, python-format
+msgid "%(total)s types · %(used)s of them in at least one room"
+msgstr ""
+
+#: app/templates/admin/bookings/catalogue.html:44
+#: app/templates/admin/bookings/setup.html:112
+msgid "New equipment type"
+msgstr ""
+
+#: app/templates/admin/bookings/catalogue.html:51
+msgid "Stock"
+msgstr ""
+
+#: app/templates/admin/bookings/catalogue.html:52
+msgid "Usage"
+msgstr ""
+
+#: app/templates/admin/bookings/catalogue.html:53
+#: app/templates/admin/bookings/catalogue.html:140
+#: app/templates/admin/bookings/list.html:81
+#: app/templates/admin/buildings/list.html:90
+msgid "Actions"
+msgstr ""
+
+#: app/templates/admin/bookings/catalogue.html:59
+msgid "Uncategorised"
+msgstr ""
+
+#: app/templates/admin/bookings/catalogue.html:78
+#: app/templates/admin/bookings/catalogue.html:161
+msgid "in no room"
+msgstr ""
+
+#: app/templates/admin/bookings/catalogue.html:79
+msgid "in 1 room"
+msgstr ""
+
+#: app/templates/admin/bookings/catalogue.html:80
+#, python-format
+msgid "in %(count)s rooms"
+msgstr ""
+
+#: app/templates/admin/bookings/catalogue.html:83
+#: app/templates/admin/bookings/catalogue.html:176
+#: app/templates/admin/buildings/list.html:64
+#: app/templates/admin/buildings/list.html:141
+msgid "Edit"
+msgstr ""
+
+#: app/templates/admin/bookings/catalogue.html:88
+#, python-format
+msgid "Stands in %(count)s rooms — set it to 0 there first"
+msgstr ""
+
+#: app/templates/admin/bookings/catalogue.html:90
+#, python-format
+msgid "Requested on %(count)s bookings — it cannot be deleted"
+msgstr ""
+
+#: app/templates/admin/bookings/catalogue.html:92
+#: app/templates/admin/bookings/catalogue.html:181
+#: app/templates/admin/bookings/detail.html:311
+#: app/templates/admin/buildings/list.html:69
+#: app/templates/admin/buildings/list.html:146
+#: app/templates/admin/parties/list.html:79
+#: app/templates/admin/parties/list.html:170
+#: app/templates/admin/parties/list.html:184
+msgid "Delete"
+msgstr ""
+
+#: app/templates/admin/bookings/catalogue.html:101
+#: app/templates/admin/bookings/catalogue.html:188
+msgid "Nothing matches that search."
+msgstr ""
+
+#: app/templates/admin/bookings/catalogue.html:104
+msgid "No equipment types yet."
+msgstr ""
+
+#: app/templates/admin/bookings/catalogue.html:108
+msgid ""
+"Stock is the sum over all rooms. How much stands where is set on the room"
+" page."
+msgstr ""
+
+#: app/templates/admin/bookings/catalogue.html:109
+msgid ""
+"A type that stands in a room cannot be deleted here — the bin is grey and"
+" says why."
+msgstr ""
+
+#: app/templates/admin/bookings/catalogue.html:119
+#: app/templates/admin/bookings/catalogue.html:121
+msgid "Search services…"
+msgstr ""
+
+#: app/templates/admin/bookings/catalogue.html:125
+#, python-format
+msgid "%(total)s services · %(active)s active"
+msgstr ""
+
+#: app/templates/admin/bookings/catalogue.html:129
+#: app/templates/admin/bookings/setup.html:159
+msgid "New service"
+msgstr ""
+
+#: app/templates/admin/bookings/catalogue.html:137
+msgid "Offered in"
+msgstr ""
+
+#: app/templates/admin/bookings/catalogue.html:138
+msgid "Requested"
+msgstr ""
+
+#: app/templates/admin/bookings/catalogue.html:152
+msgid "inactive"
+msgstr ""
+
+#: app/templates/admin/bookings/catalogue.html:162
+msgid "1 room"
+msgstr ""
+
+#: app/templates/admin/bookings/catalogue.html:163
+#, python-format
+msgid "%(count)s rooms"
+msgstr ""
+
+#: app/templates/admin/bookings/catalogue.html:167
+msgid "1 booking"
+msgstr ""
+
+#: app/templates/admin/bookings/catalogue.html:168
+#: app/templates/admin/bookings/list.html:66
+#, python-format
+msgid "%(count)s bookings"
+msgstr ""
+
+#: app/templates/admin/bookings/catalogue.html:173
+msgid "Active — appears on booking forms"
+msgstr ""
+
+#: app/templates/admin/bookings/catalogue.html:179
+#, python-format
+msgid "Requested on %(count)s bookings — deactivate it instead"
+msgstr ""
+
+#: app/templates/admin/bookings/catalogue.html:191
+msgid "No services yet."
+msgstr ""
+
+#: app/templates/admin/bookings/catalogue.html:195
+msgid ""
+"The switch here applies to every room: off means the service appears on "
+"no form at all."
+msgstr ""
+
+#: app/templates/admin/bookings/catalogue.html:196
+msgid ""
+"What is already on a booking stays there — deleting is only possible "
+"while nothing has requested it."
+msgstr ""
+
+#: app/templates/admin/bookings/detail.html:13
+msgid "Back to bookings"
+msgstr ""
+
+#: app/templates/admin/bookings/detail.html:33
+#, python-format
+msgid "Created %(when)s"
+msgstr ""
+
+#: app/templates/admin/bookings/detail.html:40
+#: app/templates/admin/bookings/list.html:168
+msgid "Approve"
+msgstr ""
+
+#: app/templates/admin/bookings/detail.html:43
+#: app/templates/admin/bookings/detail.html:439
+#: app/templates/admin/bookings/list.html:172
+msgid "Reject"
+msgstr ""
+
+#: app/templates/admin/bookings/detail.html:53
+msgid "Cancel booking"
+msgstr ""
+
+#: app/templates/admin/bookings/detail.html:64
+#: app/templates/admin/bookings/list.html:55
+#: app/templates/admin/bookings/list.html:125
+#: app/templates/admin/partials/badges.html:52
+msgid "External"
+msgstr ""
+
+#: app/templates/admin/bookings/detail.html:88
+#, python-format
+msgid "%(count)s seats"
+msgstr ""
+
+#: app/templates/admin/bookings/detail.html:93
+#: app/templates/admin/bookings/list.html:26
+#: app/templates/admin/bookings/list.html:78
+msgid "Period"
+msgstr ""
+
+#: app/templates/admin/bookings/detail.html:96
+#: app/templates/admin/bookings/list.html:142
+#, python-format
+msgid "until %(time)s"
+msgstr ""
+
+#: app/templates/admin/bookings/detail.html:97
+#: app/templates/public/form.html:512
+msgid "Whole day"
+msgstr ""
+
+#: app/templates/admin/bookings/detail.html:104
+#, python-format
+msgid "of %(count)s"
+msgstr ""
+
+#: app/templates/admin/bookings/detail.html:108
+msgid "Over the room capacity"
+msgstr ""
+
+#: app/templates/admin/bookings/detail.html:108
+msgid "Fits the room"
+msgstr ""
+
+#: app/templates/admin/bookings/detail.html:113
+msgid "Conflicts"
+msgstr ""
+
+#: app/templates/admin/bookings/detail.html:115
+#, python-format
+msgid "%(count)s found"
+msgstr ""
+
+#: app/templates/admin/bookings/detail.html:120
+msgid "An active lease covers these dates"
+msgstr ""
+
+#: app/templates/admin/bookings/detail.html:121
+msgid "The room is assigned internally"
+msgstr ""
+
+#: app/templates/admin/bookings/detail.html:124
+msgid "None"
+msgstr ""
+
+#: app/templates/admin/bookings/detail.html:125
+msgid "The room is free for this period"
+msgstr ""
+
+#: app/templates/admin/bookings/detail.html:140
+msgid "Requester"
+msgstr ""
+
+#: app/templates/admin/bookings/detail.html:146
+msgid "As submitted — not a view of the contact record"
+msgstr ""
+
+#: app/templates/admin/bookings/detail.html:160
+msgid "Open contact"
+msgstr ""
+
+#: app/templates/admin/bookings/detail.html:166
+#: app/templates/admin/parties/list.html:142 app/templates/auth/login.html:50
+#: app/templates/email/staff_new_public_request.html:8
+#: app/templates/email/staff_new_public_request.txt:9
+#: app/templates/public/form.html:90 app/templates/public/form.html:404
+#: app/templates/public/manage_edit.html:55
+#: app/templates/public/retrieve.html:40
+msgid "Email"
+msgstr ""
+
+#: app/templates/admin/bookings/detail.html:171
+#: app/templates/admin/parties/list.html:138 app/templates/public/form.html:95
+#: app/templates/public/form.html:405 app/templates/public/manage_edit.html:65
+msgid "Phone"
+msgstr ""
+
+#: app/templates/admin/bookings/detail.html:177
+#: app/templates/admin/buildings/list.html:87 app/templates/public/form.html:99
+#: app/templates/public/form.html:406 app/templates/public/manage_edit.html:69
+msgid "Address"
+msgstr ""
+
+#: app/templates/admin/bookings/detail.html:183
+msgid "Contact on the day"
+msgstr ""
+
+#: app/templates/admin/bookings/detail.html:195
+#: app/templates/email/_booking_details.html:8
+#: app/templates/email/member_booking_cancelled.txt:4
+#: app/templates/email/member_booking_confirmed.txt:4
+#: app/templates/email/public_booking_approved.txt:4
+#: app/templates/email/public_booking_cancelled.txt:4
+#: app/templates/email/public_booking_manage_link.txt:4
+#: app/templates/email/public_booking_modified.txt:4
+#: app/templates/email/public_booking_received.txt:4
+#: app/templates/email/public_booking_rejected.txt:4
+#: app/templates/email/staff_new_public_request.txt:4
+#: app/templates/public/manage.html:26
+msgid "Event"
+msgstr ""
+
+#: app/templates/admin/bookings/detail.html:220
+msgid "Additional information"
+msgstr ""
+
+#: app/templates/admin/bookings/detail.html:226
+msgid "Reason given to the requester"
+msgstr ""
+
+#: app/templates/admin/bookings/detail.html:237
+msgid "Equipment & services"
+msgstr ""
+
+#: app/templates/admin/bookings/detail.html:240
+#, python-format
+msgid "%(count)s items"
+msgstr ""
+
+#: app/templates/admin/bookings/detail.html:256
+msgid "Services"
+msgstr ""
+
+#: app/templates/admin/bookings/detail.html:274
+#: app/templates/public/form.html:444
+msgid "Liability insurance"
+msgstr ""
+
+#: app/templates/admin/bookings/detail.html:277
+msgid "Certificate on file"
+msgstr ""
+
+#: app/templates/admin/bookings/detail.html:278
+msgid "Promised — not yet received"
+msgstr ""
+
+#: app/templates/admin/bookings/detail.html:279
+#: app/templates/admin/bookings/list.html:159
+msgid "No cover"
+msgstr ""
+
+#: app/templates/admin/bookings/detail.html:280
+#: app/templates/admin/bookings/list.html:161
+msgid "Not asked"
+msgstr ""
+
+#: app/templates/admin/bookings/detail.html:289
+msgid "The certificate is attached to this booking."
+msgstr ""
+
+#: app/templates/admin/bookings/detail.html:290
+msgid ""
+"The requester said they are covered but has not sent the certificate. "
+"They can upload it at any time through their manage link."
+msgstr ""
+
+#: app/templates/admin/bookings/detail.html:291
+msgid ""
+"The requester said they have no liability cover. Worth settling before "
+"this is approved."
+msgstr ""
+
+#: app/templates/admin/bookings/detail.html:292
+msgid ""
+"This booking was made by staff or through the member portal, where the "
+"question is not asked."
+msgstr ""
+
+#: app/templates/admin/bookings/detail.html:305
+#, python-format
+msgid "uploaded %(when)s"
+msgstr ""
+
+#: app/templates/admin/bookings/detail.html:310
+#: app/templates/admin/bookings/list.html:176
+msgid "Open"
+msgstr ""
+
+#: app/templates/admin/bookings/detail.html:320
+msgid "Replace file"
+msgstr ""
+
+#: app/templates/admin/bookings/detail.html:320
+msgid "Upload file"
+msgstr ""
+
+#: app/templates/admin/bookings/detail.html:327
+msgid "Send a reminder"
+msgstr ""
+
+#: app/templates/admin/bookings/detail.html:330
+#: app/templates/public/form.html:331 app/templates/public/manage.html:112
+msgid "PDF, JPG or PNG, up to 10 MB"
+msgstr ""
+
+#: app/templates/admin/bookings/detail.html:340
+msgid "Other documents"
+msgstr ""
+
+#: app/templates/admin/bookings/detail.html:363
+#: app/templates/email/_booking_details.html:25
+#: app/templates/email/public_booking_received.txt:8
+#: app/templates/public/manage.html:54
+msgid "Cleaning charge"
+msgstr ""
+
+#: app/templates/admin/bookings/detail.html:379
+msgid "Indicative. Invoicing is handled separately."
+msgstr ""
+
+#: app/templates/admin/bookings/detail.html:382
+#: app/templates/public/form.html:259 app/templates/public/form.html:437
+#: app/templates/public/manage_edit.html:149
+msgid "Billing details"
+msgstr ""
+
+#: app/templates/admin/bookings/detail.html:392
+msgid "History"
+msgstr ""
+
+#: app/templates/admin/bookings/detail.html:409
+msgid "system"
+msgstr ""
+
+#: app/templates/admin/bookings/detail.html:416
+msgid "No history recorded."
+msgstr ""
+
+#: app/templates/admin/bookings/detail.html:434
+msgid "The requester sees this in their email."
+msgstr ""
+
+#: app/templates/admin/bookings/detail.html:438
+#: app/templates/public/form.html:168 app/templates/public/form.html:194
+#: app/templates/public/form.html:270 app/templates/public/form.html:347
+#: app/templates/public/form.html:487
+msgid "Back"
+msgstr ""
+
+#: app/templates/admin/bookings/detail.html:449
+msgid "Cancel this booking? The room is released."
+msgstr ""
+
+#: app/templates/admin/bookings/detail.html:450
+msgid "Delete the certificate?"
+msgstr ""
+
+#: app/templates/admin/bookings/detail.html:451
+#: app/templates/admin/bookings/list.html:223
+msgid "Could not update the booking"
+msgstr ""
+
+#: app/templates/admin/bookings/detail.html:452
+msgid "Uploading…"
+msgstr ""
+
+#: app/templates/admin/bookings/detail.html:453
+msgid "Certificate uploaded"
+msgstr ""
+
+#: app/templates/admin/bookings/detail.html:454
+msgid "Reminder sent"
+msgstr ""
+
+#: app/templates/admin/bookings/list.html:30
+msgid "This week"
+msgstr ""
+
+#: app/templates/admin/bookings/list.html:30
+msgid "This month"
+msgstr ""
+
+#: app/templates/admin/bookings/list.html:31
+msgid "± 30 days"
+msgstr ""
+
+#: app/templates/admin/bookings/list.html:31
+msgid "Next 12 months"
+msgstr ""
+
+#: app/templates/admin/bookings/list.html:32
+msgid "Custom period"
+msgstr ""
+
+#: app/templates/admin/bookings/list.html:39
+#: app/templates/email/_booking_details.html:16
+#: app/templates/email/member_booking_cancelled.txt:6
+#: app/templates/email/member_booking_confirmed.txt:6
+#: app/templates/email/public_booking_approved.txt:6
+#: app/templates/email/public_booking_cancelled.txt:6
+#: app/templates/email/public_booking_manage_link.txt:6
+#: app/templates/email/public_booking_modified.txt:6
+#: app/templates/email/public_booking_received.txt:6
+#: app/templates/email/public_booking_rejected.txt:6
+#: app/templates/email/staff_new_public_request.txt:6
+#: app/templates/portal/book.html:56 app/templates/public/manage.html:34
+msgid "From"
+msgstr ""
+
+#: app/templates/admin/bookings/list.html:43
+msgid "To"
+msgstr ""
+
+#: app/templates/admin/bookings/list.html:55
+msgid "All parties"
+msgstr ""
+
+#: app/templates/admin/bookings/list.html:62
+msgid "Apply"
+msgstr ""
+
+#: app/templates/admin/bookings/list.html:65
+#, python-format
+msgid "%(count)s waiting"
+msgstr ""
+
+#: app/templates/admin/bookings/list.html:76
+msgid "Who"
+msgstr ""
+
+#: app/templates/admin/bookings/list.html:80 app/templates/public/form.html:445
+#: app/templates/public/manage.html:91
+msgid "Certificate"
+msgstr ""
+
+#: app/templates/admin/bookings/list.html:100
+msgid "Done · past, rejected, cancelled"
+msgstr ""
+
+#: app/templates/admin/bookings/list.html:105
+msgid "Waiting for a decision"
+msgstr ""
+
+#: app/templates/admin/bookings/list.html:108
+msgid "Confirmed · coming up"
+msgstr ""
+
+#: app/templates/admin/bookings/list.html:155
+msgid "On file"
+msgstr ""
+
+#: app/templates/admin/bookings/list.html:157
+msgid "Missing"
+msgstr ""
+
+#: app/templates/admin/bookings/list.html:192
+msgid "Nothing in this period"
+msgstr ""
+
+#: app/templates/admin/bookings/list.html:196
+#, python-format
+msgid "Looked at %(period)s. Widen the period to see more."
+msgstr ""
+
+#: app/templates/admin/bookings/list.html:220
+#: app/templates/admin/partials/badges.html:29
+#: app/templates/portal/bookings.html:32 app/templates/public/manage.html:20
+msgid "Rejected"
+msgstr ""
+
+#: app/templates/admin/bookings/list.html:221
+#: app/templates/admin/partials/badges.html:19
+#: app/templates/admin/partials/badges.html:30
+#: app/templates/portal/bookings.html:32 app/templates/public/manage.html:20
+msgid "Cancelled"
+msgstr ""
+
+#: app/templates/admin/bookings/list.html:222
+#: app/templates/public/manage_updated.html:2
+msgid "Booking updated"
+msgstr ""
+
+#: app/templates/admin/bookings/setup.html:5
+#: app/templates/admin/bookings/setup.html:6 app/views/deps.py:99
+msgid "Equipment & Services"
+msgstr ""
+
+#: app/templates/admin/bookings/setup.html:7
+msgid "What stands in which room — stock per room, services per room"
+msgstr ""
+
+#: app/templates/admin/bookings/setup.html:44
+#: app/templates/admin/rooms/list.html:62 app/templates/portal/book.html:35
+#: app/templates/public/_room_picker.html:43
+#: app/templates/public/landing.html:50
+#, python-format
+msgid "Up to %(count)s people"
+msgstr ""
+
+#: app/templates/admin/bookings/setup.html:44
+msgid "No capacity set"
+msgstr ""
+
+#: app/templates/admin/bookings/setup.html:45
+msgid "publicly bookable"
+msgstr ""
+
+#: app/templates/admin/bookings/setup.html:46
+#, python-format
+msgid "Cleaning: %(rate)s € per day"
+msgstr ""
+
+#: app/templates/admin/bookings/setup.html:49
+msgid "Edit room details"
+msgstr ""
+
+#: app/templates/admin/bookings/setup.html:62
+#: app/templates/admin/bookings/setup.html:181
+#, python-format
+msgid "%(present)s of %(total)s in this room"
+msgstr ""
+
+#: app/templates/admin/bookings/setup.html:82
+msgid "One fewer"
+msgstr ""
+
+#: app/templates/admin/bookings/setup.html:90
+msgid "One more"
+msgstr ""
+
+#: app/templates/admin/bookings/setup.html:97
+msgid "Permanently installed in the room"
+msgstr ""
+
+#: app/templates/admin/bookings/setup.html:98
+msgid "fixed"
+msgstr ""
+
+#: app/templates/admin/bookings/setup.html:105
+msgid ""
+"The catalogue is empty. Create a type below and it appears here for every"
+" room."
+msgstr ""
+
+#: app/templates/admin/bookings/setup.html:110
+msgid "Setting a row to 0 takes it out of this room."
+msgstr ""
+
+#: app/templates/admin/bookings/setup.html:124
+#: app/templates/admin/bookings/setup.html:182
+#, python-format
+msgid "%(present)s of %(total)s offered"
+msgstr ""
+
+#: app/templates/admin/bookings/setup.html:135
+msgid "Offered in this room"
+msgstr ""
+
+#: app/templates/admin/bookings/setup.html:146
+msgid "Edit this service (applies to every room)"
+msgstr ""
+
+#: app/templates/admin/bookings/setup.html:153
+msgid "No active services yet."
+msgstr ""
+
+#: app/templates/admin/bookings/setup.html:157
+msgid "The switch applies to this room only."
+msgstr ""
+
+#: app/templates/admin/bookings/setup.html:169
+msgid "No active rooms."
+msgstr ""
+
+#: app/templates/admin/buildings/list.html:4
+#: app/templates/admin/buildings/list.html:5 app/views/deps.py:54
+msgid "Buildings"
+msgstr ""
+
+#: app/templates/admin/buildings/list.html:6
+msgid "building"
+msgstr ""
+
+#: app/templates/admin/buildings/list.html:11
+msgid "New Building"
+msgstr ""
+
+#: app/templates/admin/buildings/list.html:38
+#: app/templates/admin/buildings/list.html:48
+#: app/templates/admin/buildings/list.html:88
+#: app/templates/admin/buildings/list.html:125
+msgid "Floors"
+msgstr ""
+
+#: app/templates/admin/buildings/list.html:56
+#: app/templates/admin/buildings/list.html:133
+msgid "Clone"
+msgstr ""
+
+#: app/templates/admin/buildings/list.html:161
+msgid "No buildings yet"
+msgstr ""
+
+#: app/templates/admin/buildings/list.html:162
+msgid "Add a building to get started."
+msgstr ""
+
+#: app/templates/admin/documents/detail.html:3
+#: app/templates/admin/documents/list.html:3
+#: app/templates/admin/documents/list.html:4 app/views/deps.py:135
+msgid "Documents"
+msgstr ""
+
+#: app/templates/admin/documents/detail.html:5
+msgid "Document detail"
+msgstr ""
+
+#: app/templates/admin/documents/list.html:5
+msgid "Uploaded files and contracts"
+msgstr ""
+
+#: app/templates/admin/documents/list.html:11
+msgid "All types"
+msgstr ""
+
+#: app/templates/admin/documents/list.html:11
+#: app/templates/admin/documents/list.html:128
+msgid "Contracts"
+msgstr ""
+
+#: app/templates/admin/documents/list.html:11
+#: app/templates/admin/documents/list.html:129
+msgid "Floorplans"
+msgstr ""
+
+#: app/templates/admin/documents/list.html:12
+#: app/templates/admin/documents/list.html:130
+msgid "Handover"
+msgstr ""
+
+#: app/templates/admin/documents/list.html:12
+#: app/templates/admin/documents/list.html:131
+msgid "Invoices"
+msgstr ""
+
+#: app/templates/admin/documents/list.html:12
+#: app/templates/admin/documents/list.html:132
+msgid "Photos"
+msgstr ""
+
+#: app/templates/admin/documents/list.html:13
+#: app/templates/admin/documents/list.html:133
+msgid "Inspection"
+msgstr ""
+
+#: app/templates/admin/documents/list.html:13
+#: app/templates/admin/documents/list.html:134
+#: app/templates/public/form.html:44 app/templates/public/form.html:289
+#: app/templates/public/form.html:442
+msgid "Insurance"
+msgstr ""
+
+#: app/templates/admin/documents/list.html:13
+#: app/templates/admin/documents/list.html:135
+msgid "Other"
+msgstr ""
+
+#: app/templates/admin/documents/list.html:21
+msgid "Upload Document"
+msgstr ""
+
+#: app/templates/admin/documents/list.html:42
+#: app/templates/admin/documents/list.html:57
+msgid "No room"
+msgstr ""
+
+#: app/templates/admin/documents/list.html:63
+msgid "Attached to a lease, or to nothing"
+msgstr ""
+
+#: app/templates/admin/documents/list.html:65
+#, python-format
+msgid "%(count)s documents"
+msgstr ""
+
+#: app/templates/admin/documents/list.html:69
+msgid "Open room"
+msgstr ""
+
+#: app/templates/admin/documents/list.html:73
+msgid "Upload here"
+msgstr ""
+
+#: app/templates/admin/documents/list.html:172
+msgid "Nothing filed here yet"
+msgstr ""
+
+#: app/templates/admin/documents/list.html:174
+msgid "Try clearing the type filter"
+msgstr ""
+
+#: app/templates/admin/documents/list.html:198
+msgid "Document Type"
+msgstr ""
+
+#: app/templates/admin/integrations/list.html:3
+#: app/templates/admin/integrations/list.html:4 app/views/deps.py:147
+msgid "Integrations"
+msgstr ""
+
+#: app/templates/admin/integrations/list.html:5
+msgid "External system configuration and sync"
+msgstr ""
+
+#: app/templates/admin/keys/list.html:5
+msgid "Key inventory and assignments"
+msgstr ""
+
+#: app/templates/admin/leases/list.html:5
+msgid "All lease contracts"
+msgstr ""
+
+#: app/templates/admin/partials/admin_header.html:16
+#: app/templates/admin/partials/admin_header.html:18
+#: app/templates/admin/partials/search_overlay.html:6
+msgid "Search"
+msgstr ""
+
+#: app/templates/admin/partials/admin_header.html:21
+msgid "Toggle theme"
+msgstr ""
+
+#: app/templates/admin/partials/admin_header.html:38
+msgid "Mark all read"
+msgstr ""
+
+#: app/templates/admin/partials/admin_header.html:52
+msgid "Mark as read"
+msgstr ""
+
+#: app/templates/admin/partials/admin_header.html:61
+msgid "No notifications"
+msgstr ""
+
+#: app/templates/admin/partials/admin_header.html:67
+msgid "View all notifications"
+msgstr ""
+
+#: app/templates/admin/partials/admin_header.html:103
+msgid "Log out"
+msgstr ""
+
+#: app/templates/admin/partials/badges.html:3
+#: app/templates/admin/rooms/list.html:14
+#: app/templates/admin/rooms/list.html:37
+msgid "Available"
+msgstr ""
+
+#: app/templates/admin/partials/badges.html:6
+msgid "Expiring Soon"
+msgstr ""
+
+#: app/templates/admin/partials/badges.html:7
+msgid "Unavailable"
+msgstr ""
+
+#: app/templates/admin/partials/badges.html:9
+#: app/templates/admin/partials/badges.html:21
+#: app/templates/admin/partials/badges.html:33
+#: app/templates/admin/partials/badges.html:43
+#: app/templates/admin/partials/badges.html:54
+#: app/templates/admin/partials/badges.html:65
+#: app/templates/admin/partials/badges.html:76
+msgid "Unknown"
+msgstr ""
+
+#: app/templates/admin/partials/badges.html:16
+msgid "Draft"
+msgstr ""
+
+#: app/templates/admin/partials/badges.html:17
+msgid "Expired"
+msgstr ""
+
+#: app/templates/admin/partials/badges.html:18
+msgid "Terminated"
+msgstr ""
+
+#: app/templates/admin/partials/badges.html:49
+#: app/templates/admin/parties/list.html:132
+msgid "Person"
+msgstr ""
+
+#: app/templates/admin/partials/badges.html:50
+#: app/templates/admin/parties/list.html:133
+msgid "Organization"
+msgstr ""
+
+#: app/templates/admin/partials/badges.html:51
+#: app/templates/admin/parties/list.html:134
+msgid "Team"
+msgstr ""
+
+#: app/templates/admin/partials/badges.html:60
+msgid "Leasable"
+msgstr ""
+
+#: app/templates/admin/partials/badges.html:61
+msgid "Bookable"
+msgstr ""
+
+#: app/templates/admin/partials/badges.html:63
+msgid "Mixed"
+msgstr ""
+
+#: app/templates/admin/partials/badges.html:71
+msgid "Super Admin"
+msgstr ""
+
+#: app/templates/admin/partials/badges.html:72
+#: app/templates/admin/partials/sidebar_desktop.html:6
+msgid "Admin"
+msgstr ""
+
+#: app/templates/admin/partials/badges.html:73
+msgid "Editor"
+msgstr ""
+
+#: app/templates/admin/partials/badges.html:74
+msgid "Viewer"
+msgstr ""
+
+#: app/templates/admin/partials/badges.html:89
+msgid "created"
+msgstr ""
+
+#: app/templates/admin/partials/badges.html:90
+msgid "updated"
+msgstr ""
+
+#: app/templates/admin/partials/badges.html:91
+msgid "approved"
+msgstr ""
+
+#: app/templates/admin/partials/badges.html:92
+msgid "rejected"
+msgstr ""
+
+#: app/templates/admin/partials/badges.html:93
+msgid "cancelled"
+msgstr ""
+
+#: app/templates/admin/partials/badges.html:94
+msgid "deleted"
+msgstr ""
+
+#: app/templates/admin/partials/badges.html:95
+msgid "uploaded"
+msgstr ""
+
+#: app/templates/admin/partials/badges.html:96
+msgid "insurance reminder sent"
+msgstr ""
+
+#: app/templates/admin/partials/fa_icon_macro.html:1
+msgid "Icon"
+msgstr ""
+
+#: app/templates/admin/partials/listing.html:14
+msgid "Card view"
+msgstr ""
+
+#: app/templates/admin/partials/listing.html:21
+msgid "List view"
+msgstr ""
+
+#: app/templates/admin/partials/listing.html:58
+#: app/templates/admin/partials/listing.html:59
+msgid "Replace photo"
+msgstr ""
+
+#: app/templates/admin/partials/listing.html:58
+#: app/templates/admin/partials/listing.html:59
+msgid "Add photo"
+msgstr ""
+
+#: app/templates/admin/partials/search_overlay.html:6
+msgid "Search rooms, leases, parties..."
+msgstr ""
+
+#: app/templates/admin/partials/sidebar_desktop.html:51
+msgid "Collapse"
+msgstr ""
+
+#: app/templates/admin/partials/sidebar_mobile.html:7
+msgid "Close menu"
+msgstr ""
+
+#: app/templates/admin/parties/detail.html:5
+#: app/templates/admin/parties/list.html:73
+msgid "Inactive"
+msgstr ""
+
+#: app/templates/admin/parties/list.html:3
+#: app/templates/admin/parties/list.html:4 app/views/deps.py:69
+msgid "Parties"
+msgstr ""
+
+#: app/templates/admin/parties/list.html:5
+msgid "Tenants, organizations and teams"
+msgstr ""
+
+#: app/templates/admin/parties/list.html:12
+#, python-format
+msgid "%(count)s party"
+msgstr ""
+
+#: app/templates/admin/parties/list.html:12
+#, python-format
+msgid "%(count)s parties"
+msgstr ""
+
+#: app/templates/admin/parties/list.html:19
+msgid "Search parties"
+msgstr ""
+
+#: app/templates/admin/parties/list.html:24
+#: app/templates/admin/parties/list.html:110
+#: app/templates/admin/parties/list.html:120
+msgid "New Party"
+msgstr ""
+
+#: app/templates/admin/parties/list.html:44
+#: app/templates/public/layout.html:114
+msgid "Contact"
+msgstr ""
+
+#: app/templates/admin/parties/list.html:45
+msgid "Status"
+msgstr ""
+
+#: app/templates/admin/parties/list.html:85
+msgid "No matching entries."
+msgstr ""
+
+#: app/templates/admin/parties/list.html:91
+msgid "No entries."
+msgstr ""
+
+#: app/templates/admin/parties/list.html:99
+msgid "Internal Team"
+msgstr ""
+
+#: app/templates/admin/parties/list.html:100
+msgid "External Parties"
+msgstr ""
+
+#: app/templates/admin/parties/list.html:101
+msgid "Teams"
+msgstr ""
+
+#: app/templates/admin/parties/list.html:102
+msgid "Organizations"
+msgstr ""
+
+#: app/templates/admin/parties/list.html:107
+msgid "No parties yet"
+msgstr ""
+
+#: app/templates/admin/parties/list.html:108
+msgid "Add tenants, organizations or teams to get started."
+msgstr ""
+
+#: app/templates/admin/parties/list.html:127
+msgid "e.g. Acme GmbH"
+msgstr ""
+
+#: app/templates/admin/parties/list.html:130
+msgid "Type"
+msgstr ""
+
+#: app/templates/admin/parties/list.html:139
+msgid "+49 30 …"
+msgstr ""
+
+#: app/templates/admin/parties/list.html:143
+msgid "contact@example.com"
+msgstr ""
+
+#: app/templates/admin/parties/list.html:161
+msgid "Delete Party"
+msgstr ""
+
+#: app/templates/admin/parties/list.html:181
+msgid "Name is required."
+msgstr ""
+
+#: app/templates/admin/parties/list.html:182
+#, python-brace-format
+msgid "Delete {name}? This action cannot be undone."
+msgstr ""
+
+#: app/templates/admin/parties/list.html:183
+msgid "Deleting..."
+msgstr ""
+
+#: app/templates/admin/rooms/detail.html:402
+#: app/templates/admin/rooms/list.html:189
+msgid "Capacity"
+msgstr ""
+
+#: app/templates/admin/rooms/detail.html:406
+#: app/templates/admin/rooms/list.html:193
+msgid "Cleaning rate (per day)"
+msgstr ""
+
+#: app/templates/admin/rooms/detail.html:410
+#: app/templates/admin/rooms/list.html:197
+msgid "Public description"
+msgstr ""
+
+#: app/templates/admin/rooms/detail.html:424
+#: app/templates/admin/rooms/list.html:208
+msgid "Bookable internally"
+msgstr ""
+
+#: app/templates/admin/rooms/detail.html:428
+#: app/templates/admin/rooms/list.html:212
+msgid "Bookable publicly"
+msgstr ""
+
+#: app/templates/admin/rooms/list.html:6
+msgid "All rooms"
+msgstr ""
+
+#: app/templates/admin/rooms/list.html:13
+#: app/templates/admin/rooms/list.html:36
+msgid "All"
+msgstr ""
+
+#: app/templates/admin/rooms/list.html:20
+msgid "All Buildings"
+msgstr ""
+
+#: app/templates/admin/rooms/list.html:28
+msgid "New Room"
+msgstr ""
+
+#: app/templates/admin/rooms/list.html:79
+msgid "No rooms match the current filter."
+msgstr ""
+
+#: app/templates/admin/rooms/list.html:190
+msgid "seats"
+msgstr ""
+
+#: app/templates/admin/rooms/list.html:199
+msgid "Shown on the public booking form"
+msgstr ""
+
+#: app/templates/admin/users/list.html:4 app/templates/admin/users/list.html:5
+#: app/views/deps.py:157
+msgid "Users & Roles"
+msgstr ""
+
+#: app/templates/admin/users/list.html:6
+msgid "System user accounts"
+msgstr ""
+
+#: app/templates/auth/login.html:3 app/templates/public/layout.html:66
+msgid "Sign In"
+msgstr ""
+
+#: app/templates/auth/login.html:13
+msgid "Sign in to your account"
+msgstr ""
+
+#: app/templates/auth/login.html:23
+msgid "Sign-in failed"
+msgstr ""
+
+#: app/templates/auth/login.html:29 app/templates/public/layout.html:68
+msgid "Language"
+msgstr ""
+
+#: app/templates/auth/login.html:39
+msgid "Sign in with SSO"
+msgstr ""
+
+#: app/templates/auth/login.html:44
+msgid "or developer login"
+msgstr ""
+
+#: app/templates/auth/login.html:55
+msgid "Display Name"
+msgstr ""
+
+#: app/templates/auth/login.html:60
+msgid "Role"
+msgstr ""
+
+#: app/templates/auth/login.html:70
+msgid "Developer Login"
+msgstr ""
+
+#: app/templates/auth/login.html:78
+msgid "Authentication is not configured."
+msgstr ""
+
+#: app/templates/auth/login.html:87
+msgid "Booking a room as a guest?"
+msgstr ""
+
+#: app/templates/auth/login.html:88
+msgid "No account needed"
+msgstr ""
+
+#: app/templates/email/_booking_details.html:4
+#: app/templates/email/member_booking_cancelled.txt:3
+#: app/templates/email/member_booking_confirmed.txt:3
+#: app/templates/email/public_booking_approved.txt:3
+#: app/templates/email/public_booking_cancelled.txt:3
+#: app/templates/email/public_booking_manage_link.txt:3
+#: app/templates/email/public_booking_modified.txt:3
+#: app/templates/email/public_booking_received.txt:3
+#: app/templates/email/public_booking_rejected.txt:3
+#: app/templates/email/staff_new_public_request.txt:3
+#: app/templates/public/cancelled.html:13 app/templates/public/manage.html:10
+#: app/templates/public/manage_edit.html:12
+#: app/templates/public/manage_updated.html:15
+#: app/templates/public/retrieve.html:36
+msgid "Reference"
+msgstr ""
+
+#: app/templates/email/_booking_details.html:20
+#: app/templates/email/member_booking_cancelled.txt:7
+#: app/templates/email/member_booking_confirmed.txt:7
+#: app/templates/email/public_booking_approved.txt:7
+#: app/templates/email/public_booking_cancelled.txt:7
+#: app/templates/email/public_booking_manage_link.txt:7
+#: app/templates/email/public_booking_modified.txt:7
+#: app/templates/email/public_booking_received.txt:7
+#: app/templates/email/public_booking_rejected.txt:7
+#: app/templates/email/staff_new_public_request.txt:7
+#: app/templates/portal/book.html:60 app/templates/public/manage.html:38
+msgid "Until"
+msgstr ""
+
+#: app/templates/email/base_email.html:17 app/templates/portal/home.html:2
+#: app/templates/public/layout.html:53
+msgid "Room booking"
+msgstr ""
+
+#: app/templates/email/base_email.html:38
+msgid "This message was sent automatically. Please do not reply to it."
+msgstr ""
+
+#: app/templates/email/member_booking_cancelled.html:3
+#: app/templates/email/member_booking_cancelled.txt:1
+msgid "Your booking has been cancelled and the room is free again."
+msgstr ""
+
+#: app/templates/email/member_booking_cancelled.subject.txt:1
+#: app/templates/public/cancelled.html:2
+msgid "Booking cancelled"
+msgstr ""
+
+#: app/templates/email/member_booking_confirmed.html:3
+#: app/templates/email/member_booking_confirmed.txt:1
+msgid "Your room is booked and confirmed."
+msgstr ""
+
+#: app/templates/email/member_booking_confirmed.subject.txt:1
+msgid "Room booked"
+msgstr ""
+
+#: app/templates/email/public_booking_approved.html:3
+#: app/templates/email/public_booking_approved.txt:1
+msgid "Good news — your booking has been confirmed."
+msgstr ""
+
+#: app/templates/email/public_booking_approved.html:9
+#: app/templates/email/public_booking_approved.txt:9
+msgid "View your booking"
+msgstr ""
+
+#: app/templates/email/public_booking_approved.subject.txt:1
+msgid "Your booking is confirmed"
+msgstr ""
+
+#: app/templates/email/public_booking_cancelled.html:3
+#: app/templates/email/public_booking_cancelled.txt:1
+msgid "This booking has been cancelled."
+msgstr ""
+
+#: app/templates/email/public_booking_cancelled.html:5
+msgid "If this was not what you intended, please submit a new request."
+msgstr ""
+
+#: app/templates/email/public_booking_cancelled.subject.txt:1
+msgid "Your booking has been cancelled"
+msgstr ""
+
+#: app/templates/email/public_booking_manage_link.html:3
+#: app/templates/email/public_booking_manage_link.txt:1
+msgid "Here is the link to view or change your booking request."
+msgstr ""
+
+#: app/templates/email/public_booking_manage_link.html:8
+#: app/templates/email/public_booking_manage_link.txt:9
+msgid "Open my booking"
+msgstr ""
+
+#: app/templates/email/public_booking_manage_link.html:12
+#: app/templates/email/public_booking_manage_link.txt:11
+#: app/templates/email/public_booking_received.html:14
+#: app/templates/email/public_booking_received.txt:14
+msgid ""
+"Keep this link private — anyone who has it can view and change your "
+"request."
+msgstr ""
+
+#: app/templates/email/public_booking_manage_link.html:13
+#: app/templates/email/public_booking_manage_link.txt:12
+msgid "If you did not ask for this email, you can ignore it."
+msgstr ""
+
+#: app/templates/email/public_booking_manage_link.subject.txt:1
+msgid "Your booking link"
+msgstr ""
+
+#: app/templates/email/public_booking_modified.html:3
+#: app/templates/email/public_booking_modified.txt:1
+msgid ""
+"Your changes have been saved. Because the details changed, the request "
+"goes back to us for review."
+msgstr ""
+
+#: app/templates/email/public_booking_modified.html:5
+msgid "We will email you once a decision has been made."
+msgstr ""
+
+#: app/templates/email/public_booking_modified.subject.txt:1
+msgid "Your booking request has been updated"
+msgstr ""
+
+#: app/templates/email/public_booking_received.html:3
+#: app/templates/email/public_booking_received.txt:1
+msgid ""
+"Thank you — we have received your booking request and will review it "
+"shortly."
+msgstr ""
+
+#: app/templates/email/public_booking_received.html:5
+#: app/templates/email/public_booking_received.txt:11
+msgid ""
+"Your request is not confirmed yet. We will email you once a decision has "
+"been made."
+msgstr ""
+
+#: app/templates/email/public_booking_received.html:10
+#: app/templates/email/public_booking_received.txt:13
+msgid "View or change your request"
+msgstr ""
+
+#: app/templates/email/public_booking_received.html:19
+#: app/templates/email/public_booking_received.txt:9
+msgid "The cleaning charge shown is indicative. Invoicing is handled separately."
+msgstr ""
+
+#: app/templates/email/public_booking_received.subject.txt:1
+msgid "We have received your booking request"
+msgstr ""
+
+#: app/templates/email/public_booking_rejected.html:3
+#: app/templates/email/public_booking_rejected.txt:1
+msgid "We are sorry — we cannot accept your booking request."
+msgstr ""
+
+#: app/templates/email/public_booking_rejected.html:10
+#: app/templates/email/public_booking_rejected.txt:11
+msgid "You are welcome to submit a new request for a different room or time."
+msgstr ""
+
+#: app/templates/email/public_booking_rejected.subject.txt:1
+msgid "Your booking request could not be accepted"
+msgstr ""
+
+#: app/templates/email/staff_new_public_request.html:3
+#: app/templates/email/staff_new_public_request.txt:1
+msgid ""
+"A new booking request has arrived through the public form and is waiting "
+"for review."
+msgstr ""
+
+#: app/templates/email/staff_new_public_request.html:6
+#: app/templates/email/staff_new_public_request.txt:8
+msgid "Requested by"
+msgstr ""
+
+#: app/templates/email/staff_new_public_request.html:14
+#: app/templates/email/staff_new_public_request.txt:11
+msgid "Review the request"
+msgstr ""
+
+#: app/templates/email/staff_new_public_request.subject.txt:1
+msgid "New public booking request"
+msgstr ""
+
+#: app/templates/partials/calendar_month.html:19
+msgid "Booked"
+msgstr ""
+
+#: app/templates/partials/calendar_month.html:22
+#: app/templates/public/_calendar.html:11
+msgid "All day"
+msgstr ""
+
+#: app/templates/partials/calendar_month.html:40
+#: app/templates/public/_calendar.html:22
+msgid "Previous"
+msgstr ""
+
+#: app/templates/partials/calendar_month.html:43
+#: app/templates/public/_calendar.html:26 app/templates/public/form.html:114
+#: app/templates/public/form.html:176 app/templates/public/form.html:202
+#: app/templates/public/form.html:278 app/templates/public/form.html:355
+msgid "Next"
+msgstr ""
+
+#: app/templates/partials/calendar_month.html:51
+#: app/templates/public/_calendar.html:34
+msgid "Mon"
+msgstr ""
+
+#: app/templates/partials/calendar_month.html:51
+#: app/templates/public/_calendar.html:34
+msgid "Tue"
+msgstr ""
+
+#: app/templates/partials/calendar_month.html:51
+#: app/templates/public/_calendar.html:34
+msgid "Wed"
+msgstr ""
+
+#: app/templates/partials/calendar_month.html:51
+#: app/templates/public/_calendar.html:34
+msgid "Thu"
+msgstr ""
+
+#: app/templates/partials/calendar_month.html:51
+#: app/templates/public/_calendar.html:34
+msgid "Fri"
+msgstr ""
+
+#: app/templates/partials/calendar_month.html:51
+#: app/templates/public/_calendar.html:34
+msgid "Sat"
+msgstr ""
+
+#: app/templates/partials/calendar_month.html:51
+#: app/templates/public/_calendar.html:34
+msgid "Sun"
+msgstr ""
+
+#: app/templates/partials/calendar_month.html:87
+#: app/templates/public/_calendar.html:60
+#, python-format
+msgid "+%(count)s more"
+msgstr ""
+
+#: app/templates/partials/calendar_month.html:88
+#: app/templates/public/_calendar.html:61
+msgid "Show fewer"
+msgstr ""
+
+#: app/templates/portal/book.html:2 app/templates/portal/book.html:7
+#: app/templates/portal/bookings.html:9 app/templates/portal/bookings.html:46
+#: app/templates/portal/calendar.html:12 app/templates/portal/home.html:14
+#: app/templates/portal/layout.html:56 app/templates/portal/layout.html:78
+#: app/templates/public/landing.html:2
+msgid "Book a room"
+msgstr ""
+
+#: app/templates/portal/book.html:9
+msgid ""
+"Internal rooms are confirmed straight away. If a room is taken you will "
+"be told at once."
+msgstr ""
+
+#: app/templates/portal/book.html:17 app/templates/portal/home.html:23
+msgid ""
+"Your account is not linked to a contact record yet, so you cannot book. "
+"Please contact an administrator."
+msgstr ""
+
+#: app/templates/portal/book.html:21
+msgid "No rooms are available for internal booking."
+msgstr ""
+
+#: app/templates/portal/book.html:44
+msgid "What is it for"
+msgstr ""
+
+#: app/templates/portal/book.html:46
+msgid "e.g. Team meeting"
+msgstr ""
+
+#: app/templates/portal/book.html:51 app/templates/public/form.html:415
+msgid "Date"
+msgstr ""
+
+#: app/templates/portal/book.html:65
+#, python-format
+msgid "Up to %(hours)s hours, and no more than %(days)s days ahead."
+msgstr ""
+
+#: app/templates/portal/book.html:69 app/templates/public/form.html:160
+#: app/templates/public/form.html:417 app/templates/public/manage_edit.html:117
+msgid "Number of attendees"
+msgstr ""
+
+#: app/templates/portal/book.html:82 app/templates/public/_room_picker.html:82
+#, python-format
+msgid "%(count)s available"
+msgstr ""
+
+#: app/templates/portal/book.html:97
+msgid "Book it"
+msgstr ""
+
+#: app/templates/portal/book.html:112
+msgid "That room is already taken then."
+msgstr ""
+
+#: app/templates/portal/book.html:113
+msgid "That room is free then."
+msgstr ""
+
+#: app/templates/portal/book.html:114
+msgid "Already booked that day:"
+msgstr ""
+
+#: app/templates/portal/book.html:115
+msgid "Could not book the room."
+msgstr ""
+
+#: app/templates/portal/bookings.html:2 app/templates/portal/bookings.html:7
+#: app/templates/portal/layout.html:62 app/templates/portal/layout.html:80
+msgid "My bookings"
+msgstr ""
+
+#: app/templates/portal/bookings.html:45 app/templates/portal/home.html:51
+msgid "Nothing booked yet."
+msgstr ""
+
+#: app/templates/portal/bookings.html:57 app/templates/public/manage.html:127
+#: app/templates/public/manage.html:133
+msgid "Cancel this booking?"
+msgstr ""
+
+#: app/templates/portal/calendar.html:3 app/templates/portal/calendar.html:8
+#: app/templates/portal/layout.html:59 app/templates/portal/layout.html:79
+#: app/templates/public/calendar.html:3 app/templates/public/calendar.html:8
+#: app/templates/public/layout.html:59 app/templates/public/layout.html:86
+msgid "Availability"
+msgstr ""
+
+#: app/templates/portal/calendar.html:9
+msgid "When internal rooms are already taken."
+msgstr ""
+
+#: app/templates/portal/home.html:8
+#, python-format
+msgid "Welcome, %(name)s"
+msgstr ""
+
+#: app/templates/portal/home.html:10
+msgid "Book an internal room and see the bookings you have made."
+msgstr ""
+
+#: app/templates/portal/home.html:29
+msgid "Coming up"
+msgstr ""
+
+#: app/templates/portal/home.html:46
+msgid "Confirmed"
+msgstr ""
+
+#: app/templates/portal/layout.html:50
+msgid "Member portal"
+msgstr ""
+
+#: app/templates/portal/layout.html:71
+msgid "Sign out"
+msgstr ""
+
+#: app/templates/portal/layout.html:92 app/templates/public/layout.html:128
+msgid "Privacy"
+msgstr ""
+
+#: app/templates/public/_calendar.html:82
+msgid "Partly booked"
+msgstr ""
+
+#: app/templates/public/_calendar.html:85
+msgid "Booked all day"
+msgstr ""
+
+#: app/templates/public/_calendar.html:88
+msgid "Free"
+msgstr ""
+
+#: app/templates/public/_calendar.html:91 app/templates/public/landing.html:19
+#: app/templates/public/landing.html:102 app/templates/public/layout.html:79
+#: app/templates/public/layout.html:88
+msgid "Request a room"
+msgstr ""
+
+#: app/templates/public/_room_picker.html:35
+msgid "Pers."
+msgstr ""
+
+#: app/templates/public/_room_picker.html:62
+msgid "Already in the room"
+msgstr ""
+
+#: app/templates/public/_room_picker.html:76
+msgid "Request equipment"
+msgstr ""
+
+#: app/templates/public/calendar.html:10
+msgid ""
+"See when our rooms are already taken. To make a request, just pick your "
+"preferred date in the form."
+msgstr ""
+
+#: app/templates/public/cancelled.html:10
+msgid "Your booking is cancelled"
+msgstr ""
+
+#: app/templates/public/cancelled.html:18
+msgid ""
+"We have emailed you a confirmation. You are welcome to make a new request"
+" at any time."
+msgstr ""
+
+#: app/templates/public/cancelled.html:20
+msgid "Book another room"
+msgstr ""
+
+#: app/templates/public/confirmation.html:2
+msgid "Request received"
+msgstr ""
+
+#: app/templates/public/confirmation.html:10
+msgid "Thank you"
+msgstr ""
+
+#: app/templates/public/confirmation.html:12
+msgid ""
+"We have received your request and will review it shortly. You will get an"
+" email either way."
+msgstr ""
+
+#: app/templates/public/confirmation.html:16
+msgid "Your reference"
+msgstr ""
+
+#: app/templates/public/confirmation.html:23
+msgid ""
+"We have emailed you a personal link for viewing, changing or cancelling "
+"this request."
+msgstr ""
+
+#: app/templates/public/confirmation.html:27 app/templates/public/form.html:455
+msgid "We check availability — usually within two working days."
+msgstr ""
+
+#: app/templates/public/confirmation.html:31 app/templates/public/form.html:456
+msgid ""
+"You get our yes or no by email. Only with the yes is your date firmly "
+"reserved."
+msgstr ""
+
+#: app/templates/public/confirmation.html:34
+#: app/templates/public/manage.html:122
+msgid "Back to rooms"
+msgstr ""
+
+#: app/templates/public/form.html:3 app/templates/public/form.html:9
+msgid "Booking request"
+msgstr ""
+
+#: app/templates/public/form.html:10
+msgid "Six short steps — fields marked * are required."
+msgstr ""
+
+#: app/templates/public/form.html:30
+msgid "Leave this field empty"
+msgstr ""
+
+#: app/templates/public/form.html:38
+msgid "Steps"
+msgstr ""
+
+#: app/templates/public/form.html:40 app/templates/public/form.html:67
+#: app/templates/public/form.html:70 app/templates/public/form.html:400
+#: app/templates/public/manage_edit.html:32
+#: app/templates/public/manage_edit.html:35
+msgid "Your details"
+msgstr ""
+
+#: app/templates/public/form.html:40
+msgid "Who you are, how we reach you"
+msgstr ""
+
+#: app/templates/public/form.html:41 app/templates/public/form.html:121
+#: app/templates/public/form.html:124 app/templates/public/form.html:412
+#: app/templates/public/manage_edit.html:76
+#: app/templates/public/manage_edit.html:79
+msgid "Your event"
+msgstr ""
+
+#: app/templates/public/form.html:41
+msgid "Title, date, attendees"
+msgstr ""
+
+#: app/templates/public/form.html:42 app/templates/public/form.html:183
+#: app/templates/public/form.html:186 app/templates/public/form.html:422
+#: app/templates/public/manage_edit.html:130
+#: app/templates/public/manage_edit.html:133
+msgid "Room & extras"
+msgstr ""
+
+#: app/templates/public/form.html:42
+msgid "Room, equipment, services"
+msgstr ""
+
+#: app/templates/public/form.html:43 app/templates/public/form.html:210
+#: app/templates/public/form.html:213 app/templates/public/form.html:431
+#: app/templates/public/manage_edit.html:142
+#: app/templates/public/manage_edit.html:145
+msgid "Anything else"
+msgstr ""
+
+#: app/templates/public/form.html:43
+msgid "Billing, notes for us"
+msgstr ""
+
+#: app/templates/public/form.html:44
+msgid "Liability cover, certificate"
+msgstr ""
+
+#: app/templates/public/form.html:45 app/templates/public/form.html:363
+#: app/templates/public/form.html:366
+msgid "Check & send"
+msgstr ""
+
+#: app/templates/public/form.html:45
+msgid "Everything once more"
+msgstr ""
+
+#: app/templates/public/form.html:74 app/templates/public/manage_edit.html:39
+msgid "First name"
+msgstr ""
+
+#: app/templates/public/form.html:78 app/templates/public/manage_edit.html:43
+msgid "Last name"
+msgstr ""
+
+#: app/templates/public/form.html:86 app/templates/public/form.html:403
+#: app/templates/public/manage_edit.html:51
+msgid "Organisation"
+msgstr ""
+
+#: app/templates/public/form.html:103 app/templates/public/form.html:407
+#: app/templates/public/manage_edit.html:123
+msgid "Contact person on the day"
+msgstr ""
+
+#: app/templates/public/form.html:111 app/templates/public/form.html:173
+#: app/templates/public/form.html:199 app/templates/public/form.html:275
+#: app/templates/public/form.html:352
+msgid "Back to the summary"
+msgstr ""
+
+#: app/templates/public/form.html:128 app/templates/public/form.html:414
+#: app/templates/public/manage_edit.html:83
+msgid "Event title"
+msgstr ""
+
+#: app/templates/public/form.html:133 app/templates/public/manage_edit.html:88
+msgid "Start date"
+msgstr ""
+
+#: app/templates/public/form.html:139 app/templates/public/manage_edit.html:94
+msgid "Start time"
+msgstr ""
+
+#: app/templates/public/form.html:143 app/templates/public/manage_edit.html:99
+msgid "End date"
+msgstr ""
+
+#: app/templates/public/form.html:149 app/templates/public/manage_edit.html:105
+msgid "End time"
+msgstr ""
+
+#: app/templates/public/form.html:156 app/templates/public/manage_edit.html:113
+msgid "Whole day — we can sort the times out later"
+msgstr ""
+
+#: app/templates/public/form.html:216
+msgid ""
+"Everything here is optional. We read it before we say yes — it helps us "
+"prepare your event."
+msgstr ""
+
+#: app/templates/public/form.html:228
+msgid "Does any of this apply?"
+msgstr ""
+
+#: app/templates/public/form.html:230
+msgid "All optional — it helps us prepare."
+msgstr ""
+
+#: app/templates/public/form.html:248
+msgid "Anything else?"
+msgstr ""
+
+#: app/templates/public/form.html:250 app/templates/public/form.html:254
+msgid "The running order, set-up times, anything we should know beforehand."
+msgstr ""
+
+#: app/templates/public/form.html:261
+msgid ""
+"Only needed if the invoice should go to a different address or carry a "
+"reference."
+msgstr ""
+
+#: app/templates/public/form.html:265
+msgid "Different billing address, cost centre, reference…"
+msgstr ""
+
+#: app/templates/public/form.html:292
+msgid "Do you have liability insurance?"
+msgstr ""
+
+#: app/templates/public/form.html:295
+msgid ""
+"We need proof of cover for events in our rooms. If you have it to hand "
+"you can attach it right away — otherwise you can send it on later."
+msgstr ""
+
+#: app/templates/public/form.html:301
+msgid "Yes, we are covered"
+msgstr ""
+
+#: app/templates/public/form.html:301
+msgid "Proof now or later"
+msgstr ""
+
+#: app/templates/public/form.html:302
+msgid "No, we are not"
+msgstr ""
+
+#: app/templates/public/form.html:302
+msgid "We will get in touch about it"
+msgstr ""
+
+#: app/templates/public/form.html:329
+msgid "Upload your certificate"
+msgstr ""
+
+#: app/templates/public/form.html:329
+msgid "optional"
+msgstr ""
+
+#: app/templates/public/form.html:338
+msgid ""
+"Nothing to hand? No problem — your confirmation email has a link you can "
+"use to send it on whenever you like."
+msgstr ""
+
+#: app/templates/public/form.html:377
+msgid ""
+"Have another look at your answers. “Change” takes you back to that step —"
+" nothing you typed is lost."
+msgstr ""
+
+#: app/templates/public/form.html:387
+msgid "Change"
+msgstr ""
+
+#: app/templates/public/form.html:416
+msgid "Time"
+msgstr ""
+
+#: app/templates/public/form.html:434 app/templates/public/manage_edit.html:153
+msgid "Anything we should know"
+msgstr ""
+
+#: app/templates/public/form.html:452
+msgid "What happens after you send?"
+msgstr ""
+
+#: app/templates/public/form.html:454
+msgid ""
+"You get a confirmation email straight away — with your reference and a "
+"link to view, change or cancel the request."
+msgstr ""
+
+#: app/templates/public/form.html:471
+msgid "privacy policy"
+msgstr ""
+
+#: app/templates/public/form.html:477
+#, python-format
+msgid ""
+"I have read the %(policy)s and agree that %(org)s may process our details to"
+" handle this request."
+msgstr ""
+
+#: app/templates/public/form.html:490
+msgid "Send request"
+msgstr ""
+
+#: app/templates/public/form.html:492 app/views/views_public.py:314
+msgid "Please confirm the privacy policy first."
+msgstr ""
+
+#: app/templates/public/form.html:511
+msgid "Not given"
+msgstr ""
+
+#: app/templates/public/form.html:513
+#, python-format
+msgid "%(from)s – %(to)s"
+msgstr ""
+
+#: app/templates/public/landing.html:14
+msgid "Rooms for the community"
+msgstr ""
+
+#: app/templates/public/landing.html:16
+#, python-format
+msgid ""
+"Workshops, readings, gatherings: book the rooms at %(org)s for your event. "
+"Send us a request and we will confirm it by email."
+msgstr ""
+
+#: app/templates/public/landing.html:20
+msgid "See availability"
+msgstr ""
+
+#: app/templates/public/landing.html:29
+msgid "Our rooms"
+msgstr ""
+
+#: app/templates/public/landing.html:30
+#, python-format
+msgid "All rooms are in the %(org)s house and accessible by arrangement."
+msgstr ""
+
+#: app/templates/public/landing.html:59
+msgid "Request"
+msgstr ""
+
+#: app/templates/public/landing.html:67
+msgid "No rooms are available for online booking at the moment."
+msgstr ""
+
+#: app/templates/public/landing.html:76
+msgid "How it works"
+msgstr ""
+
+#: app/templates/public/landing.html:80
+msgid "Send a request"
+msgstr ""
+
+#: app/templates/public/landing.html:81
+msgid "Fill in the form with your preferred date. No account needed."
+msgstr ""
+
+#: app/templates/public/landing.html:85
+msgid "We get back to you"
+msgstr ""
+
+#: app/templates/public/landing.html:86
+msgid "We check availability and reply by email."
+msgstr ""
+
+#: app/templates/public/landing.html:90
+msgid "Date confirmed"
+msgstr ""
+
+#: app/templates/public/landing.html:91
+msgid ""
+"Once we say yes, your date is reserved. Change or cancel any time via "
+"your link."
+msgstr ""
+
+#: app/templates/public/landing.html:100
+msgid "Planning an event?"
+msgstr ""
+
+#: app/templates/public/landing.html:101
+msgid "Send us your request — we usually reply within two working days."
+msgstr ""
+
+#: app/templates/public/layout.html:62 app/templates/public/layout.html:87
+#: app/templates/public/retrieve.html:2 app/templates/public/retrieve.html:23
+msgid "Find my booking"
+msgstr ""
+
+#: app/templates/public/layout.html:107
+msgid "Do you have questions?"
+msgstr ""
+
+#: app/templates/public/layout.html:113
+msgid "Support & donate"
+msgstr ""
+
+#: app/templates/public/layout.html:115
+msgid "About us"
+msgstr ""
+
+#: app/templates/public/layout.html:116
+msgid "FAQ"
+msgstr ""
+
+#: app/templates/public/layout.html:120
+#, python-format
+msgid "To the %(org)s website"
+msgstr ""
+
+#: app/templates/public/layout.html:127
+msgid "Legal notice"
+msgstr ""
+
+#: app/templates/public/link_invalid.html:2
+msgid "Link not valid"
+msgstr ""
+
+#: app/templates/public/link_invalid.html:10
+msgid "This link is not valid"
+msgstr ""
+
+#: app/templates/public/link_invalid.html:12
+msgid "It may have expired, or the booking may already have been cancelled."
+msgstr ""
+
+#: app/templates/public/link_invalid.html:14
+msgid "Request a new link"
+msgstr ""
+
+#: app/templates/public/manage.html:2 app/templates/public/manage.html:9
+msgid "Your booking"
+msgstr ""
+
+#: app/templates/public/manage.html:60
+msgid "This figure is indicative. Invoicing is handled separately."
+msgstr ""
+
+#: app/templates/public/manage.html:77
+msgid "Proof of liability cover"
+msgstr ""
+
+#: app/templates/public/manage.html:79
+msgid ""
+"We have your certificate. If you sent the wrong file, you can replace it "
+"here."
+msgstr ""
+
+#: app/templates/public/manage.html:80
+msgid ""
+"You told us you are covered. We still need the certificate — upload it "
+"here whenever you have it to hand."
+msgstr ""
+
+#: app/templates/public/manage.html:92
+#, python-format
+msgid "Received %(when)s"
+msgstr ""
+
+#: app/templates/public/manage.html:107
+msgid "Replace the certificate"
+msgstr ""
+
+#: app/templates/public/manage.html:107
+msgid "Choose your certificate"
+msgstr ""
+
+#: app/templates/public/manage.html:114
+msgid "Upload"
+msgstr ""
+
+#: app/templates/public/manage.html:121
+msgid "Change this booking"
+msgstr ""
+
+#: app/templates/public/manage.html:129
+msgid ""
+"Cancelling is final — the link stops working afterwards. You will get a "
+"confirmation by email."
+msgstr ""
+
+#: app/templates/public/manage.html:136
+msgid "Cancel this booking"
+msgstr ""
+
+#: app/templates/public/manage_edit.html:3
+#: app/templates/public/manage_edit.html:11
+msgid "Change your booking"
+msgstr ""
+
+#: app/templates/public/manage_edit.html:17
+msgid ""
+"This booking is already confirmed. If you change it, it goes back to us "
+"for review."
+msgstr ""
+
+#: app/templates/public/manage_edit.html:62
+msgid "To change the email address, please contact us."
+msgstr ""
+
+#: app/templates/public/manage_edit.html:158
+msgid "Save changes"
+msgstr ""
+
+#: app/templates/public/manage_edit.html:159
+msgid "Discard"
+msgstr ""
+
+#: app/templates/public/manage_updated.html:10
+msgid "Your changes are saved"
+msgstr ""
+
+#: app/templates/public/manage_updated.html:12
+msgid ""
+"Because the details changed, your booking goes back to us for review. We "
+"will email you once it is decided."
+msgstr ""
+
+#: app/templates/public/manage_updated.html:18
+msgid "View my booking"
+msgstr ""
+
+#: app/templates/public/retrieve.html:15
+msgid "Check your inbox"
+msgstr ""
+
+#: app/templates/public/retrieve.html:17
+msgid ""
+"If that reference and email match a booking, we have sent a link to that "
+"address."
+msgstr ""
+
+#: app/templates/public/retrieve.html:25
+msgid ""
+"Lost the link? No problem. Enter your reference and the email you booked "
+"with — we will send it again."
+msgstr ""
+
+#: app/templates/public/retrieve.html:43
+msgid "Email me the link"
+msgstr ""
+
+#: app/templates/public/retrieve.html:45
+msgid ""
+"For privacy we only ever send the link by email — this page never says "
+"whether a booking exists."
+msgstr ""
+
+#: app/views/deps.py:40
+msgid "OVERVIEW"
+msgstr ""
+
+#: app/views/deps.py:51
+msgid "SPACES"
+msgstr ""
+
+#: app/views/deps.py:62
+msgid "OCCUPANCY"
+msgstr ""
+
+#: app/views/deps.py:65
+msgid "Occupancy"
+msgstr ""
+
+#: app/views/deps.py:73
+msgid "BOOKINGS"
+msgstr ""
+
+#: app/views/deps.py:113
+msgid "Public Booking Site"
+msgstr ""
+
+#: app/views/deps.py:118
+msgid "Member Portal"
+msgstr ""
+
+#: app/views/deps.py:121
+msgid "ACCESS & INFRASTRUCTURE"
+msgstr ""
+
+#: app/views/deps.py:132
+msgid "DOCUMENTS"
+msgstr ""
+
+#: app/views/deps.py:138
+msgid "NOTIFICATIONS"
+msgstr ""
+
+#: app/views/deps.py:144
+msgid "ADMINISTRATION"
+msgstr ""
+
+#: app/views/views_public.py:82 app/views/views_public.py:370
+msgid "That file is larger than 10 MB."
+msgstr ""
+
+#: app/views/views_public.py:84
+msgid "That file is empty."
+msgstr ""
+
+#: app/views/views_public.py:85 app/views/views_public.py:372
+msgid "Please upload a PDF, JPG or PNG."
+msgstr ""
+
+#: app/views/views_public.py:106
+msgid "Step-free access needed"
+msgstr ""
+
+#: app/views/views_public.py:107
+msgid "We bring our own equipment"
+msgstr ""
+
+#: app/views/views_public.py:108
+msgid "Set-up or take-down the day before"
+msgstr ""
+
+#: app/views/views_public.py:109
+msgid "Catering in the room"
+msgstr ""
+
+#: app/views/views_public.py:110
+msgid "Children will be there"
+msgstr ""
+
+#: app/views/views_public.py:111
+msgid "Press or photos planned"
+msgstr ""
+
+#: app/views/views_public.py:324 app/views/views_public.py:416
+#: app/views/views_public.py:495 app/views/views_public.py:596
+msgid "Too many requests. Please try again later."
+msgstr ""
+
+#: app/views/views_public.py:329
+msgid "An email address is required."
+msgstr ""
+
+#: app/views/views_public.py:331 app/views/views_public.py:717
+msgid "Please give your event a title."
+msgstr ""
+
+#: app/views/views_public.py:333 app/views/views_public.py:719
+msgid "Please choose a room."
+msgstr ""
+
+#: app/views/views_public.py:339 app/views/views_public.py:739
+msgid "Please give a valid start date."
+msgstr ""
+
+#: app/views/views_public.py:341 app/views/views_public.py:741
+msgid "Please give a valid end date."
+msgstr ""
+
+#: app/views/views_public.py:351 app/views/views_public.py:727
+msgid "That room cannot be booked online."
+msgstr ""
+
+#: app/views/views_public.py:360 app/views/views_public.py:749
+msgid "Please give a number of attendees."
+msgstr ""
+
+#: app/views/views_public.py:599
+msgid "Please choose a file."
+msgstr ""
+

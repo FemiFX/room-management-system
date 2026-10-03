@@ -1,0 +1,144 @@
+{% extends "base.html" %}
+{#
+  Public shell, styled from the deployment's branding settings
+  (docs/branding.md). Extends
+  base.html directly, NOT admin/layout.html: that builds the staff sidebar and
+  dereferences user attributes an anonymous visitor does not have. Nothing
+  here may include admin/partials/*.
+
+  The public surface is deliberately light-only: it renders on the brand surface colour,
+  so head_extra below forces light rendering even when a staff member with a
+  stored dark theme opens the page, and neutralises base.html's dark-mode
+  !important overrides for the form controls.
+#}
+{% block head_extra %}
+<style>
+  body {
+    font-family: var(--font-body);
+    font-weight: 500;
+    background: rgb(var(--c-surface));
+    color: rgb(var(--c-primary));
+  }
+  h1, h2, h3, h4, h5, h6 { font-family: var(--font-heading); }
+  html.dark body { background: rgb(var(--c-surface)); color: rgb(var(--c-primary)); }
+  [hidden] { display: none !important; }
+  html.dark .ui-input,
+  html.dark input.ui-input,
+  html.dark select.ui-input,
+  html.dark textarea.ui-input {
+    background-color: #ffffff !important;
+    border-color: rgb(var(--c-primary) / 0.25) !important;
+    color: rgb(var(--c-primary)) !important;
+  }
+</style>
+<script>
+  // The public shell is light-only. base.html sets `dark` from localStorage,
+  // which is shared with the admin on this origin -- a staff member who once
+  // switched the admin to dark would otherwise get black bands here, because
+  // base.html's dark rules repaint .bg-white with !important. Runs in <head>,
+  // before first paint.
+  document.documentElement.classList.remove('dark');
+  document.documentElement.style.colorScheme = 'light';
+</script>
+{% endblock %}
+
+{% block content %}
+<div class="min-h-screen flex flex-col bg-surface text-primary">
+  <header class="border-b border-primary/10">
+    <div class="mx-auto flex w-full max-w-6xl min-[1600px]:max-w-[1440px] items-center justify-between gap-4 px-4 py-3 sm:px-8">
+      <a href="/book" class="flex items-center gap-3">
+        {% if brand.logo_url %}
+        <img src="{{ brand.logo_url }}" alt="{{ brand.name }}"
+             class="h-10 w-10 object-contain sm:h-12 sm:w-12">
+        {% endif %}
+        <span class="flex flex-col gap-0.5">
+          <span class="ui-h text-base leading-none sm:text-lg">{{ _('Room booking') }}</span>
+          <span class="text-[11px] font-semibold uppercase leading-none tracking-[0.6px] text-primary/65">{{ brand.legal_name or brand.name }}</span>
+        </span>
+      </a>
+      <nav class="flex items-center gap-4 sm:gap-7">
+        <a href="/book/calendar" class="ui-navlink hidden sm:inline {{ 'text-accent' if request.url.path == '/book/calendar' }}">
+          {{ _('Availability') }}
+        </a>
+        <a href="/book/retrieve" class="ui-navlink hidden sm:inline {{ 'text-accent' if request.url.path.startswith('/book/retrieve') }}">
+          {{ _('Find my booking') }}
+        </a>
+        {# A member or staff member who lands here needs a route back to their
+           own surface. #}
+        <a href="/auth/login" class="ui-navlink hidden md:inline">{{ _('Sign In') }}</a>
+        {# Plain links: no JavaScript, no CSRF question, and idempotent. #}
+        <span class="flex items-center gap-2 font-heading text-[13px] font-bold" aria-label="{{ _('Language') }}">
+          {% for option in language_options %}
+            {% if option.code == current_language %}
+              <span class="text-primary" aria-current="true">{{ option.code | upper }}</span>
+            {% else %}
+              <a href="?lang={{ option.code }}" class="text-primary/45 hover:text-accent"
+                 title="{{ option.label }}">{{ option.code | upper }}</a>
+            {% endif %}
+            {% if not loop.last %}<span class="text-primary/30">|</span>{% endif %}
+          {% endfor %}
+        </span>
+        <a href="/book/new" class="btn-brand btn-brand-sm hidden sm:inline-block">{{ _('Request a room') }}</a>
+      </nav>
+    </div>
+  </header>
+  {# The desktop nav links collapse below sm; give small screens a plain link
+     row instead of a JavaScript burger menu. #}
+  <nav class="flex items-center justify-center gap-6 border-b border-primary/10 bg-surface px-4 py-2.5 sm:hidden">
+    <a href="/book/calendar" class="ui-navlink text-[12px]">{{ _('Availability') }}</a>
+    <a href="/book/retrieve" class="ui-navlink text-[12px]">{{ _('Find my booking') }}</a>
+    <a href="/book/new" class="ui-navlink text-[12px] text-accent-600">{{ _('Request a room') }}</a>
+  </nav>
+
+  <main class="w-full flex-1">
+    {% block public_content %}{% endblock %}
+  </main>
+
+  {#
+    Footer content comes entirely from branding settings (docs/branding.md):
+    contact details, extra links, the organisation's website, legal pages.
+    Anything not configured is simply not rendered. No third-party embeds:
+    the page makes no requests to other servers.
+  #}
+  <footer class="bg-footer px-4 pb-7 pt-11 sm:px-8">
+    <div class="mx-auto flex w-full max-w-6xl min-[1600px]:max-w-[1440px] flex-col gap-8">
+      <div class="flex flex-col justify-between gap-8 sm:flex-row sm:items-start">
+        {% if brand.contact_phone or brand.contact_email %}
+        <div class="flex flex-col gap-2.5">
+          <span class="font-heading text-lg font-bold uppercase text-accent">{{ _('Do you have questions?') }}</span>
+          {% if brand.contact_phone %}
+          <a href="tel:{{ brand.contact_phone | replace(' ', '') | replace('(0)', '') }}" class="text-[15px] text-accent hover:text-accent-200">{{ brand.contact_phone }}</a>
+          {% endif %}
+          {% if brand.contact_email %}
+          <a href="mailto:{{ brand.contact_email }}" class="text-[15px] text-accent hover:text-accent-200">{{ brand.contact_email }}</a>
+          {% endif %}
+        </div>
+        {% endif %}
+        <div class="flex flex-col items-start gap-4 sm:items-end">
+          {% if brand.footer_links %}
+          <nav class="flex flex-wrap gap-x-7 gap-y-2.5 sm:justify-end">
+            {% for label, url in brand.footer_links %}
+            <a href="{{ url }}" class="font-heading text-[13px] font-bold uppercase tracking-[0.4px] text-accent hover:text-accent-200">{{ label }}</a>
+            {% endfor %}
+          </nav>
+          {% endif %}
+          {% if brand.website_url %}
+          <a href="{{ brand.website_url }}"
+             class="inline-flex items-center gap-2.5 rounded-[25px] border-2 border-accent px-5 pb-1.5 pt-2.5 font-heading text-[13px] font-bold uppercase tracking-[0.4px] text-accent hover:bg-accent hover:text-footer">
+            {{ _('To the %(org)s website')|format(org=brand.name) }}
+            <i class="fa-solid fa-arrow-right text-xs" aria-hidden="true"></i>
+          </a>
+          {% endif %}
+        </div>
+      </div>
+      <div class="flex flex-col justify-between gap-2 border-t border-accent/25 pt-5 sm:flex-row sm:items-center">
+        <nav class="flex gap-7">
+          {% if brand.imprint_url %}<a href="{{ brand.imprint_url }}" class="font-heading text-[13px] font-bold uppercase tracking-[0.4px] text-accent hover:text-accent-200">{{ _('Legal notice') }}</a>{% endif %}
+          {% if brand.privacy_url %}<a href="{{ brand.privacy_url }}" class="font-heading text-[13px] font-bold uppercase tracking-[0.4px] text-accent hover:text-accent-200">{{ _('Privacy') }}</a>{% endif %}
+        </nav>
+        <span class="text-[13px] text-accent/70">© {{ brand.name }} {{ current_year }}</span>
+      </div>
+    </div>
+  </footer>
+</div>
+{% endblock %}

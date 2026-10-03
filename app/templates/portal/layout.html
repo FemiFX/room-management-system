@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+{#
+  Portal shell, styled from the deployment's branding settings
+  (docs/branding.md). Extends
+  base.html directly, NOT admin/layout.html -- the admin layout builds the
+  staff sidebar and would leak navigation a member must not see. Keep this
+  file free of any admin/partials include.
+
+  Same light-only forcing as public/layout.html.
+#}
+{% block head_extra %}
+<style>
+  body {
+    font-family: var(--font-body);
+    font-weight: 500;
+    background: rgb(var(--c-surface));
+    color: rgb(var(--c-primary));
+  }
+  h1, h2, h3, h4, h5, h6 { font-family: var(--font-heading); }
+  html.dark body { background: rgb(var(--c-surface)); color: rgb(var(--c-primary)); }
+  [hidden] { display: none !important; }
+  html.dark .ui-input,
+  html.dark input.ui-input,
+  html.dark select.ui-input,
+  html.dark textarea.ui-input {
+    background-color: #ffffff !important;
+    border-color: rgb(var(--c-primary) / 0.25) !important;
+    color: rgb(var(--c-primary)) !important;
+  }
+</style>
+<script>
+  // The portal shell is light-only. base.html sets `dark` from localStorage,
+  // which is shared with the admin on this origin -- a staff member who once
+  // switched the admin to dark would otherwise get black bands here, because
+  // base.html's dark rules repaint .bg-white with !important. Runs in <head>,
+  // before first paint.
+  document.documentElement.classList.remove('dark');
+  document.documentElement.style.colorScheme = 'light';
+</script>
+{% endblock %}
+
+{% block content %}
+<div class="min-h-screen flex flex-col bg-surface text-primary">
+  <header class="border-b border-primary/10">
+    <div class="mx-auto flex w-full max-w-5xl items-center justify-between gap-4 px-4 py-3 sm:px-6">
+      <a href="/portal" class="flex items-center gap-3">
+        {% if brand.logo_url %}
+        <img src="{{ brand.logo_url }}" alt="{{ brand.name }}"
+             class="h-10 w-10 object-contain sm:h-12 sm:w-12">
+        {% endif %}
+        <span class="flex flex-col gap-0.5">
+          <span class="ui-h text-base leading-none sm:text-lg">{{ _('Member portal') }}</span>
+          <span class="text-[11px] font-semibold uppercase leading-none tracking-[0.6px] text-primary/65">{{ brand.legal_name or brand.name }}</span>
+        </span>
+      </a>
+      <nav class="flex items-center gap-4 sm:gap-7">
+        <a href="/portal/book" class="ui-navlink hidden sm:inline {{ 'text-accent' if active_path == '/portal/book' }}">
+          {{ _('Book a room') }}
+        </a>
+        <a href="/portal/calendar" class="ui-navlink hidden sm:inline {{ 'text-accent' if active_path == '/portal/calendar' }}">
+          {{ _('Availability') }}
+        </a>
+        <a href="/portal/bookings" class="ui-navlink hidden sm:inline {{ 'text-accent' if active_path == '/portal/bookings' }}">
+          {{ _('My bookings') }}
+        </a>
+        <span class="flex items-center gap-3 border-l border-primary/15 pl-4 sm:pl-6">
+          <span class="flex h-9 w-9 items-center justify-center rounded-full bg-accent pt-0.5 font-heading text-[13px] font-bold text-primary">
+            {{ user_initials }}
+          </span>
+          <span class="hidden text-[13px] font-semibold md:inline">{{ user_name }}</span>
+          <form method="post" action="/auth/logout">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+            <button type="submit" class="ui-navlink text-[11px] text-primary/55">{{ _('Sign out') }}</button>
+          </form>
+        </span>
+      </nav>
+    </div>
+  </header>
+  <nav class="flex items-center justify-center gap-6 border-b border-primary/10 bg-surface px-4 py-2.5 sm:hidden">
+    <a href="/portal/book" class="ui-navlink text-[12px] {{ 'text-accent' if active_path == '/portal/book' }}">{{ _('Book a room') }}</a>
+    <a href="/portal/calendar" class="ui-navlink text-[12px] {{ 'text-accent' if active_path == '/portal/calendar' }}">{{ _('Availability') }}</a>
+    <a href="/portal/bookings" class="ui-navlink text-[12px] {{ 'text-accent' if active_path == '/portal/bookings' }}">{{ _('My bookings') }}</a>
+  </nav>
+
+  <main class="mx-auto w-full max-w-5xl flex-1 px-4 py-10 sm:px-6">
+    {% block portal_content %}{% endblock %}
+  </main>
+
+  <footer class="bg-footer px-4 py-6 sm:px-6">
+    <div class="mx-auto flex w-full max-w-5xl flex-col justify-between gap-3 sm:flex-row sm:items-center">
+      <span class="text-[13px] text-accent/70">© {{ brand.name }} · {{ _('Internal') }}</span>
+      <div class="flex gap-6">
+        {% if brand.website_url %}<a href="{{ brand.website_url }}" class="font-heading text-[12px] font-bold uppercase text-accent hover:text-accent-200">{{ brand.website_url | replace('https://', '') | replace('http://', '') | trim('/') }}</a>{% endif %}
+        {% if brand.privacy_url %}<a href="{{ brand.privacy_url }}" class="font-heading text-[12px] font-bold uppercase text-accent hover:text-accent-200">{{ _('Privacy') }}</a>{% endif %}
+      </div>
+    </div>
+  </footer>
+</div>
+{% endblock %}

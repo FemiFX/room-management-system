@@ -1,0 +1,110 @@
+{# Dialogs for the booking setup page, split out to keep that file readable. #}
+
+{% macro dialog(id, title) %}
+<dialog id="{{ id }}" class="w-full max-w-lg rounded-xl bg-white p-0 shadow-2xl backdrop:bg-black/50 dark:bg-carbon-800">
+  <div class="flex items-center justify-between border-b border-gray-100 px-6 py-4 dark:border-carbon-700">
+    <h2 class="text-base font-semibold text-gray-900 dark:text-parchment">{{ title }}</h2>
+    <button type="button" onclick="closeModal('{{ id }}')" class="text-gray-400 hover:text-gray-600 dark:hover:text-parchment">
+      <i class="fa-solid fa-xmark"></i>
+    </button>
+  </div>
+  {{ caller() }}
+</dialog>
+{% endmacro %}
+
+{% call dialog('modal-equipment-create', _('Add equipment')) %}
+<form id="form-equipment-create" class="space-y-4 px-6 py-5">
+  <div>
+    <label class="form-label" for="eq-name">{{ _('Name') }} <span class="text-red-500">*</span></label>
+    <input id="eq-name" name="name" class="form-input" required placeholder="{{ _('e.g. Projector') }}">
+  </div>
+  <div>
+    <label class="form-label" for="eq-category">{{ _('Category') }}</label>
+    <input id="eq-category" name="category" class="form-input">
+  </div>
+  <div>
+    <label class="form-label" for="eq-notes">{{ _('Notes') }}</label>
+    <textarea id="eq-notes" name="notes" rows="2" class="form-input"></textarea>
+  </div>
+  <div data-modal-error class="hidden text-sm text-red-600 dark:text-red-400"></div>
+  <div class="flex justify-end gap-2 pt-2">
+    <button type="button" onclick="closeModal('modal-equipment-create')" class="btn-secondary">{{ _('Cancel') }}</button>
+    <button type="submit" class="btn-primary">{{ _('Create') }}</button>
+  </div>
+</form>
+{% endcall %}
+
+{% call dialog('modal-equipment-edit', _('Edit equipment')) %}
+<form id="form-equipment-edit" class="space-y-4 px-6 py-5">
+  <input type="hidden" id="eq-edit-id">
+  <div>
+    <label class="form-label" for="eq-edit-name">{{ _('Name') }} <span class="text-red-500">*</span></label>
+    <input id="eq-edit-name" name="name" class="form-input" required>
+  </div>
+  <div>
+    <label class="form-label" for="eq-edit-category">{{ _('Category') }}</label>
+    <input id="eq-edit-category" name="category" class="form-input">
+  </div>
+  <div>
+    <label class="form-label" for="eq-edit-notes">{{ _('Notes') }}</label>
+    <textarea id="eq-edit-notes" name="notes" rows="2" class="form-input"></textarea>
+  </div>
+  <div data-modal-error class="hidden text-sm text-red-600 dark:text-red-400"></div>
+  <div class="flex justify-end gap-2 pt-2">
+    <button type="button" onclick="closeModal('modal-equipment-edit')" class="btn-secondary">{{ _('Cancel') }}</button>
+    <button type="submit" class="btn-primary">{{ _('Save') }}</button>
+  </div>
+</form>
+{% endcall %}
+
+{% call dialog('modal-service-create', _('Add service')) %}
+<form id="form-service-create" class="space-y-4 px-6 py-5">
+  <div>
+    <label class="form-label" for="svc-name">{{ _('Name') }} <span class="text-red-500">*</span></label>
+    <input id="svc-name" name="name" class="form-input" required placeholder="{{ _('e.g. Technician') }}">
+  </div>
+  <div>
+    <label class="form-label" for="svc-code">{{ _('Code') }}</label>
+    <input id="svc-code" name="code" class="form-input" placeholder="technician">
+    <p class="mt-1 text-xs text-gray-500 dark:text-parchment/60">
+      {{ _('A stable key. The name can change later; this cannot. Leave it empty and one is derived from the name.') }}
+    </p>
+  </div>
+  <div>
+    <label class="form-label" for="svc-description">{{ _('Description') }}</label>
+    <textarea id="svc-description" name="description" rows="2" class="form-input"></textarea>
+  </div>
+  <div>
+    <label class="form-label" for="svc-sort">{{ _('Sort order') }}</label>
+    <input id="svc-sort" name="sort_order" type="number" value="0" class="form-input">
+  </div>
+  <div data-modal-error class="hidden text-sm text-red-600 dark:text-red-400"></div>
+  <div class="flex justify-end gap-2 pt-2">
+    <button type="button" onclick="closeModal('modal-service-create')" class="btn-secondary">{{ _('Cancel') }}</button>
+    <button type="submit" class="btn-primary">{{ _('Create') }}</button>
+  </div>
+</form>
+{% endcall %}
+
+{% call dialog('modal-service-edit', _('Edit service')) %}
+<form id="form-service-edit" class="space-y-4 px-6 py-5">
+  <input type="hidden" id="svc-edit-id">
+  <div>
+    <label class="form-label" for="svc-edit-name">{{ _('Name') }} <span class="text-red-500">*</span></label>
+    <input id="svc-edit-name" name="name" class="form-input" required>
+  </div>
+  <div>
+    <label class="form-label" for="svc-edit-description">{{ _('Description') }}</label>
+    <textarea id="svc-edit-description" name="description" rows="2" class="form-input"></textarea>
+  </div>
+  <div>
+    <label class="form-label" for="svc-edit-sort">{{ _('Sort order') }}</label>
+    <input id="svc-edit-sort" name="sort_order" type="number" class="form-input">
+  </div>
+  <div data-modal-error class="hidden text-sm text-red-600 dark:text-red-400"></div>
+  <div class="flex justify-end gap-2 pt-2">
+    <button type="button" onclick="closeModal('modal-service-edit')" class="btn-secondary">{{ _('Cancel') }}</button>
+    <button type="submit" class="btn-primary">{{ _('Save') }}</button>
+  </div>
+</form>
+{% endcall %}

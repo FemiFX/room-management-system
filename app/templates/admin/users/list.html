@@ -1,0 +1,255 @@
+{% extends "admin/layout.html" %}
+{% from "admin/partials/badges.html" import role_badge %}
+
+{% block title %}{{ _('Users & Roles') }}{% endblock %}
+{% block page_title %}{{ _('Users & Roles') }}{% endblock %}
+{% block page_subtitle %}{{ _('System user accounts') }}{% endblock %}
+
+{% block admin_content %}
+<div class="space-y-4">
+
+    <div class="flex items-center justify-end">
+        <button onclick="openModal('modal-user-create')" class="btn-primary inline-flex items-center gap-2">
+            <i class="fa-solid fa-plus text-xs"></i> New User
+        </button>
+    </div>
+
+    <div class="card overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-100 dark:border-carbon-700 flex items-center justify-between">
+            <h3 class="text-base font-semibold text-gray-900 dark:text-parchment flex items-center gap-2">
+                <i class="fa-solid fa-users text-deep-space-500 text-sm"></i> Users
+            </h3>
+            <span class="text-xs text-gray-400 dark:text-parchment/50">{{ users | length }} user{{ 's' if users | length != 1 else '' }}</span>
+        </div>
+
+        {% if users %}
+        <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+                <thead>
+                    <tr class="border-b border-gray-100 dark:border-carbon-700 bg-gray-50/60 dark:bg-carbon-700/30">
+                        <th class="text-left px-6 py-3 text-xs font-semibold text-gray-500 dark:text-parchment/60 uppercase tracking-wide">Name</th>
+                        <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-parchment/60 uppercase tracking-wide hidden md:table-cell">Email</th>
+                        <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-parchment/60 uppercase tracking-wide">Role</th>
+                        <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-parchment/60 uppercase tracking-wide">Status</th>
+                        <th class="px-4 py-3"></th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-50 dark:divide-carbon-700/50">
+                    {% for u in users %}
+                    <tr class="hover:bg-gray-50/60 dark:hover:bg-carbon-700/30 transition-colors" data-user-id="{{ u.id }}">
+                        <td class="px-6 py-3.5">
+                            <div class="flex items-center gap-3">
+                                <div class="w-8 h-8 rounded-full bg-turf-green-600/10 dark:bg-golden-bronze-300/10 flex items-center justify-center flex-shrink-0">
+                                    <span class="text-xs font-bold text-turf-green-600 dark:text-golden-bronze-300">
+                                        {{ (u.display_name or u.email or '?')[:2] | upper }}
+                                    </span>
+                                </div>
+                                <span class="font-medium text-gray-900 dark:text-parchment">{{ u.display_name or '—' }}</span>
+                            </div>
+                        </td>
+                        <td class="px-4 py-3.5 text-sm text-gray-600 dark:text-parchment/70 hidden md:table-cell">
+                            {{ u.email }}
+                        </td>
+                        <td class="px-4 py-3.5">
+                            {{ role_badge(u.role.value) }}
+                        </td>
+                        <td class="px-4 py-3.5" id="status-cell-{{ u.id }}">
+                            {% if u.is_active %}
+                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">
+                                <i class="fa-solid fa-circle text-[6px] mr-1.5"></i>Active
+                            </span>
+                            {% else %}
+                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-500 dark:bg-gray-700/40 dark:text-gray-400">
+                                Inactive
+                            </span>
+                            {% endif %}
+                        </td>
+                        <td class="px-4 py-3.5 text-right">
+                            <div class="flex items-center justify-end gap-1">
+                                <button onclick="openUserEditModal({{ u.id }}, '{{ u.display_name or '' | e }}', '{{ u.role.value }}', '{{ u.preferred_language }}')"
+                                        class="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold rounded-lg bg-gray-100 dark:bg-carbon-700 text-gray-600 dark:text-parchment/80 hover:bg-gray-200 dark:hover:bg-carbon-600 transition-colors">
+                                    <i class="fa-solid fa-pen text-[9px]"></i> Edit
+                                </button>
+                                {% if u.is_active %}
+                                <button onclick="toggleUserActive({{ u.id }}, false)"
+                                        id="toggle-btn-{{ u.id }}"
+                                        class="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold rounded-lg bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400 hover:bg-orange-200 dark:hover:bg-orange-900/50 transition-colors">
+                                    Deactivate
+                                </button>
+                                {% else %}
+                                <button onclick="toggleUserActive({{ u.id }}, true)"
+                                        id="toggle-btn-{{ u.id }}"
+                                        class="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold rounded-lg bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 hover:bg-green-200 dark:hover:bg-green-900/50 transition-colors">
+                                    Activate
+                                </button>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="py-16 text-center">
+            <i class="fa-solid fa-users text-4xl text-gray-200 dark:text-parchment/20 mb-4 block"></i>
+            <p class="text-base font-medium text-gray-600 dark:text-parchment/60">No users found</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+{# ─── Create User Modal ────────────────────────────────────────────── #}
+<dialog id="modal-user-create" class="rounded-xl shadow-2xl p-0 w-full max-w-md bg-white dark:bg-carbon-800 backdrop:bg-black/50">
+    <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-carbon-700">
+        <h2 class="text-base font-semibold text-gray-900 dark:text-parchment">New User</h2>
+        <button type="button" onclick="closeModal('modal-user-create')" class="w-8 h-8 flex items-center justify-center rounded-lg text-gray-400 hover:bg-gray-100 dark:hover:bg-carbon-700 hover:text-gray-600 transition-colors">&times;</button>
+    </div>
+    <form id="form-user-create" class="px-6 py-5 space-y-4" novalidate>
+        <div>
+            <label class="form-label" for="uc-email">Email <span class="text-red-500">*</span></label>
+            <input id="uc-email" name="email" type="email" required class="form-input" placeholder="user@example.com">
+        </div>
+        <div>
+            <label class="form-label" for="uc-name">Display Name <span class="text-red-500">*</span></label>
+            <input id="uc-name" name="display_name" type="text" required class="form-input" placeholder="Full Name">
+        </div>
+        <div>
+            <label class="form-label" for="uc-role">Role</label>
+            <select id="uc-role" name="role" class="form-input">
+                <option value="viewer">Viewer</option>
+                <option value="editor">Editor</option>
+                <option value="admin">Admin</option>
+                <option value="super_admin">Super Admin</option>
+            </select>
+        </div>
+        <div>
+            <label class="form-label" for="uc-language">Preferred Language</label>
+            <select id="uc-language" name="preferred_language" class="form-input">
+                {% for language in supported_languages %}
+                <option value="{{ language }}" {% if language == current_language %}selected{% endif %}>{{ language | upper }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="flex items-center gap-2">
+            <input id="uc-active" name="is_active" type="checkbox" class="rounded border-gray-300 text-turf-green-600" checked>
+            <label for="uc-active" class="text-sm text-gray-700 dark:text-parchment">Active</label>
+        </div>
+        <p id="err-user-create" class="text-sm text-red-600 dark:text-red-400 hidden"></p>
+    </form>
+    <div class="flex justify-end gap-3 px-6 py-4 border-t border-gray-100 dark:border-carbon-700">
+        <button type="button" onclick="closeModal('modal-user-create')" class="btn-secondary">Cancel</button>
+        <button type="submit" form="form-user-create" class="btn-primary">Create</button>
+    </div>
+</dialog>
+
+{# ─── Edit User Modal ──────────────────────────────────────────────── #}
+<dialog id="modal-user-edit" class="rounded-xl shadow-2xl p-0 w-full max-w-md bg-white dark:bg-carbon-800 backdrop:bg-black/50">
+    <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-carbon-700">
+        <h2 class="text-base font-semibold text-gray-900 dark:text-parchment">Edit User</h2>
+        <button type="button" onclick="closeModal('modal-user-edit')" class="w-8 h-8 flex items-center justify-center rounded-lg text-gray-400 hover:bg-gray-100 dark:hover:bg-carbon-700 hover:text-gray-600 transition-colors">&times;</button>
+    </div>
+    <form id="form-user-edit" class="px-6 py-5 space-y-4" novalidate>
+        <input type="hidden" id="ue-id">
+        <div>
+            <label class="form-label" for="ue-name">Display Name <span class="text-red-500">*</span></label>
+            <input id="ue-name" name="display_name" type="text" required class="form-input">
+        </div>
+        <div>
+            <label class="form-label" for="ue-role">Role</label>
+            <select id="ue-role" name="role" class="form-input">
+                <option value="viewer">Viewer</option>
+                <option value="editor">Editor</option>
+                <option value="admin">Admin</option>
+                <option value="super_admin">Super Admin</option>
+            </select>
+        </div>
+        <div>
+            <label class="form-label" for="ue-language">Preferred Language</label>
+            <select id="ue-language" name="preferred_language" class="form-input">
+                {% for language in supported_languages %}
+                <option value="{{ language }}">{{ language | upper }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <p id="err-user-edit" class="text-sm text-red-600 dark:text-red-400 hidden"></p>
+    </form>
+    <div class="flex justify-end gap-3 px-6 py-4 border-t border-gray-100 dark:border-carbon-700">
+        <button type="button" onclick="closeModal('modal-user-edit')" class="btn-secondary">Cancel</button>
+        <button type="submit" form="form-user-edit" class="btn-primary">Save</button>
+    </div>
+</dialog>
+
+{% endblock %}
+
+
+{% block page_scripts %}
+<script>
+(function () {
+    // ── Create User ─────────────────────────────────────────────────────
+    document.getElementById('form-user-create').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const data = formToObject(e.target, []);
+        if (!data.email) { setModalError('modal-user-create', 'Email is required.'); return; }
+        if (!data.display_name) { setModalError('modal-user-create', 'Display name is required.'); return; }
+        setSubmitting('form-user-create', true);
+        clearModalError('modal-user-create');
+        const res = await apiPost('/api/v1/admin/users', data);
+        setSubmitting('form-user-create', false);
+        if (res.ok) { location.reload(); }
+        else { setModalError('modal-user-create', await parseApiError(res)); }
+    });
+
+    // ── Edit User ───────────────────────────────────────────────────────
+    window.openUserEditModal = function(id, name, role, preferredLanguage) {
+        document.getElementById('ue-id').value = id;
+        document.getElementById('ue-name').value = name;
+        document.getElementById('ue-role').value = role;
+        document.getElementById('ue-language').value = preferredLanguage || '{{ current_language }}';
+        clearModalError('modal-user-edit');
+        openModal('modal-user-edit');
+    };
+
+    document.getElementById('form-user-edit').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const id = document.getElementById('ue-id').value;
+        const data = {
+            display_name: document.getElementById('ue-name').value.trim(),
+            role: document.getElementById('ue-role').value,
+            preferred_language: document.getElementById('ue-language').value,
+        };
+        if (!data.display_name) { setModalError('modal-user-edit', 'Display name is required.'); return; }
+        setSubmitting('form-user-edit', true);
+        clearModalError('modal-user-edit');
+        const res = await apiPatch(`/api/v1/admin/users/${id}`, data);
+        setSubmitting('form-user-edit', false);
+        if (res.ok) { location.reload(); }
+        else { setModalError('modal-user-edit', await parseApiError(res)); }
+    });
+
+    // ── Activate / Deactivate ───────────────────────────────────────────
+    window.toggleUserActive = async function(id, activate) {
+        const action = activate ? 'activate' : 'deactivate';
+        const res = await apiPost(`/api/v1/admin/users/${id}/${action}`, {});
+        if (res.ok) {
+            const statusCell = document.getElementById(`status-cell-${id}`);
+            const toggleBtn = document.getElementById(`toggle-btn-${id}`);
+            if (activate) {
+                statusCell.innerHTML = '<span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"><i class="fa-solid fa-circle text-[6px] mr-1.5"></i>Active</span>';
+                toggleBtn.textContent = 'Deactivate';
+                toggleBtn.className = 'inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold rounded-lg bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400 hover:bg-orange-200 dark:hover:bg-orange-900/50 transition-colors';
+                toggleBtn.setAttribute('onclick', `toggleUserActive(${id}, false)`);
+            } else {
+                statusCell.innerHTML = '<span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-500 dark:bg-gray-700/40 dark:text-gray-400">Inactive</span>';
+                toggleBtn.textContent = 'Activate';
+                toggleBtn.className = 'inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold rounded-lg bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 hover:bg-green-200 dark:hover:bg-green-900/50 transition-colors';
+                toggleBtn.setAttribute('onclick', `toggleUserActive(${id}, true)`);
+            }
+            if (window.showToast) window.showToast(`User ${activate ? 'activated' : 'deactivated'}`, 'success');
+        } else {
+            if (window.showToast) window.showToast('Failed to update user', 'error');
+        }
+    };
+})();
+</script>
+{% endblock %}

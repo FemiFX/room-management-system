@@ -1,0 +1,1 @@
+{{ _('We have received your booking request') }} — {{ public_ref }}

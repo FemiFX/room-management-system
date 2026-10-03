@@ -1,0 +1,536 @@
+{% extends "admin/layout.html" %}
+{% from "admin/partials/badges.html" import audit_action_label, booking_source_badge, booking_status_badge, party_type_badge %}
+
+{% block title %}{{ booking.title }}{% endblock %}
+{% block page_title %}{{ booking.title }}{% endblock %}
+{% block page_subtitle %}
+  {% if booking_request and booking_request.public_ref %}{{ booking_request.public_ref }} · {% endif %}
+  {{ booking.room.name if booking.room else '' }}
+{% endblock %}
+
+{% block nav_extra %}
+<a href="{{ back_url }}" class="btn-secondary inline-flex shrink-0 items-center gap-2 whitespace-nowrap text-sm">
+  <i class="fa-solid fa-arrow-left text-xs"></i> {{ _('Back to bookings') }}
+</a>
+{% endblock %}
+
+{% block admin_content %}
+{% set past = is_past(booking.end_at) %}
+<div class="space-y-5">
+
+  {# ─── Header: who and what, the decision, and the four facts ─────── #}
+  <div class="card overflow-hidden">
+    <div class="flex flex-wrap items-start justify-between gap-5 px-6 pb-4 pt-5">
+      <div class="flex min-w-0 flex-col gap-2">
+        <div class="flex flex-wrap items-center gap-2">
+          {{ booking_status_badge(booking.status.value) }}
+          {{ booking_source_badge(booking.source.value) }}
+          {% if booking_request and booking_request.public_ref %}
+          <span class="rounded-md bg-gray-100 px-2 py-0.5 font-mono text-[11px] text-gray-600 dark:bg-carbon-700 dark:text-parchment/70">{{ booking_request.public_ref }}</span>
+          {% endif %}
+        </div>
+        <p class="text-xs text-gray-500 dark:text-parchment/60">
+          {{ _('Created %(when)s')|format(when=booking.created_at | local_datetime) }}
+          {%- if booking.created_by %} · {{ booking.created_by.display_name }}{% endif %}
+        </p>
+      </div>
+      <div class="flex flex-wrap items-center gap-2">
+        {% if not past and booking.status.value == 'pending' %}
+        <button id="btn-approve" data-id="{{ booking.id }}" class="btn-primary inline-flex items-center gap-2 text-sm">
+          <i class="fa-solid fa-check text-xs"></i> {{ _('Approve') }}
+        </button>
+        <button id="btn-reject" data-id="{{ booking.id }}" class="btn-secondary inline-flex items-center gap-2 text-sm">
+          <i class="fa-solid fa-xmark text-xs"></i> {{ _('Reject') }}
+        </button>
+        {% endif %}
+        {#
+          Cancel lives here rather than in the bookings table. It ends a booking
+          somebody is counting on, so it belongs where the room, the party and
+          the dates are on screen -- not one row-hover away from Approve.
+        #}
+        {% if not past and booking.status.value in ['pending', 'approved'] %}
+        <button id="btn-cancel" data-id="{{ booking.id }}" class="btn-danger inline-flex items-center gap-2 text-sm">
+          <i class="fa-solid fa-ban text-xs"></i> {{ _('Cancel booking') }}
+        </button>
+        {% endif %}
+        {#
+          Which workflow this booking belongs to, so the page says whether the
+          certificate, the invoice and the manage link below apply at all.
+          It follows the PARTY, not the source: a request phoned in and typed
+          by staff is an external one.
+        #}
+        {% if is_external %}
+        <span class="inline-flex items-center gap-1.5 rounded-full bg-blue-100 px-2.5 py-1 text-[11px] font-semibold text-blue-700 dark:bg-blue-900/30 dark:text-blue-300">
+          <i class="fa-solid fa-arrow-right-to-bracket text-[10px]"></i> {{ _('External') }}
+        </span>
+        {% else %}
+        <span class="inline-flex items-center gap-1.5 rounded-full bg-gray-100 px-2.5 py-1 text-[11px] font-semibold text-gray-600 dark:bg-carbon-700 dark:text-parchment/70">
+          <i class="fa-solid fa-building text-[10px]"></i> {{ _('Internal') }}
+        </span>
+        {% endif %}
+      </div>
+    </div>
+
+    {#
+      The four things anyone opening this page checks first. Capacity and
+      conflicts are computed on load rather than discovered by a failing
+      Approve -- finding out about a clash from a 409 is the wrong order.
+    #}
+    <dl class="grid grid-cols-1 border-t border-gray-100 bg-gray-50/60 sm:grid-cols-2 lg:grid-cols-4 dark:border-carbon-700 dark:bg-carbon-700/20">
+      <div class="border-b border-gray-100 px-6 py-3 sm:border-r lg:border-b-0 dark:border-carbon-700">
+        <dt class="text-[11px] font-semibold uppercase tracking-wide text-gray-400 dark:text-parchment/40">{{ _('Room') }}</dt>
+        <dd class="mt-0.5 text-sm font-semibold text-gray-900 dark:text-parchment">
+          {% if booking.room %}<a href="/rooms/{{ booking.room.id }}" class="hover:underline">{{ booking.room.name }}</a>{% else %}—{% endif %}
+        </dd>
+        {% if booking.room %}
+        <dd class="text-xs text-gray-500 dark:text-parchment/60">
+          <span class="font-mono">{{ booking.room.room_code }}</span>
+          {%- if capacity %} · {{ _('%(count)s seats')|format(count=capacity) }}{% endif %}
+        </dd>
+        {% endif %}
+      </div>
+      <div class="border-b border-gray-100 px-6 py-3 lg:border-b-0 lg:border-r dark:border-carbon-700">
+        <dt class="text-[11px] font-semibold uppercase tracking-wide text-gray-400 dark:text-parchment/40">{{ _('Period') }}</dt>
+        <dd class="mt-0.5 text-sm font-semibold text-gray-900 dark:text-parchment">{{ booking.start_at | local_datetime }}</dd>
+        <dd class="text-xs text-gray-500 dark:text-parchment/60">
+          {{ _('until %(time)s')|format(time=booking.end_at | local_datetime) }}
+          {%- if booking_request and booking_request.whole_day %} · {{ _('Whole day') }}
+          {%- else %} · {{ _('%(count)s h')|format(count=duration_hours) }}{% endif %}
+        </dd>
+      </div>
+      <div class="border-b border-gray-100 px-6 py-3 sm:border-r lg:border-b-0 dark:border-carbon-700">
+        <dt class="text-[11px] font-semibold uppercase tracking-wide text-gray-400 dark:text-parchment/40">{{ _('Attendees') }}</dt>
+        <dd class="mt-0.5 text-sm font-semibold text-gray-900 dark:text-parchment">
+          {{ booking.attendee_count or '—' }}{% if capacity and booking.attendee_count %} <span class="font-normal text-gray-400 dark:text-parchment/40">{{ _('of %(count)s')|format(count=capacity) }}</span>{% endif %}
+        </dd>
+        {% if capacity and booking.attendee_count %}
+        <dd class="text-xs {% if over_capacity %}font-semibold text-red-600 dark:text-red-400{% else %}text-teal-700 dark:text-teal-400{% endif %}">
+          {{ _('Over the room capacity') if over_capacity else _('Fits the room') }}
+        </dd>
+        {% endif %}
+      </div>
+      <div class="px-6 py-3">
+        <dt class="text-[11px] font-semibold uppercase tracking-wide text-gray-400 dark:text-parchment/40">{{ _('Conflicts') }}</dt>
+        {% if conflicts %}
+        <dd class="mt-0.5 text-sm font-semibold text-red-600 dark:text-red-400">{{ _('%(count)s found')|format(count=conflicts | length) }}</dd>
+        <dd class="text-xs text-gray-500 dark:text-parchment/60">
+          {% set clash = conflicts[0] %}
+          {% if clash.kind == 'booking' %}
+            <a href="/bookings/{{ clash.booking_id }}" class="hover:underline">{{ clash.start_at | local_datetime }} – {{ clash.end_at | local_datetime }}</a>
+          {% elif clash.kind == 'lease' %}{{ _('An active lease covers these dates') }}
+          {% else %}{{ _('The room is assigned internally') }}{% endif %}
+        </dd>
+        {% else %}
+        <dd class="mt-0.5 text-sm font-semibold text-teal-700 dark:text-teal-400">{{ _('None') }}</dd>
+        <dd class="text-xs text-gray-500 dark:text-parchment/60">{{ _('The room is free for this period') }}</dd>
+        {% endif %}
+      </div>
+    </dl>
+  </div>
+
+  <div class="grid items-start gap-5 lg:grid-cols-3">
+
+    {# ─── Left: the request, in reading order ───────────────────────── #}
+    <div class="flex flex-col gap-5 lg:col-span-2">
+
+      {% if booking_request and booking.source.value == 'public' %}
+      <div class="card">
+        <div class="flex flex-wrap items-center justify-between gap-3 border-b border-gray-100 px-6 py-3.5 dark:border-carbon-700">
+          <h3 class="flex items-center gap-2 text-sm font-semibold text-gray-900 dark:text-parchment">
+            <i class="fa-solid fa-user text-gray-400"></i> {{ _('Requester') }}
+          </h3>
+          {#
+            These are a snapshot of what was submitted, not a view onto the
+            Party. They stay accurate if the Party is later edited or merged.
+          #}
+          <span class="text-[11px] text-gray-400 dark:text-parchment/40">{{ _('As submitted — not a view of the contact record') }}</span>
+        </div>
+        <div class="flex flex-col gap-4 px-6 py-4">
+          <div class="flex items-center gap-3.5">
+            {% set name_parts = (booking_request.requester_display_name or '?').split() %}
+            <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-blue-50 text-sm font-bold text-blue-800 dark:bg-carbon-700 dark:text-parchment">
+              {{ (name_parts[0][0] ~ (name_parts[1][0] if name_parts | length > 1 else '')) | upper }}
+            </span>
+            <span class="flex min-w-0 flex-col">
+              <span class="text-[15px] font-semibold text-gray-900 dark:text-parchment">
+                {{ booking_request.requester_academic_title or '' }} {{ booking_request.requester_display_name or '—' }}
+              </span>
+              <span class="text-xs text-gray-500 dark:text-parchment/60">
+                {%- if booking_request.requester_organization %}{{ booking_request.requester_organization }} · {% endif -%}
+                {% if booking.party %}<a href="/parties/{{ booking.party.id }}" class="text-deep-space-500 hover:underline dark:text-golden-bronze-300">{{ _('Open contact') }}</a>{% endif %}
+              </span>
+            </span>
+          </div>
+          <dl class="grid gap-4 text-sm sm:grid-cols-2">
+            <div>
+              <dt class="text-[11px] font-semibold uppercase tracking-wide text-gray-400 dark:text-parchment/40">{{ _('Email') }}</dt>
+              <dd><a href="mailto:{{ booking_request.requester_email }}" class="break-all text-deep-space-500 hover:underline dark:text-golden-bronze-300">{{ booking_request.requester_email or '—' }}</a></dd>
+            </div>
+            {% if booking_request.requester_phone %}
+            <div>
+              <dt class="text-[11px] font-semibold uppercase tracking-wide text-gray-400 dark:text-parchment/40">{{ _('Phone') }}</dt>
+              <dd><a href="tel:{{ booking_request.requester_phone }}" class="text-deep-space-500 hover:underline dark:text-golden-bronze-300">{{ booking_request.requester_phone }}</a></dd>
+            </div>
+            {% endif %}
+            {% if booking_request.requester_address %}
+            <div>
+              <dt class="text-[11px] font-semibold uppercase tracking-wide text-gray-400 dark:text-parchment/40">{{ _('Address') }}</dt>
+              <dd class="whitespace-pre-line text-gray-900 dark:text-parchment">{{ booking_request.requester_address }}</dd>
+            </div>
+            {% endif %}
+            {% if booking_request.contact_person %}
+            <div>
+              <dt class="text-[11px] font-semibold uppercase tracking-wide text-gray-400 dark:text-parchment/40">{{ _('Contact on the day') }}</dt>
+              <dd class="text-gray-900 dark:text-parchment">{{ booking_request.contact_person }}</dd>
+            </div>
+            {% endif %}
+          </dl>
+        </div>
+      </div>
+      {% endif %}
+
+      <div class="card">
+        <div class="border-b border-gray-100 px-6 py-3.5 dark:border-carbon-700">
+          <h3 class="flex items-center gap-2 text-sm font-semibold text-gray-900 dark:text-parchment">
+            <i class="fa-solid fa-calendar-days text-gray-400"></i> {{ _('Event') }}
+          </h3>
+        </div>
+        <dl class="grid gap-4 px-6 py-4 text-sm sm:grid-cols-2">
+          <div>
+            <dt class="text-[11px] font-semibold uppercase tracking-wide text-gray-400 dark:text-parchment/40">{{ _('Party') }}</dt>
+            <dd class="text-gray-900 dark:text-parchment">
+              {% if booking.party %}
+                <a href="/parties/{{ booking.party.id }}" class="hover:underline">{{ booking.party.name }}</a>
+                {{ party_type_badge(booking.party.party_type.value) }}
+              {% else %}—{% endif %}
+            </dd>
+          </div>
+          <div>
+            <dt class="text-[11px] font-semibold uppercase tracking-wide text-gray-400 dark:text-parchment/40">{{ _('Purpose') }}</dt>
+            <dd class="text-gray-900 dark:text-parchment">{{ booking.purpose or '—' }}</dd>
+          </div>
+          {% if booking.notes %}
+          <div class="sm:col-span-2">
+            <dt class="text-[11px] font-semibold uppercase tracking-wide text-gray-400 dark:text-parchment/40">{{ _('Notes') }}</dt>
+            <dd class="whitespace-pre-line text-gray-900 dark:text-parchment">{{ booking.notes }}</dd>
+          </div>
+          {% endif %}
+          {% if booking_request and booking_request.additional_info %}
+          <div class="sm:col-span-2">
+            <dt class="text-[11px] font-semibold uppercase tracking-wide text-gray-400 dark:text-parchment/40">{{ _('Additional information') }}</dt>
+            <dd class="whitespace-pre-line text-gray-900 dark:text-parchment">{{ booking_request.additional_info }}</dd>
+          </div>
+          {% endif %}
+          {% if booking_request and booking_request.staff_note %}
+          <div class="sm:col-span-2">
+            <dt class="text-[11px] font-semibold uppercase tracking-wide text-gray-400 dark:text-parchment/40">{{ _('Reason given to the requester') }}</dt>
+            <dd class="whitespace-pre-line text-gray-900 dark:text-parchment">{{ booking_request.staff_note }}</dd>
+          </div>
+          {% endif %}
+        </dl>
+      </div>
+
+      {% if booking.equipment_requests or booking.service_requests %}
+      <div class="card">
+        <div class="flex items-center justify-between gap-3 border-b border-gray-100 px-6 py-3.5 dark:border-carbon-700">
+          <h3 class="flex items-center gap-2 text-sm font-semibold text-gray-900 dark:text-parchment">
+            <i class="fa-solid fa-screwdriver-wrench text-gray-400"></i> {{ _('Equipment & services') }}
+          </h3>
+          <span class="text-[11px] text-gray-400 dark:text-parchment/40">
+            {{ _('%(count)s items')|format(count=(booking.equipment_requests | length) + (booking.service_requests | length)) }}
+          </span>
+        </div>
+        <div class="px-6 py-4">
+          {% if booking.equipment_requests %}
+          <p class="mb-1 text-[11px] font-semibold uppercase tracking-wide text-gray-400 dark:text-parchment/40">{{ _('Equipment') }}</p>
+          <ul class="mb-4 text-sm text-gray-900 dark:text-parchment">
+            {% for line in booking.equipment_requests %}
+            <li class="flex items-center justify-between gap-3 border-b border-gray-50 py-2 last:border-0 dark:border-carbon-700/50">
+              <span>{{ line.equipment.name if line.equipment else '—' }}</span>
+              <span class="text-gray-500 dark:text-parchment/60">&times; {{ line.quantity }}</span>
+            </li>
+            {% endfor %}
+          </ul>
+          {% endif %}
+          {% if booking.service_requests %}
+          <p class="mb-2 text-[11px] font-semibold uppercase tracking-wide text-gray-400 dark:text-parchment/40">{{ _('Services') }}</p>
+          <div class="flex flex-wrap gap-2">
+            {% for line in booking.service_requests %}
+            <span class="rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-gray-600 dark:bg-carbon-700 dark:text-parchment/70">{{ line.service.name if line.service else '—' }}</span>
+            {% endfor %}
+          </div>
+          {% endif %}
+        </div>
+      </div>
+      {% endif %}
+
+      {# ─── Liability insurance ──────────────────────────────────────── #}
+      {# The state is in the markup as well as in the badge: it is a four-way
+         distinction the page turns on, and a test should not have to read
+         translated prose to find out which one it is. #}
+      <div class="card" id="insurance-card" data-insurance-state="{{ insurance_state }}">
+        <div class="flex flex-wrap items-center justify-between gap-3 border-b border-gray-100 px-6 py-3.5 dark:border-carbon-700">
+          <h3 class="flex items-center gap-2 text-sm font-semibold text-gray-900 dark:text-parchment">
+            <i class="fa-solid fa-shield-halved text-gray-400"></i> {{ _('Liability insurance') }}
+          </h3>
+          {% set states = {
+            'on_file':  ('bg-teal-100 text-teal-700 dark:bg-teal-900/30 dark:text-teal-400', _('Certificate on file')),
+            'promised': ('bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300', _('Promised — not yet received')),
+            'declined': ('bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400', _('No cover')),
+            'unasked':  ('bg-gray-100 text-gray-500 dark:bg-carbon-700 dark:text-parchment/60', _('Not asked')),
+          } %}
+          {% set tone, label = states[insurance_state] %}
+          <span class="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold {{ tone }}">
+            <span class="h-1.5 w-1.5 rounded-full bg-current"></span>{{ label }}
+          </span>
+        </div>
+        <div class="flex flex-col gap-4 px-6 py-4">
+          <p class="text-sm text-gray-600 dark:text-parchment/70">
+            {% if insurance_state == 'on_file' %}{{ _('The certificate is attached to this booking.') }}
+            {% elif insurance_state == 'promised' %}{{ _('The requester said they are covered but has not sent the certificate. They can upload it at any time through their manage link.') }}
+            {% elif insurance_state == 'declined' %}{{ _('The requester said they have no liability cover. Worth settling before this is approved.') }}
+            {% else %}{{ _('This booking was made by staff or through the member portal, where the question is not asked.') }}
+            {% endif %}
+          </p>
+
+          {% if certificate %}
+          <div class="flex flex-wrap items-center gap-3 rounded-xl border border-gray-200 px-3.5 py-2.5 dark:border-carbon-600">
+            <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-red-50 text-[9px] font-bold text-red-700 dark:bg-red-900/30 dark:text-red-400">
+              {{ (certificate.original_filename or 'file').rsplit('.', 1)[-1][:4] | upper }}
+            </span>
+            <span class="flex min-w-0 flex-col">
+              <span class="truncate text-[13px] font-semibold text-gray-900 dark:text-parchment">{{ certificate.original_filename or certificate.title }}</span>
+              <span class="text-[11px] text-gray-400 dark:text-parchment/40">
+                {{ certificate.file_size | filesizeformat if certificate.file_size else '' }} ·
+                {{ _('uploaded %(when)s')|format(when=certificate.uploaded_at | local_datetime) }}
+                {%- if certificate.uploaded_by %} · {{ certificate.uploaded_by.display_name }}{% endif %}
+              </span>
+            </span>
+            <span class="ml-auto flex gap-2">
+              <a href="/documents/{{ certificate.id }}" class="btn-secondary !px-3 !py-1.5 text-xs">{{ _('Open') }}</a>
+              <button type="button" id="btn-insurance-delete" class="btn-secondary !px-3 !py-1.5 text-xs !text-red-600 dark:!text-red-400">{{ _('Delete') }}</button>
+            </span>
+          </div>
+          {% endif %}
+
+          <div class="flex flex-wrap items-center gap-2.5">
+            <form id="form-insurance" class="contents" enctype="multipart/form-data">
+              <label class="btn-secondary inline-flex cursor-pointer items-center gap-2 text-sm">
+                <i class="fa-solid fa-arrow-up-from-bracket text-xs"></i>
+                {{ _('Replace file') if certificate else _('Upload file') }}
+                <input type="file" id="insurance-file" name="file" class="sr-only"
+                       accept="application/pdf,image/jpeg,image/png,image/webp">
+              </label>
+            </form>
+            {% if booking_request and booking_request.requester_email and insurance_state != 'on_file' and booking.source.value == 'public' %}
+            <button type="button" id="btn-insurance-remind" data-id="{{ booking.id }}" class="btn-secondary inline-flex items-center gap-2 text-sm">
+              <i class="fa-regular fa-envelope text-xs"></i> {{ _('Send a reminder') }}
+            </button>
+            {% endif %}
+            <span class="text-[11px] text-gray-400 dark:text-parchment/40">{{ _('PDF, JPG or PNG, up to 10 MB') }}</span>
+          </div>
+        </div>
+      </div>
+
+      {% set other_documents = documents | rejectattr('document_type.value', 'equalto', 'insurance') | list %}
+      {% if other_documents %}
+      <div class="card">
+        <div class="border-b border-gray-100 px-6 py-3.5 dark:border-carbon-700">
+          <h3 class="flex items-center gap-2 text-sm font-semibold text-gray-900 dark:text-parchment">
+            <i class="fa-solid fa-paperclip text-gray-400"></i> {{ _('Other documents') }}
+          </h3>
+        </div>
+        <ul class="px-6 py-2 text-sm">
+          {% for row in other_documents %}
+          <li class="flex items-center justify-between gap-3 border-b border-gray-50 py-2.5 last:border-0 dark:border-carbon-700/50">
+            <a href="/documents/{{ row.id }}" class="truncate text-gray-900 hover:underline dark:text-parchment">{{ row.original_filename or row.title }}</a>
+            <span class="shrink-0 text-[11px] text-gray-400 dark:text-parchment/40">{{ row.uploaded_at | local_datetime }}</span>
+          </li>
+          {% endfor %}
+        </ul>
+      </div>
+      {% endif %}
+
+    </div>
+
+    {# ─── Right: what you only sometimes need ────────────────────────── #}
+    <div class="flex flex-col gap-5">
+
+      {% if booking_request and booking_request.cleaning_charge %}
+      <div class="card">
+        <div class="border-b border-gray-100 px-6 py-3.5 dark:border-carbon-700">
+          <h3 class="flex items-center gap-2 text-sm font-semibold text-gray-900 dark:text-parchment">
+            <i class="fa-solid fa-broom text-gray-400"></i> {{ _('Cleaning charge') }}
+          </h3>
+        </div>
+        <div class="px-6 py-4">
+          {#
+            Shown as rate x days = total so staff can see how the figure was
+            derived and defend it to a customer, rather than reading a number
+            they cannot explain.
+          #}
+          <p class="text-xs text-gray-500 dark:text-parchment/60">
+            {{ booking_request.cleaning_days }} &times; {{ booking_request.cleaning_rate_daily }} {{ booking_request.currency }}
+          </p>
+          <p class="mt-0.5 text-2xl font-semibold text-gray-900 dark:text-parchment">
+            {{ booking_request.cleaning_charge }} {{ booking_request.currency }}
+          </p>
+          <p class="mt-1.5 text-[11px] text-gray-400 dark:text-parchment/40">
+            {{ _('Indicative. Invoicing is handled separately.') }}
+          </p>
+          {% if booking_request.billing_info %}
+          <p class="mt-4 text-[11px] font-semibold uppercase tracking-wide text-gray-400 dark:text-parchment/40">{{ _('Billing details') }}</p>
+          <p class="whitespace-pre-line text-sm text-gray-900 dark:text-parchment">{{ booking_request.billing_info }}</p>
+          {% endif %}
+        </div>
+      </div>
+      {% endif %}
+
+      <div class="card">
+        <div class="border-b border-gray-100 px-6 py-3.5 dark:border-carbon-700">
+          <h3 class="flex items-center gap-2 text-sm font-semibold text-gray-900 dark:text-parchment">
+            <i class="fa-regular fa-clock text-gray-400"></i> {{ _('History') }}
+          </h3>
+        </div>
+        <div class="px-6 py-4">
+          {% if audit_entries %}
+          {# A timeline rather than a list: the order is the information. #}
+          <ol class="flex flex-col">
+            {% for entry in audit_entries %}
+            <li class="flex gap-3">
+              <span class="flex shrink-0 flex-col items-center">
+                <span class="mt-1.5 h-2 w-2 rounded-full {{ 'bg-turf-green-600' if loop.first else 'bg-gray-300 dark:bg-carbon-600' }}"></span>
+                {% if not loop.last %}<span class="w-px flex-grow bg-gray-100 dark:bg-carbon-700"></span>{% endif %}
+              </span>
+              <span class="flex flex-col gap-0.5 {{ '' if loop.last else 'pb-4' }}">
+                <span class="text-[13px] font-medium text-gray-900 dark:text-parchment">{{ audit_action_label(entry.action) }}</span>
+                <span class="text-[11px] text-gray-400 dark:text-parchment/40">
+                  {{ entry.created_at | local_datetime }} ·
+                  {% if entry.actor %}{{ entry.actor.display_name }}{% else %}{{ _('system') }}{% endif %}
+                </span>
+              </span>
+            </li>
+            {% endfor %}
+          </ol>
+          {% else %}
+          <p class="text-sm text-gray-400 dark:text-parchment/40">{{ _('No history recorded.') }}</p>
+          {% endif %}
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+{# ─── Reject Booking Modal ──────────────────────────────────────────── #}
+<dialog id="modal-booking-reject" class="w-full max-w-md rounded-xl bg-white p-0 shadow-2xl backdrop:bg-black/50 dark:bg-carbon-800">
+  <div class="flex items-center justify-between border-b border-gray-100 px-6 py-4 dark:border-carbon-700">
+    <h2 class="text-base font-semibold text-gray-900 dark:text-parchment">{{ _('Reject booking') }}</h2>
+    <button type="button" onclick="closeModal('modal-booking-reject')" class="flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-carbon-700">&times;</button>
+  </div>
+  <form id="form-booking-reject" class="space-y-4 px-6 py-5" novalidate>
+    <div>
+      <label class="form-label" for="reject-reason">{{ _('Reason') }}</label>
+      <textarea id="reject-reason" class="form-input" rows="3" placeholder="{{ _('The requester sees this in their email.') }}"></textarea>
+    </div>
+    <p id="err-booking-reject" class="hidden text-sm text-red-600 dark:text-red-400"></p>
+    <div class="flex justify-end gap-2 pt-1">
+      <button type="button" onclick="closeModal('modal-booking-reject')" class="btn-secondary">{{ _('Back') }}</button>
+      <button type="submit" class="btn-danger">{{ _('Reject') }}</button>
+    </div>
+  </form>
+</dialog>
+{% endblock %}
+
+{% block page_scripts %}
+<script>
+(function () {
+  const T = {
+    confirmCancel: {{ _('Cancel this booking? The room is released.') | tojson }},
+    confirmDelete: {{ _('Delete the certificate?') | tojson }},
+    failed: {{ _('Could not update the booking') | tojson }},
+    uploading: {{ _('Uploading…') | tojson }},
+    uploaded: {{ _('Certificate uploaded') | tojson }},
+    reminded: {{ _('Reminder sent') | tojson }},
+  };
+  const BOOKING_ID = {{ booking.id }};
+
+  async function setStatus(id, status) {
+    const res = await apiPatch(`/api/v1/bookings/${id}`, { status });
+    if (res.ok) { location.reload(); return; }
+    let message = T.failed;
+    if (res.status === 409) {
+      // The approval clashes with another booking; the API names which.
+      try {
+        const body = await res.json();
+        message = (body.detail && body.detail.detail) || message;
+      } catch (e) {}
+    } else {
+      message = await parseApiError(res) || message;
+    }
+    if (window.showToast) window.showToast(message, 'error'); else alert(message);
+  }
+
+  document.getElementById('btn-approve')?.addEventListener('click', function () {
+    setStatus(this.dataset.id, 'approved');
+  });
+  document.getElementById('btn-cancel')?.addEventListener('click', function () {
+    if (!confirm(T.confirmCancel)) return;
+    setStatus(this.dataset.id, 'cancelled');
+  });
+
+  // Rejecting asks for a reason, which the requester sees in their email.
+  const rejectButton = document.getElementById('btn-reject');
+  rejectButton?.addEventListener('click', function () {
+    document.getElementById('reject-reason').value = '';
+    clearModalError('modal-booking-reject');
+    openModal('modal-booking-reject');
+  });
+  document.getElementById('form-booking-reject')?.addEventListener('submit', async function (event) {
+    event.preventDefault();
+    const reason = document.getElementById('reject-reason').value.trim();
+    setSubmitting('form-booking-reject', true);
+    const res = await apiPost(`/api/v1/bookings/${rejectButton.dataset.id}/reject`, { reason });
+    setSubmitting('form-booking-reject', false);
+    if (res.ok) { closeModal('modal-booking-reject'); location.reload(); }
+    else { setModalError('modal-booking-reject', await parseApiError(res)); }
+  });
+
+  // ── The liability certificate ─────────────────────────────────────
+  // A file goes as multipart, so this cannot use apiPost (JSON) -- the CSRF
+  // header is set the same way apiPost sets it.
+  document.getElementById('insurance-file')?.addEventListener('change', async function () {
+    const file = this.files && this.files[0];
+    if (!file) return;
+    const body = new FormData();
+    body.append('file', file);
+    if (window.showToast) window.showToast(T.uploading, 'info');
+    const res = await apiPostForm(`/api/v1/bookings/${BOOKING_ID}/insurance`, body);
+    this.value = '';
+    if (res.ok) {
+      if (window.showToast) window.showToast(T.uploaded, 'success');
+      location.reload();
+      return;
+    }
+    const message = await parseApiError(res);
+    if (window.showToast) window.showToast(message || T.failed, 'error');
+  });
+
+  document.getElementById('btn-insurance-delete')?.addEventListener('click', async function () {
+    if (!confirm(T.confirmDelete)) return;
+    const res = await apiDelete(`/api/v1/bookings/${BOOKING_ID}/insurance`);
+    if (res.ok) { location.reload(); return; }
+    if (window.showToast) window.showToast(await parseApiError(res) || T.failed, 'error');
+  });
+
+  document.getElementById('btn-insurance-remind')?.addEventListener('click', async function () {
+    this.disabled = true;
+    const res = await apiPost(`/api/v1/bookings/${BOOKING_ID}/insurance/remind`, {});
+    this.disabled = false;
+    if (window.showToast) {
+      window.showToast(res.ok ? T.reminded : (await parseApiError(res) || T.failed), res.ok ? 'success' : 'error');
+    }
+  });
+})();
+</script>
+{% endblock %}

@@ -1,0 +1,253 @@
+{% extends "admin/layout.html" %}
+
+{% block title %}{{ _('Audit Log') }}{% endblock %}
+{% block page_title %}{{ _('Audit Log') }}{% endblock %}
+{% block page_subtitle %}{{ _('Who did what, and when') }}{% endblock %}
+
+{% block admin_content %}
+<div class="space-y-4" id="audit-page">
+
+    {# ─── Filter bar ────────────────────────────────────────────────── #}
+    <div class="card px-6 py-4">
+        <form id="audit-filters" class="grid grid-cols-1 md:grid-cols-6 gap-3 items-end" novalidate>
+            <div class="md:col-span-1">
+                <label class="form-label" for="f-entity-type">Entity</label>
+                <select id="f-entity-type" name="entity_type" class="form-input">
+                    <option value="">All</option>
+                </select>
+            </div>
+            <div class="md:col-span-1">
+                <label class="form-label" for="f-action">Action</label>
+                <select id="f-action" name="action" class="form-input">
+                    <option value="">All</option>
+                </select>
+            </div>
+            <div class="md:col-span-1">
+                <label class="form-label" for="f-actor">Actor</label>
+                <select id="f-actor" name="actor_user_id" class="form-input">
+                    <option value="">All</option>
+                </select>
+            </div>
+            <div class="md:col-span-1">
+                <label class="form-label" for="f-from">From</label>
+                <input id="f-from" name="from" type="date" class="form-input">
+            </div>
+            <div class="md:col-span-1">
+                <label class="form-label" for="f-to">To</label>
+                <input id="f-to" name="to" type="date" class="form-input">
+            </div>
+            <div class="md:col-span-1">
+                <label class="form-label" for="f-q">Search</label>
+                <input id="f-q" name="q" type="search" placeholder="entity, action, user…" class="form-input">
+            </div>
+            <div class="md:col-span-6 flex justify-end gap-2">
+                <button type="button" id="audit-reset" class="btn-secondary">Reset</button>
+                <a id="audit-csv-link" href="/api/v1/admin/audit-logs.csv" class="btn-secondary inline-flex items-center gap-2">
+                    <i class="fa-solid fa-file-csv text-xs"></i> Export CSV
+                </a>
+            </div>
+        </form>
+    </div>
+
+    {# ─── Table ─────────────────────────────────────────────────────── #}
+    <div class="card overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-100 dark:border-carbon-700 flex items-center justify-between">
+            <h3 class="text-base font-semibold text-gray-900 dark:text-parchment flex items-center gap-2">
+                <i class="fa-solid fa-shield-halved text-deep-space-500 text-sm"></i> Activity
+            </h3>
+            <span id="audit-count" class="text-xs text-gray-400 dark:text-parchment/50">—</span>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+                <thead>
+                    <tr class="border-b border-gray-100 dark:border-carbon-700 bg-gray-50/60 dark:bg-carbon-700/30">
+                        <th class="text-left px-6 py-3 text-xs font-semibold text-gray-500 dark:text-parchment/60 uppercase tracking-wide cursor-pointer select-none" id="audit-sort-time">
+                            <span>Time</span>
+                            <i id="audit-sort-icon" class="fa-solid fa-arrow-down ml-1 text-[9px]"></i>
+                        </th>
+                        <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-parchment/60 uppercase tracking-wide">Actor</th>
+                        <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-parchment/60 uppercase tracking-wide">Entity</th>
+                        <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-parchment/60 uppercase tracking-wide">Action</th>
+                        <th class="px-4 py-3"></th>
+                    </tr>
+                </thead>
+                <tbody id="audit-tbody" class="divide-y divide-gray-50 dark:divide-carbon-700/50">
+                    <tr><td colspan="5" class="py-12 text-center text-sm text-gray-500 dark:text-parchment/60">Loading…</td></tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="flex items-center justify-between px-6 py-3 border-t border-gray-100 dark:border-carbon-700">
+            <span id="audit-page-info" class="text-xs text-gray-500 dark:text-parchment/60">—</span>
+            <div class="flex gap-2">
+                <button id="audit-prev" class="btn-secondary" disabled>Prev</button>
+                <button id="audit-next" class="btn-secondary" disabled>Next</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{# ─── Diff dialog ───────────────────────────────────────────────────── #}
+<dialog id="modal-audit-diff" class="rounded-xl shadow-2xl p-0 w-full max-w-3xl bg-white dark:bg-carbon-800 backdrop:bg-black/50">
+    <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-carbon-700">
+        <h2 class="text-base font-semibold text-gray-900 dark:text-parchment" id="audit-diff-title">Change</h2>
+        <button type="button" onclick="closeModal('modal-audit-diff')" class="w-8 h-8 flex items-center justify-center rounded-lg text-gray-400 hover:bg-gray-100 dark:hover:bg-carbon-700 hover:text-gray-600 transition-colors">&times;</button>
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-0 divide-x divide-gray-100 dark:divide-carbon-700">
+        <div class="px-6 py-4">
+            <div class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-parchment/60 mb-2">Before</div>
+            <pre id="audit-before" class="text-xs whitespace-pre-wrap break-words text-gray-700 dark:text-parchment/80 bg-gray-50 dark:bg-carbon-900/40 rounded-lg p-3 max-h-96 overflow-auto">—</pre>
+        </div>
+        <div class="px-6 py-4">
+            <div class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-parchment/60 mb-2">After</div>
+            <pre id="audit-after" class="text-xs whitespace-pre-wrap break-words text-gray-700 dark:text-parchment/80 bg-gray-50 dark:bg-carbon-900/40 rounded-lg p-3 max-h-96 overflow-auto">—</pre>
+        </div>
+    </div>
+    <div class="flex justify-end gap-3 px-6 py-4 border-t border-gray-100 dark:border-carbon-700">
+        <button type="button" onclick="closeModal('modal-audit-diff')" class="btn-secondary">Close</button>
+    </div>
+</dialog>
+
+{% endblock %}
+
+
+{% block page_scripts %}
+<script>
+(function () {
+    const state = {
+        page: 1,
+        page_size: 25,
+        sort: 'created_at_desc',
+        total: 0,
+    };
+
+    const tbody = document.getElementById('audit-tbody');
+    const countEl = document.getElementById('audit-count');
+    const pageInfo = document.getElementById('audit-page-info');
+    const prevBtn = document.getElementById('audit-prev');
+    const nextBtn = document.getElementById('audit-next');
+    const sortIcon = document.getElementById('audit-sort-icon');
+    const csvLink = document.getElementById('audit-csv-link');
+    const filterForm = document.getElementById('audit-filters');
+
+    function escapeHtml(s) {
+        if (s === null || s === undefined) return '';
+        return String(s)
+            .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+    }
+
+    function formatTime(iso) {
+        try { return new Date(iso).toLocaleString(); } catch (e) { return iso; }
+    }
+
+    function buildQuery(extra = {}) {
+        const data = formToObject(filterForm, ['entity_type', 'action', 'actor_user_id', 'from', 'to', 'q']);
+        const params = new URLSearchParams();
+        for (const [k, v] of Object.entries(data)) {
+            if (v !== '' && v !== null && v !== undefined) params.set(k, v);
+        }
+        params.set('sort', state.sort);
+        params.set('page', state.page);
+        params.set('page_size', state.page_size);
+        for (const [k, v] of Object.entries(extra)) params.set(k, v);
+        return params;
+    }
+
+    async function loadFacets() {
+        const res = await fetch('/api/v1/admin/audit-logs/facets', { headers: { 'x-csrf-token': getCsrf() } });
+        if (!res.ok) return;
+        const data = await res.json();
+        const etSel = document.getElementById('f-entity-type');
+        const acSel = document.getElementById('f-action');
+        const usSel = document.getElementById('f-actor');
+        for (const v of data.entity_types) etSel.insertAdjacentHTML('beforeend', `<option value="${escapeHtml(v)}">${escapeHtml(v)}</option>`);
+        for (const v of data.actions) acSel.insertAdjacentHTML('beforeend', `<option value="${escapeHtml(v)}">${escapeHtml(v)}</option>`);
+        for (const u of data.actors) usSel.insertAdjacentHTML('beforeend', `<option value="${u.id}">${escapeHtml(u.display_name)} (${escapeHtml(u.email)})</option>`);
+    }
+
+    const _diffStash = new Map();
+
+    function renderRows(items) {
+        if (!items.length) {
+            tbody.innerHTML = '<tr><td colspan="5" class="py-12 text-center text-sm text-gray-500 dark:text-parchment/60">No audit entries match these filters.</td></tr>';
+            return;
+        }
+        _diffStash.clear();
+        const rows = items.map(it => {
+            const actor = it.actor
+                ? `<div class="flex flex-col"><span class="font-medium text-gray-900 dark:text-parchment">${escapeHtml(it.actor.display_name)}</span><span class="text-xs text-gray-500 dark:text-parchment/60">${escapeHtml(it.actor.email)}</span></div>`
+                : '<span class="text-xs italic text-gray-500 dark:text-parchment/50">system</span>';
+            const entity = `${escapeHtml(it.entity_type)}${it.entity_id !== null ? ' #' + it.entity_id : ''}`;
+            const actionLabel = `${it.action}_${it.entity_type}`;
+            _diffStash.set(it.id, { before: it.before_json, after: it.after_json, entity, action: actionLabel });
+            return `
+              <tr class="hover:bg-gray-50/60 dark:hover:bg-carbon-700/30">
+                <td class="px-6 py-3 text-sm text-gray-700 dark:text-parchment/80 whitespace-nowrap">${escapeHtml(formatTime(it.created_at))}</td>
+                <td class="px-4 py-3">${actor}</td>
+                <td class="px-4 py-3"><code class="text-xs bg-gray-100 dark:bg-carbon-700 px-2 py-0.5 rounded">${escapeHtml(entity)}</code></td>
+                <td class="px-4 py-3"><span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-deep-space-100 text-deep-space-700 dark:bg-deep-space-900/30 dark:text-deep-space-400">${escapeHtml(actionLabel)}</span></td>
+                <td class="px-4 py-3 text-right">
+                  <button type="button" onclick="openAuditDiff(${it.id})" class="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold rounded-lg bg-gray-100 dark:bg-carbon-700 text-gray-600 dark:text-parchment/80 hover:bg-gray-200 dark:hover:bg-carbon-600 transition-colors">
+                    <i class="fa-solid fa-magnifying-glass text-[9px]"></i> Diff
+                  </button>
+                </td>
+              </tr>`;
+        }).join('');
+        tbody.innerHTML = rows;
+    }
+
+    window.openAuditDiff = function (id) {
+        const d = _diffStash.get(id);
+        if (!d) return;
+        document.getElementById('audit-diff-title').textContent = `${d.entity} — ${d.action}`;
+        document.getElementById('audit-before').textContent = d.before ? JSON.stringify(d.before, null, 2) : '—';
+        document.getElementById('audit-after').textContent = d.after ? JSON.stringify(d.after, null, 2) : '—';
+        openModal('modal-audit-diff');
+    };
+
+    async function load() {
+        tbody.innerHTML = '<tr><td colspan="5" class="py-12 text-center text-sm text-gray-500 dark:text-parchment/60">Loading…</td></tr>';
+        const params = buildQuery();
+        csvLink.href = '/api/v1/admin/audit-logs.csv?' + params.toString();
+        const res = await fetch('/api/v1/admin/audit-logs?' + params.toString(), { headers: { 'x-csrf-token': getCsrf() } });
+        if (!res.ok) {
+            tbody.innerHTML = '<tr><td colspan="5" class="py-12 text-center text-sm text-red-600 dark:text-red-400">Failed to load audit log.</td></tr>';
+            return;
+        }
+        const data = await res.json();
+        state.total = data.total;
+        renderRows(data.items);
+        countEl.textContent = `${data.total} entr${data.total === 1 ? 'y' : 'ies'}`;
+        const last = Math.max(1, Math.ceil(data.total / state.page_size));
+        pageInfo.textContent = `Page ${state.page} of ${last}`;
+        prevBtn.disabled = state.page <= 1;
+        nextBtn.disabled = state.page >= last;
+    }
+
+    document.getElementById('audit-sort-time').addEventListener('click', () => {
+        state.sort = state.sort === 'created_at_desc' ? 'created_at_asc' : 'created_at_desc';
+        sortIcon.className = 'ml-1 text-[9px] fa-solid ' + (state.sort === 'created_at_desc' ? 'fa-arrow-down' : 'fa-arrow-up');
+        state.page = 1;
+        load();
+    });
+
+    prevBtn.addEventListener('click', () => { if (state.page > 1) { state.page--; load(); } });
+    nextBtn.addEventListener('click', () => { state.page++; load(); });
+
+    let debounceId;
+    filterForm.addEventListener('input', () => {
+        clearTimeout(debounceId);
+        debounceId = setTimeout(() => { state.page = 1; load(); }, 200);
+    });
+    filterForm.addEventListener('change', () => { state.page = 1; load(); });
+
+    document.getElementById('audit-reset').addEventListener('click', () => {
+        filterForm.reset();
+        state.page = 1;
+        load();
+    });
+
+    loadFacets().then(load);
+})();
+</script>
+{% endblock %}

@@ -1,0 +1,173 @@
+{% extends "admin/layout.html" %}
+
+{% block title %}{{ _('Infrastructure') }}{% endblock %}
+{% block page_title %}{{ _('Infrastructure') }}{% endblock %}
+{% block page_subtitle %}{{ _('Internet connections and utility meters') }}{% endblock %}
+
+{% block admin_content %}
+<div class="space-y-6">
+
+    {# ─── Tab switcher ─────────────────────────────────────────────── #}
+    <div class="flex items-center gap-1 bg-gray-100 dark:bg-carbon-700/50 rounded-lg p-1 w-fit">
+        <button id="tab-internet" class="tab-btn px-4 py-2 text-sm font-medium rounded-md transition-colors bg-white dark:bg-carbon-600 text-gray-900 dark:text-parchment shadow-sm" data-tab="internet">
+            <i class="fa-solid fa-wifi mr-1.5 text-xs"></i> Internet
+            <span class="ml-1.5 text-xs text-gray-400 dark:text-parchment/50">{{ connections | length }}</span>
+        </button>
+        <button id="tab-meters" class="tab-btn px-4 py-2 text-sm font-medium rounded-md transition-colors text-gray-600 dark:text-parchment/70 hover:text-gray-900 dark:hover:text-parchment" data-tab="meters">
+            <i class="fa-solid fa-gauge-high mr-1.5 text-xs"></i> Meters
+            <span class="ml-1.5 text-xs text-gray-400 dark:text-parchment/50">{{ rooms_with_meter | length }}</span>
+        </button>
+    </div>
+
+    {# ─── Internet connections panel ───────────────────────────────── #}
+    <div id="panel-internet" class="tab-panel">
+        <div class="card overflow-hidden">
+            <div class="px-6 py-4 border-b border-gray-100 dark:border-carbon-700">
+                <h3 class="text-base font-semibold text-gray-900 dark:text-parchment flex items-center gap-2">
+                    <i class="fa-solid fa-wifi text-blue-500 text-sm"></i> Internet Connections
+                </h3>
+            </div>
+            {% if connections %}
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                    <thead>
+                        <tr class="border-b border-gray-100 dark:border-carbon-700 bg-gray-50/60 dark:bg-carbon-700/30">
+                            <th class="text-left px-6 py-3 text-xs font-semibold text-gray-500 dark:text-parchment/60 uppercase tracking-wide">Room</th>
+                            <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-parchment/60 uppercase tracking-wide">Medium</th>
+                            <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-parchment/60 uppercase tracking-wide hidden sm:table-cell">Channel</th>
+                            <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-parchment/60 uppercase tracking-wide hidden md:table-cell">Provider</th>
+                            <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-parchment/60 uppercase tracking-wide">Status</th>
+                            <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-parchment/60 uppercase tracking-wide hidden lg:table-cell">Notes</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-50 dark:divide-carbon-700/50">
+                        {% for conn in connections %}
+                        <tr class="hover:bg-gray-50/60 dark:hover:bg-carbon-700/30 transition-colors">
+                            <td class="px-6 py-3.5">
+                                {% if conn.room %}
+                                <a href="/rooms/{{ conn.room.id }}" class="font-mono text-xs font-semibold bg-gray-100 dark:bg-carbon-700 text-gray-700 dark:text-parchment px-1.5 py-0.5 rounded hover:bg-gray-200 dark:hover:bg-carbon-600">{{ conn.room.room_code }}</a>
+                                {% if conn.room.name %}
+                                <span class="ml-2 text-xs text-gray-500 dark:text-parchment/50">{{ conn.room.name }}</span>
+                                {% endif %}
+                                {% else %}<span class="text-gray-400">—</span>{% endif %}
+                            </td>
+                            <td class="px-4 py-3.5">
+                                {% set medium_colors = {
+                                    'lan': 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
+                                    'wifi': 'bg-sky-100 text-sky-700 dark:bg-sky-900/30 dark:text-sky-400',
+                                    'fiber': 'bg-teal-100 text-teal-700 dark:bg-teal-900/30 dark:text-teal-400',
+                                    'coax': 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
+                                } %}
+                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium {{ medium_colors.get(conn.medium.value, 'bg-gray-100 text-gray-600') }}">
+                                    {{ conn.medium.value | upper }}
+                                </span>
+                            </td>
+                            <td class="px-4 py-3.5 text-sm text-gray-600 dark:text-parchment/70 hidden sm:table-cell font-mono">
+                                {{ conn.channel or '—' }}
+                            </td>
+                            <td class="px-4 py-3.5 text-sm text-gray-600 dark:text-parchment/70 hidden md:table-cell">
+                                {{ conn.provider or '—' }}
+                            </td>
+                            <td class="px-4 py-3.5">
+                                {% if conn.is_active %}
+                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">
+                                    <i class="fa-solid fa-circle text-[6px] mr-1.5"></i>Active
+                                </span>
+                                {% else %}
+                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-500 dark:bg-gray-700/40 dark:text-gray-400">
+                                    Inactive
+                                </span>
+                                {% endif %}
+                            </td>
+                            <td class="px-4 py-3.5 text-xs text-gray-500 dark:text-parchment/50 hidden lg:table-cell max-w-xs truncate">
+                                {{ conn.notes or '—' }}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="py-16 text-center">
+                <i class="fa-solid fa-wifi text-4xl text-gray-200 dark:text-parchment/20 mb-4 block"></i>
+                <p class="text-base font-medium text-gray-600 dark:text-parchment/60">No internet connections recorded</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    {# ─── Meters panel ─────────────────────────────────────────────── #}
+    <div id="panel-meters" class="tab-panel hidden">
+        <div class="card overflow-hidden">
+            <div class="px-6 py-4 border-b border-gray-100 dark:border-carbon-700">
+                <h3 class="text-base font-semibold text-gray-900 dark:text-parchment flex items-center gap-2">
+                    <i class="fa-solid fa-gauge-high text-amber-500 text-sm"></i> Meter Numbers
+                </h3>
+            </div>
+            {% if rooms_with_meter %}
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                    <thead>
+                        <tr class="border-b border-gray-100 dark:border-carbon-700 bg-gray-50/60 dark:bg-carbon-700/30">
+                            <th class="text-left px-6 py-3 text-xs font-semibold text-gray-500 dark:text-parchment/60 uppercase tracking-wide">Room Code</th>
+                            <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-parchment/60 uppercase tracking-wide hidden sm:table-cell">Room Name</th>
+                            <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-parchment/60 uppercase tracking-wide">Meter Number</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-50 dark:divide-carbon-700/50">
+                        {% for room in rooms_with_meter %}
+                        <tr class="hover:bg-gray-50/60 dark:hover:bg-carbon-700/30 transition-colors">
+                            <td class="px-6 py-3.5">
+                                <a href="/rooms/{{ room.id }}" class="font-mono text-xs font-semibold bg-gray-100 dark:bg-carbon-700 text-gray-700 dark:text-parchment px-1.5 py-0.5 rounded hover:bg-gray-200 dark:hover:bg-carbon-600">{{ room.room_code }}</a>
+                            </td>
+                            <td class="px-4 py-3.5 text-sm text-gray-600 dark:text-parchment/70 hidden sm:table-cell">
+                                {{ room.name or '—' }}
+                            </td>
+                            <td class="px-4 py-3.5">
+                                <span class="font-mono text-sm text-gray-900 dark:text-parchment bg-gray-50 dark:bg-carbon-700/50 px-2 py-0.5 rounded border border-gray-200 dark:border-carbon-600">{{ room.meter_number }}</span>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="py-16 text-center">
+                <i class="fa-solid fa-gauge-high text-4xl text-gray-200 dark:text-parchment/20 mb-4 block"></i>
+                <p class="text-base font-medium text-gray-600 dark:text-parchment/60">No meter numbers recorded</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+</div>
+
+{% endblock %}
+
+
+{% block page_scripts %}
+<script>
+(function () {
+    const tabs = document.querySelectorAll('.tab-btn');
+    const panels = document.querySelectorAll('.tab-panel');
+
+    function activateTab(tabId) {
+        tabs.forEach(btn => {
+            const isActive = btn.dataset.tab === tabId;
+            btn.classList.toggle('bg-white', isActive);
+            btn.classList.toggle('dark:bg-carbon-600', isActive);
+            btn.classList.toggle('text-gray-900', isActive);
+            btn.classList.toggle('dark:text-parchment', isActive);
+            btn.classList.toggle('shadow-sm', isActive);
+            btn.classList.toggle('text-gray-600', !isActive);
+            btn.classList.toggle('dark:text-parchment/70', !isActive);
+        });
+        panels.forEach(panel => {
+            panel.classList.toggle('hidden', panel.id !== 'panel-' + tabId);
+        });
+    }
+
+    tabs.forEach(btn => btn.addEventListener('click', () => activateTab(btn.dataset.tab)));
+})();
+</script>
+{% endblock %}

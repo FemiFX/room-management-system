@@ -1,0 +1,93 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ─── Brand variables ──────────────────────────────────────────────────
+   Defaults only. base.html injects the deployment's values from the
+   RMS_BRAND_* settings (app/core/branding.py), which override these.
+   Kept here so the stylesheet renders sensibly on its own. */
+:root {
+  --c-primary: 59 74 107;
+  --c-primary-500: 59 74 107;
+  --c-primary-50: 245 246 248;
+  --c-primary-100: 228 230 234;
+  --c-primary-200: 196 201 211;
+  --c-primary-300: 157 164 181;
+  --c-primary-400: 108 119 144;
+  --c-primary-600: 50 63 91;
+  --c-primary-700: 41 52 75;
+  --c-primary-800: 32 41 59;
+  --c-primary-900: 24 30 43;
+  --c-accent: 240 180 41;
+  --c-accent-500: 240 180 41;
+  --c-accent-50: 254 251 244;
+  --c-accent-100: 253 244 225;
+  --c-accent-200: 250 232 191;
+  --c-accent-300: 248 218 148;
+  --c-accent-400: 244 199 94;
+  --c-accent-600: 204 153 35;
+  --c-accent-700: 168 126 29;
+  --c-accent-800: 132 99 23;
+  --c-accent-900: 96 72 16;
+  --c-highlight: 91 58 122;
+  --c-highlight-500: 91 58 122;
+  --c-highlight-50: 247 245 248;
+  --c-highlight-100: 232 227 236;
+  --c-highlight-200: 206 196 215;
+  --c-highlight-300: 173 156 188;
+  --c-highlight-400: 132 107 155;
+  --c-highlight-600: 77 49 104;
+  --c-highlight-700: 64 41 85;
+  --c-highlight-800: 50 32 67;
+  --c-highlight-900: 36 23 49;
+  --c-surface: 248 250 252;
+  --c-footer: 30 41 59;
+  --font-heading: 'Inter', ui-sans-serif, system-ui, sans-serif;
+  --font-body: 'Inter', ui-sans-serif, system-ui, sans-serif;
+}
+
+/* ─── Public-surface components (docs/branding.md) ─────────────────────── */
+@layer components {
+  .btn-brand {
+    @apply inline-block rounded-[25px] bg-accent px-[30px] pt-[13px] pb-[9px] text-center font-heading text-base font-bold uppercase leading-none text-primary no-underline;
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16);
+  }
+  .btn-brand:hover { background-color: #f3bd66; }
+  .btn-brand-sm { @apply px-[22px] pt-[10px] pb-[7px] text-[13px]; }
+  .btn-brand-outline {
+    @apply inline-block rounded-[25px] border-2 border-primary bg-transparent px-[28px] pt-[11px] pb-[7px] text-center font-heading text-base font-bold uppercase leading-none text-primary no-underline shadow-none;
+  }
+  .btn-brand-outline:hover { @apply bg-primary-50; }
+  .btn-highlight {
+    @apply inline-block rounded-[25px] bg-highlight px-[30px] pt-[13px] pb-[9px] text-center font-heading text-base font-bold uppercase leading-none text-accent no-underline;
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16);
+  }
+  .btn-highlight:hover { background-color: #6f3c54; }
+  .ui-navlink {
+    @apply font-heading text-[13px] font-bold uppercase tracking-[0.4px] text-primary no-underline hover:text-accent;
+  }
+  .ui-card { @apply rounded-[25px] bg-white; box-shadow: 0 3px 6px rgba(0, 0, 0, 0.08); }
+  .ui-label { @apply block text-[13px] font-semibold text-primary; }
+  .ui-input {
+    @apply block w-full rounded-xl border-[1.5px] border-primary/25 bg-white px-3.5 py-[11px] font-body text-[15px] text-primary;
+  }
+  .ui-input:focus { @apply outline-none border-accent; box-shadow: 0 0 0 3px rgb(var(--c-accent) / 0.25); }
+  .ui-h { @apply font-heading font-bold uppercase text-primary; }
+  /* Oversized brand letterforms for hero bands and photo fallbacks. */
+  .ui-letter { @apply pointer-events-none absolute select-none font-heading font-bold leading-none; }
+}
+
+/* ─── Card / list listings (buildings, rooms) ──────────────────────────── */
+/* One wrapper carries the active view; the other view is simply not shown.
+   Both are in the DOM, so switching needs no request and no re-render. */
+[data-view-active="list"] [data-view="grid"] { display: none; }
+[data-view-active="grid"] [data-view="list"] { display: none; }
+
+/* A filtered-to-nothing card grid collapses; the shared empty state shows. */
+[data-view="grid"].is-empty { display: none; }
+
+/* The legend sits inside the calendar's own toolbar; give it room to breathe
+   and let the toolbar wrap rather than overflow on a narrow screen. */
+#ec .ec-toolbar { flex-wrap: wrap; gap: 0.75rem; }
+#ec .ec-toolbar .ec-end { display: flex; align-items: center; gap: 1rem; }
+#ec .ec-legend { margin-right: 0.25rem; }

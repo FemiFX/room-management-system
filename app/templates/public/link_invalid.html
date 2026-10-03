@@ -1,0 +1,17 @@
+{% extends "public/layout.html" %}
+{% block title %}{{ _('Link not valid') }}{% endblock %}
+
+{% block public_content %}
+<div class="mx-auto w-full max-w-2xl px-4 pb-24 pt-16 sm:px-6">
+  <div class="ui-card flex flex-col items-center gap-6 p-8 text-center sm:p-14">
+    <span class="flex h-[72px] w-[72px] items-center justify-center rounded-full bg-primary/10">
+      <i class="fa-solid fa-link-slash text-2xl text-primary" aria-hidden="true"></i>
+    </span>
+    <h1 class="ui-h text-3xl">{{ _('This link is not valid') }}</h1>
+    <p class="max-w-md text-primary/85">
+      {{ _('It may have expired, or the booking may already have been cancelled.') }}
+    </p>
+    <a href="/book/retrieve" class="btn-brand">{{ _('Request a new link') }}</a>
+  </div>
+</div>
+{% endblock %}

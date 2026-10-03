@@ -1,0 +1,488 @@
+{
+  "input_file": "translations/de/messages.json",
+  "output_file": "translations/de/messages.reviewed.json",
+  "reviewed_at": "2026-04-13T08:27:35.180152+00:00",
+  "model": "gpt-4.1-mini",
+  "target_language": "de",
+  "total_entries": 114,
+  "processed_entries": 29,
+  "changed_entries": 29,
+  "filled_entries": 28,
+  "updated_entries": 0,
+  "error_count": 1,
+  "changes": [
+    {
+      "index": 63,
+      "msgid": "%(count)s party",
+      "old_msgstr": "",
+      "new_msgstr": "",
+      "old_msgstr_plural": {
+        "0": "",
+        "1": ""
+      },
+      "new_msgstr_plural": {
+        "0": "%(count)s Partei",
+        "1": "%(count)s Parteien"
+      },
+      "note": "correct plural forms with placeholder preserved",
+      "occurrences": [
+        {
+          "file": "app/templates/admin/parties/list.html",
+          "line": "12"
+        }
+      ]
+    },
+    {
+      "index": 64,
+      "msgid": "Search parties",
+      "old_msgstr": "",
+      "new_msgstr": "Parteien suchen",
+      "old_msgstr_plural": {},
+      "new_msgstr_plural": {},
+      "note": "natural and concise translation",
+      "occurrences": [
+        {
+          "file": "app/templates/admin/parties/list.html",
+          "line": "19"
+        }
+      ]
+    },
+    {
+      "index": 65,
+      "msgid": "New Party",
+      "old_msgstr": "",
+      "new_msgstr": "Neue Partei",
+      "old_msgstr_plural": {},
+      "new_msgstr_plural": {},
+      "note": "correct gender and concise",
+      "occurrences": [
+        {
+          "file": "app/templates/admin/parties/list.html",
+          "line": "24"
+        },
+        {
+          "file": "app/templates/admin/parties/list.html",
+          "line": "110"
+        },
+        {
+          "file": "app/templates/admin/parties/list.html",
+          "line": "120"
+        }
+      ]
+    },
+    {
+      "index": 66,
+      "msgid": "Name",
+      "old_msgstr": "",
+      "new_msgstr": "Name",
+      "old_msgstr_plural": {},
+      "new_msgstr_plural": {},
+      "note": "same word in German, correct",
+      "occurrences": [
+        {
+          "file": "app/templates/admin/parties/list.html",
+          "line": "43"
+        },
+        {
+          "file": "app/templates/admin/parties/list.html",
+          "line": "126"
+        }
+      ]
+    },
+    {
+      "index": 67,
+      "msgid": "Contact",
+      "old_msgstr": "",
+      "new_msgstr": "Kontakt",
+      "old_msgstr_plural": {},
+      "new_msgstr_plural": {},
+      "note": "correct and natural",
+      "occurrences": [
+        {
+          "file": "app/templates/admin/parties/list.html",
+          "line": "44"
+        }
+      ]
+    },
+    {
+      "index": 68,
+      "msgid": "Delete",
+      "old_msgstr": "",
+      "new_msgstr": "Löschen",
+      "old_msgstr_plural": {},
+      "new_msgstr_plural": {},
+      "note": "common UI term",
+      "occurrences": [
+        {
+          "file": "app/templates/admin/parties/list.html",
+          "line": "79"
+        },
+        {
+          "file": "app/templates/admin/parties/list.html",
+          "line": "170"
+        },
+        {
+          "file": "app/templates/admin/parties/list.html",
+          "line": "182"
+        }
+      ]
+    },
+    {
+      "index": 69,
+      "msgid": "No matching entries.",
+      "old_msgstr": "",
+      "new_msgstr": "Keine passenden Einträge.",
+      "old_msgstr_plural": {},
+      "new_msgstr_plural": {},
+      "note": "natural and clear",
+      "occurrences": [
+        {
+          "file": "app/templates/admin/parties/list.html",
+          "line": "85"
+        }
+      ]
+    },
+    {
+      "index": 70,
+      "msgid": "No entries.",
+      "old_msgstr": "",
+      "new_msgstr": "Keine Einträge.",
+      "old_msgstr_plural": {},
+      "new_msgstr_plural": {},
+      "note": "correct and concise",
+      "occurrences": [
+        {
+          "file": "app/templates/admin/parties/list.html",
+          "line": "91"
+        }
+      ]
+    },
+    {
+      "index": 71,
+      "msgid": "Internal Teams",
+      "old_msgstr": "",
+      "new_msgstr": "Interne Teams",
+      "old_msgstr_plural": {},
+      "new_msgstr_plural": {},
+      "note": "correct plural adjective",
+      "occurrences": [
+        {
+          "file": "app/templates/admin/parties/list.html",
+          "line": "99"
+        }
+      ]
+    },
+    {
+      "index": 72,
+      "msgid": "External Parties",
+      "old_msgstr": "",
+      "new_msgstr": "Externe Parteien",
+      "old_msgstr_plural": {},
+      "new_msgstr_plural": {},
+      "note": "correct and natural",
+      "occurrences": [
+        {
+          "file": "app/templates/admin/parties/list.html",
+          "line": "100"
+        }
+      ]
+    },
+    {
+      "index": 73,
+      "msgid": "Teams",
+      "old_msgstr": "",
+      "new_msgstr": "Teams",
+      "old_msgstr_plural": {},
+      "new_msgstr_plural": {},
+      "note": "same word used in German UI",
+      "occurrences": [
+        {
+          "file": "app/templates/admin/parties/list.html",
+          "line": "101"
+        }
+      ]
+    },
+    {
+      "index": 74,
+      "msgid": "Organizations",
+      "old_msgstr": "",
+      "new_msgstr": "Organisationen",
+      "old_msgstr_plural": {},
+      "new_msgstr_plural": {},
+      "note": "correct plural",
+      "occurrences": [
+        {
+          "file": "app/templates/admin/parties/list.html",
+          "line": "102"
+        }
+      ]
+    },
+    {
+      "index": 75,
+      "msgid": "No parties yet",
+      "old_msgstr": "",
+      "new_msgstr": "Noch keine Parteien",
+      "old_msgstr_plural": {},
+      "new_msgstr_plural": {},
+      "note": "natural phrasing",
+      "occurrences": [
+        {
+          "file": "app/templates/admin/parties/list.html",
+          "line": "107"
+        }
+      ]
+    },
+    {
+      "index": 76,
+      "msgid": "Add tenants, organizations or teams to get started.",
+      "old_msgstr": "",
+      "new_msgstr": "Fügen Sie Mieter, Organisationen oder Teams hinzu, um zu beginnen.",
+      "old_msgstr_plural": {},
+      "new_msgstr_plural": {},
+      "note": "natural and clear",
+      "occurrences": [
+        {
+          "file": "app/templates/admin/parties/list.html",
+          "line": "108"
+        }
+      ]
+    },
+    {
+      "index": 77,
+      "msgid": "e.g. Acme GmbH",
+      "old_msgstr": "",
+      "new_msgstr": "z. B. Acme GmbH",
+      "old_msgstr_plural": {},
+      "new_msgstr_plural": {},
+      "note": "common abbreviation for 'zum Beispiel'",
+      "occurrences": [
+        {
+          "file": "app/templates/admin/parties/list.html",
+          "line": "127"
+        }
+      ]
+    },
+    {
+      "index": 78,
+      "msgid": "Type",
+      "old_msgstr": "",
+      "new_msgstr": "Typ",
+      "old_msgstr_plural": {},
+      "new_msgstr_plural": {},
+      "note": "correct and concise",
+      "occurrences": [
+        {
+          "file": "app/templates/admin/parties/list.html",
+          "line": "130"
+        }
+      ]
+    },
+    {
+      "index": 79,
+      "msgid": "Person",
+      "old_msgstr": "",
+      "new_msgstr": "Person",
+      "old_msgstr_plural": {},
+      "new_msgstr_plural": {},
+      "note": "correct",
+      "occurrences": [
+        {
+          "file": "app/templates/admin/parties/list.html",
+          "line": "132"
+        }
+      ]
+    },
+    {
+      "index": 80,
+      "msgid": "Organization",
+      "old_msgstr": "",
+      "new_msgstr": "Organisation",
+      "old_msgstr_plural": {},
+      "new_msgstr_plural": {},
+      "note": "correct",
+      "occurrences": [
+        {
+          "file": "app/templates/admin/parties/list.html",
+          "line": "133"
+        }
+      ]
+    },
+    {
+      "index": 81,
+      "msgid": "Team",
+      "old_msgstr": "",
+      "new_msgstr": "Team",
+      "old_msgstr_plural": {},
+      "new_msgstr_plural": {},
+      "note": "correct",
+      "occurrences": [
+        {
+          "file": "app/templates/admin/parties/list.html",
+          "line": "134"
+        }
+      ]
+    },
+    {
+      "index": 82,
+      "msgid": "Phone",
+      "old_msgstr": "",
+      "new_msgstr": "Telefon",
+      "old_msgstr_plural": {},
+      "new_msgstr_plural": {},
+      "note": "common UI term",
+      "occurrences": [
+        {
+          "file": "app/templates/admin/parties/list.html",
+          "line": "138"
+        }
+      ]
+    },
+    {
+      "index": 83,
+      "msgid": "+49 30 …",
+      "old_msgstr": "",
+      "new_msgstr": "+49 30 …",
+      "old_msgstr_plural": {},
+      "new_msgstr_plural": {},
+      "note": "placeholder phone number, keep as is",
+      "occurrences": [
+        {
+          "file": "app/templates/admin/parties/list.html",
+          "line": "139"
+        }
+      ]
+    },
+    {
+      "index": 85,
+      "msgid": "contact@example.com",
+      "old_msgstr": "",
+      "new_msgstr": "kontakt@beispiel.de",
+      "old_msgstr_plural": {},
+      "new_msgstr_plural": {},
+      "note": "localized example email address",
+      "occurrences": [
+        {
+          "file": "app/templates/admin/parties/list.html",
+          "line": "143"
+        }
+      ]
+    },
+    {
+      "index": 86,
+      "msgid": "Notes",
+      "old_msgstr": "",
+      "new_msgstr": "Notizen",
+      "old_msgstr_plural": {},
+      "new_msgstr_plural": {},
+      "note": "correct plural form for notes",
+      "occurrences": [
+        {
+          "file": "app/templates/admin/parties/list.html",
+          "line": "146"
+        }
+      ]
+    },
+    {
+      "index": 87,
+      "msgid": "Cancel",
+      "old_msgstr": "",
+      "new_msgstr": "Abbrechen",
+      "old_msgstr_plural": {},
+      "new_msgstr_plural": {},
+      "note": "common UI term",
+      "occurrences": [
+        {
+          "file": "app/templates/admin/parties/list.html",
+          "line": "153"
+        },
+        {
+          "file": "app/templates/admin/parties/list.html",
+          "line": "169"
+        }
+      ]
+    },
+    {
+      "index": 88,
+      "msgid": "Create",
+      "old_msgstr": "",
+      "new_msgstr": "Erstellen",
+      "old_msgstr_plural": {},
+      "new_msgstr_plural": {},
+      "note": "correct and concise",
+      "occurrences": [
+        {
+          "file": "app/templates/admin/parties/list.html",
+          "line": "154"
+        }
+      ]
+    },
+    {
+      "index": 89,
+      "msgid": "Delete Party",
+      "old_msgstr": "",
+      "new_msgstr": "Partei löschen",
+      "old_msgstr_plural": {},
+      "new_msgstr_plural": {},
+      "note": "natural and concise",
+      "occurrences": [
+        {
+          "file": "app/templates/admin/parties/list.html",
+          "line": "161"
+        }
+      ]
+    },
+    {
+      "index": 90,
+      "msgid": "Name is required.",
+      "old_msgstr": "",
+      "new_msgstr": "Name ist erforderlich.",
+      "old_msgstr_plural": {},
+      "new_msgstr_plural": {},
+      "note": "correct and clear",
+      "occurrences": [
+        {
+          "file": "app/templates/admin/parties/list.html",
+          "line": "179"
+        }
+      ]
+    },
+    {
+      "index": 91,
+      "msgid": "Delete {name}? This action cannot be undone.",
+      "old_msgstr": "",
+      "new_msgstr": "{name} löschen? Diese Aktion kann nicht rückgängig gemacht werden.",
+      "old_msgstr_plural": {},
+      "new_msgstr_plural": {},
+      "note": "placeholder preserved, natural phrasing",
+      "occurrences": [
+        {
+          "file": "app/templates/admin/parties/list.html",
+          "line": "180"
+        }
+      ]
+    },
+    {
+      "index": 92,
+      "msgid": "Deleting...",
+      "old_msgstr": "",
+      "new_msgstr": "Lösche...",
+      "old_msgstr_plural": {},
+      "new_msgstr_plural": {},
+      "note": "concise and natural",
+      "occurrences": [
+        {
+          "file": "app/templates/admin/parties/list.html",
+          "line": "181"
+        }
+      ]
+    }
+  ],
+  "errors": [
+    {
+      "index": 63,
+      "msgid": "%(count)s party",
+      "error": "Placeholder mismatch in msgstr; kept original",
+      "candidate_msgstr": ""
+    }
+  ]
+}

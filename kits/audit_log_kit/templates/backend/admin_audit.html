@@ -1,0 +1,513 @@
+{% extends "backend/base_admin.html" %}
+
+{% block title %}Audit Logs{% endblock %}
+{% block page_title %}Audit Logs{% endblock %}
+{% block page_subtitle %}Vollständiger Verlauf aller Systemaktionen und Benutzeraktivitäten{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Filter Panel -->
+    <div class="bg-white dark:bg-carbon-800 border border-gray-200 dark:border-carbon-700 rounded-xl shadow-md p-6">
+        <div class="flex items-start justify-between mb-4">
+            <h3 class="text-lg font-heading font-bold text-gray-900 dark:text-parchment flex items-center">
+                <svg class="w-5 h-5 mr-2 text-golden-bronze-600 dark:text-golden-bronze-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/>
+                </svg>
+                Filter
+            </h3>
+            <div class="relative" id="exportDropdown">
+                <button type="button" class="flex items-center px-3 py-2 bg-golden-bronze-500 hover:bg-golden-bronze-600 text-deep-space-900 dark:text-deep-space-900 rounded-lg border border-golden-bronze-500 shadow-sm transition-colors text-sm font-semibold" id="exportToggle">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                    </svg>
+                    Exportieren
+                    <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                    </svg>
+                </button>
+                <div class="hidden absolute right-0 mt-2 w-48 bg-white dark:bg-carbon-800 border border-gray-200 dark:border-carbon-600 rounded-lg shadow-lg z-10" id="exportMenu">
+                    <a href="{{ url_for('admin_tools.audit_export_csv', action=selected_action, user_id=selected_user, sort=sort_order) }}" class="flex items-center justify-center px-2.5 py-2 text-sm font-medium text-gray-800 dark:text-parchment hover:bg-amber-50 dark:hover:bg-carbon-700 transition-colors">
+                        <svg class="w-4 h-4 mr-2 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                        </svg>
+                        CSV Export
+                    </a>
+                    <a href="{{ url_for('admin_tools.audit_export_pdf', action=selected_action, user_id=selected_user, sort=sort_order) }}" class="flex items-center justify-center px-2.5 py-2 text-sm font-medium text-gray-800 dark:text-parchment hover:bg-amber-50 dark:hover:bg-carbon-700 transition-colors border-t border-gray-200 dark:border-carbon-600">
+                        <svg class="w-4 h-4 mr-2 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+                        </svg>
+                        PDF Export
+                    </a>
+                </div>
+            </div>
+        </div>
+        <form method="get" class="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+            <div>
+                <label class="block text-sm font-semibold text-gray-700 dark:text-parchment/80 mb-2">Aktion</label>
+                <select name="action" class="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-carbon-600 bg-white dark:bg-carbon-700 text-gray-900 dark:text-parchment focus:ring-2 focus:ring-golden-bronze-500">
+                    <option value="">Alle Aktionen</option>
+                    {% for action in actions %}
+                        <option value="{{ action }}" {% if selected_action == action %}selected{% endif %}>{{ action }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <label class="block text-sm font-semibold text-gray-700 dark:text-parchment/80 mb-2">Benutzer</label>
+                <select name="user_id" class="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-carbon-600 bg-white dark:bg-carbon-700 text-gray-900 dark:text-parchment focus:ring-2 focus:ring-golden-bronze-500">
+                    <option value="">Alle Benutzer</option>
+                    {% for u in users %}
+                        <option value="{{ u.id }}" {% if selected_user == u.id %}selected{% endif %}>{{ u.full_name }} ({{ u.email }})</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="flex items-end space-x-2">
+                <button type="submit" class="px-6 py-2 bg-golden-bronze-500 hover:bg-golden-bronze-600 text-deep-space-900 dark:text-deep-space-900 font-semibold rounded-lg transition-colors flex-1">
+                    Anwenden
+                </button>
+                <a href="{{ url_for('admin_tools.audit') }}" class="px-4 py-2 bg-gray-200 dark:bg-carbon-600 hover:bg-gray-300 dark:hover:bg-carbon-500 text-gray-900 dark:text-parchment font-semibold rounded-lg transition-colors">
+                    Reset
+                </a>
+            </div>
+            <input type="hidden" name="sort" value="{{ sort_order }}">
+        </form>
+    </div>
+
+    <!-- Stats Summary -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="bg-white dark:bg-carbon-800 border border-gray-200 dark:border-carbon-700 rounded-lg p-4">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm text-gray-600 dark:text-parchment/70">Gesamte Einträge</p>
+                    <p class="text-2xl font-bold text-gray-900 dark:text-parchment">{{ pagination.total }}</p>
+                </div>
+                <div class="w-12 h-12 bg-deep-space-100 dark:bg-deep-space-900/40 rounded-lg flex items-center justify-center">
+                    <svg class="w-6 h-6 text-deep-space-600 dark:text-deep-space-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                    </svg>
+                </div>
+            </div>
+        </div>
+        <div class="bg-white dark:bg-carbon-800 border border-gray-200 dark:border-carbon-700 rounded-lg p-4">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm text-gray-600 dark:text-parchment/70">Aktueller Filter</p>
+                    <p class="text-lg font-bold text-gray-900 dark:text-parchment">
+                        {% if selected_action or selected_user %}
+                            {{ selected_action or 'Alle' }}
+                        {% else %}
+                            Keine Filter aktiv
+                        {% endif %}
+                    </p>
+                </div>
+                <div class="w-12 h-12 bg-golden-bronze-100 dark:bg-golden-bronze-900/40 rounded-lg flex items-center justify-center">
+                    <svg class="w-6 h-6 text-golden-bronze-600 dark:text-golden-bronze-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/>
+                    </svg>
+                </div>
+            </div>
+        </div>
+        <div class="bg-white dark:bg-carbon-800 border border-gray-200 dark:border-carbon-700 rounded-lg p-4">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm text-gray-600 dark:text-parchment/70">Seite {{ pagination.page }} von {{ pagination.pages }}</p>
+                    <p class="text-lg font-bold text-gray-900 dark:text-parchment">{{ logs|length }} Einträge</p>
+                </div>
+                <div class="w-12 h-12 bg-blue-bell-100 dark:bg-blue-bell-900/40 rounded-lg flex items-center justify-center">
+                    <svg class="w-6 h-6 text-blue-bell-600 dark:text-blue-bell-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+                    </svg>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Audit Logs Table -->
+    <div class="bg-white dark:bg-carbon-800 border border-gray-200 dark:border-carbon-700 rounded-xl shadow-lg overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200 dark:divide-carbon-700">
+                <thead class="bg-gray-50 dark:bg-carbon-700">
+                    <tr>
+                        <th class="px-4 py-3 text-left text-xs font-bold text-gray-700 dark:text-parchment uppercase tracking-wider">
+                            <a href="{{ url_for('admin_tools.audit', action=selected_action, user_id=selected_user, sort='asc' if sort_order == 'desc' else 'desc', per_page=per_page) }}"
+                               class="flex items-center hover:text-golden-bronze-600 dark:hover:text-golden-bronze-400 transition-colors">
+                                Zeitstempel
+                                {% if sort_order == 'desc' %}
+                                    <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                                    </svg>
+                                {% else %}
+                                    <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"/>
+                                    </svg>
+                                {% endif %}
+                            </a>
+                        </th>
+                        <th class="px-4 py-3 text-left text-xs font-bold text-gray-700 dark:text-parchment uppercase tracking-wider">
+                            Benutzer
+                        </th>
+                        <th class="px-4 py-3 text-left text-xs font-bold text-gray-700 dark:text-parchment uppercase tracking-wider">
+                            Aktion
+                        </th>
+                        <th class="px-4 py-3 text-left text-xs font-bold text-gray-700 dark:text-parchment uppercase tracking-wider">
+                            Ressource
+                        </th>
+                        <th class="px-4 py-3 text-left text-xs font-bold text-gray-700 dark:text-parchment uppercase tracking-wider">
+                            Beschreibung
+                        </th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white dark:bg-carbon-800 divide-y divide-gray-200 dark:divide-carbon-700">
+                    {% for log in logs %}
+                        <tr class="hover:bg-gray-50 dark:hover:bg-carbon-700/50 transition-colors">
+                            <td class="px-4 py-3 whitespace-nowrap">
+                                <div class="text-sm font-medium text-gray-900 dark:text-parchment">
+                                    {{ log.created_at.strftime('%d.%m.%Y') if log.created_at else '—' }}
+                                </div>
+                                <div class="text-xs text-gray-500 dark:text-parchment/60">
+                                    {{ log.created_at.strftime('%H:%M:%S') if log.created_at else '' }}
+                                </div>
+                            </td>
+                            <td class="px-4 py-3">
+                                <div class="flex items-center">
+                                    <div class="w-8 h-8 bg-deep-space-600 rounded-full flex items-center justify-center text-white text-xs font-bold mr-2">
+                                        {{ log.user.initials if log.user else 'SYS' }}
+                                    </div>
+                                    <div>
+                                        <div class="text-sm font-medium text-gray-900 dark:text-parchment">
+                                            {{ log.user.full_name if log.user else 'System' }}
+                                        </div>
+                                        <div class="text-xs text-gray-500 dark:text-parchment/60">
+                                            {{ log.user.email if log.user else 'Automatisch' }}
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="px-4 py-3 whitespace-nowrap">
+                                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium
+                                    {% if log.action == 'login' %}bg-green-100 dark:bg-green-900/40 text-green-800 dark:text-green-400
+                                    {% elif log.action == 'logout' %}bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-400
+                                    {% elif log.action == 'application_submitted' %}bg-coral-100 dark:bg-coral-900/40 text-coral-800 dark:text-coral-400
+                                    {% elif 'application' in log.action %}bg-golden-bronze-100 dark:bg-golden-bronze-900/40 text-golden-bronze-800 dark:text-golden-bronze-400
+                                    {% elif 'user' in log.action %}bg-deep-space-100 dark:bg-deep-space-900/40 text-deep-space-800 dark:text-deep-space-400
+                                    {% elif 'payment' in log.action %}bg-green-100 dark:bg-green-900/40 text-green-800 dark:text-green-400
+                                    {% else %}bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-400{% endif %}">
+                                    {{ log.action.replace('_', ' ').title() }}
+                                </span>
+                            </td>
+                            <td class="px-4 py-3 text-sm text-gray-700 dark:text-parchment/80">
+                                {% if log.resource_type %}
+                                    <div class="font-medium">{{ log.resource_type }}</div>
+                                    {% if log.resource_id %}
+                                        <div class="text-xs text-gray-500 dark:text-parchment/60">ID: {{ log.resource_id }}</div>
+                                    {% endif %}
+                                {% else %}
+                                    <span class="text-gray-400 dark:text-parchment/40">—</span>
+                                {% endif %}
+                            </td>
+                            <td class="px-4 py-3 text-sm text-gray-700 dark:text-parchment/80">
+                                {{ log.description if log.description else '—' }}
+                            </td>
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td colspan="6" class="px-6 py-8 text-center">
+                                <svg class="w-12 h-12 text-gray-400 dark:text-parchment/40 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                                </svg>
+                                <p class="text-gray-600 dark:text-parchment/70">Keine Audit Log Einträge gefunden</p>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        {% if pagination.pages > 1 %}
+        <div class="bg-gray-50 dark:bg-carbon-700 px-4 py-3 border-t border-gray-200 dark:border-carbon-600 sm:px-6">
+            <div class="flex items-center justify-between">
+                <div class="flex-1 flex justify-between sm:hidden">
+                    {% if pagination.has_prev %}
+                        <a href="{{ url_for('admin_tools.audit', page=pagination.prev_num, action=selected_action, user_id=selected_user, sort=sort_order, per_page=per_page) }}" class="px-4 py-2 text-sm font-medium rounded-md text-gray-700 dark:text-parchment bg-white dark:bg-carbon-600 hover:bg-gray-50 dark:hover:bg-carbon-500">
+                            Zurück
+                        </a>
+                    {% endif %}
+                    {% if pagination.has_next %}
+                        <a href="{{ url_for('admin_tools.audit', page=pagination.next_num, action=selected_action, user_id=selected_user, sort=sort_order, per_page=per_page) }}" class="ml-3 px-4 py-2 text-sm font-medium rounded-md text-gray-700 dark:text-parchment bg-white dark:bg-carbon-600 hover:bg-gray-50 dark:hover:bg-carbon-500">
+                            Weiter
+                        </a>
+                    {% endif %}
+                </div>
+                <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+                    <div>
+                        <p class="text-sm text-gray-700 dark:text-parchment/80">
+                            Zeige <span class="font-medium">{{ ((pagination.page - 1) * pagination.per_page) + 1 }}</span> bis <span class="font-medium">{{ [pagination.page * pagination.per_page, pagination.total]|min }}</span> von <span class="font-medium">{{ pagination.total }}</span> Einträgen
+                        </p>
+                    </div>
+                    <div>
+                        <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                            {% if pagination.has_prev %}
+                                <a href="{{ url_for('admin_tools.audit', page=pagination.prev_num, action=selected_action, user_id=selected_user, sort=sort_order, per_page=per_page) }}" class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 dark:border-carbon-600 bg-white dark:bg-carbon-600 text-sm font-medium text-gray-500 dark:text-parchment hover:bg-gray-50 dark:hover:bg-carbon-500">
+                                    <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                                    </svg>
+                                </a>
+                            {% endif %}
+
+                            {% for page_num in pagination.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+                                {% if page_num %}
+                                    {% if page_num == pagination.page %}
+                                        <span class="relative inline-flex items-center px-4 py-2 border border-golden-bronze-500 bg-golden-bronze-500 text-sm font-medium text-deep-space-900 dark:text-deep-space-900">
+                                            {{ page_num }}
+                                        </span>
+                                    {% else %}
+                                        <a href="{{ url_for('admin_tools.audit', page=page_num, action=selected_action, user_id=selected_user, sort=sort_order, per_page=per_page) }}" class="relative inline-flex items-center px-4 py-2 border border-gray-300 dark:border-carbon-600 bg-white dark:bg-carbon-600 text-sm font-medium text-gray-700 dark:text-parchment hover:bg-gray-50 dark:hover:bg-carbon-500">
+                                            {{ page_num }}
+                                        </a>
+                                    {% endif %}
+                                {% else %}
+                                    <span class="relative inline-flex items-center px-4 py-2 border border-gray-300 dark:border-carbon-600 bg-white dark:bg-carbon-600 text-sm font-medium text-gray-700 dark:text-parchment">...</span>
+                                {% endif %}
+                            {% endfor %}
+
+                            {% if pagination.has_next %}
+                                <a href="{{ url_for('admin_tools.audit', page=pagination.next_num, action=selected_action, user_id=selected_user, sort=sort_order, per_page=per_page) }}" class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 dark:border-carbon-600 bg-white dark:bg-carbon-600 text-sm font-medium text-gray-500 dark:text-parchment hover:bg-gray-50 dark:hover:bg-carbon-500">
+                                    <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"/>
+                                    </svg>
+                                </a>
+                            {% endif %}
+                        </nav>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+{{ super() }}
+<script>
+  const exportToggle = document.getElementById('exportToggle');
+  const exportMenu = document.getElementById('exportMenu');
+  const exportDropdown = document.getElementById('exportDropdown');
+
+  if (exportToggle && exportMenu && exportDropdown) {
+    exportToggle.addEventListener('click', () => {
+      exportMenu.classList.toggle('hidden');
+    });
+
+    document.addEventListener('click', (e) => {
+      if (!exportDropdown.contains(e.target)) {
+        exportMenu.classList.add('hidden');
+      }
+    });
+  }
+</script>
+<script>
+    // AJAX sorting and pagination without page reload
+    const tableBody = document.querySelector('tbody');
+    const timestampHeader = document.querySelector('th a[href*="sort="]');
+    const paginationLinks = document.querySelectorAll('a[href*="page="]');
+
+    // Get current filter parameters from URL
+    function getCurrentParams() {
+        const urlParams = new URLSearchParams(window.location.search);
+        return {
+            action: urlParams.get('action') || '',
+            user_id: urlParams.get('user_id') || '',
+            sort: urlParams.get('sort') || 'desc',
+            page: urlParams.get('page') || '1',
+            per_page: urlParams.get('per_page') || '50'
+        };
+    }
+
+    // Determine action badge color classes
+    function getActionBadgeClass(action) {
+        if (action === 'login') return 'bg-green-100 dark:bg-green-900/40 text-green-800 dark:text-green-400';
+        if (action === 'logout') return 'bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-400';
+        if (action === 'application_submitted') return 'bg-coral-100 dark:bg-coral-900/40 text-coral-800 dark:text-coral-400';
+        if (action.includes('application')) return 'bg-golden-bronze-100 dark:bg-golden-bronze-900/40 text-golden-bronze-800 dark:text-golden-bronze-400';
+        if (action.includes('user')) return 'bg-deep-space-100 dark:bg-deep-space-900/40 text-deep-space-800 dark:text-deep-space-400';
+        if (action.includes('payment')) return 'bg-green-100 dark:bg-green-900/40 text-green-800 dark:text-green-400';
+        return 'bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-400';
+    }
+
+    // Update the table with new data
+    function updateTable(data) {
+        if (!tableBody) return;
+
+        if (data.logs.length === 0) {
+            tableBody.innerHTML = `
+                <tr>
+                    <td colspan="6" class="px-6 py-8 text-center">
+                        <svg class="w-12 h-12 text-gray-400 dark:text-parchment/40 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                        </svg>
+                        <p class="text-gray-600 dark:text-parchment/70">Keine Audit Log Einträge gefunden</p>
+                    </td>
+                </tr>
+            `;
+            return;
+        }
+
+        tableBody.innerHTML = data.logs.map(log => `
+            <tr class="hover:bg-gray-50 dark:hover:bg-carbon-700/50 transition-colors">
+                <td class="px-4 py-3 whitespace-nowrap">
+                    <div class="text-sm font-medium text-gray-900 dark:text-parchment">
+                        ${log.created_at_date}
+                    </div>
+                    <div class="text-xs text-gray-500 dark:text-parchment/60">
+                        ${log.created_at_time}
+                    </div>
+                </td>
+                <td class="px-4 py-3">
+                    <div class="flex items-center">
+                        <div class="w-8 h-8 bg-deep-space-600 rounded-full flex items-center justify-center text-white text-xs font-bold mr-2">
+                            ${log.user_initials}
+                        </div>
+                        <div>
+                            <div class="text-sm font-medium text-gray-900 dark:text-parchment">
+                                ${log.user_name}
+                            </div>
+                            <div class="text-xs text-gray-500 dark:text-parchment/60">
+                                ${log.user_email}
+                            </div>
+                        </div>
+                    </div>
+                </td>
+                <td class="px-4 py-3 whitespace-nowrap">
+                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${getActionBadgeClass(log.action)}">
+                        ${log.action_display}
+                    </span>
+                </td>
+                <td class="px-4 py-3 text-sm text-gray-700 dark:text-parchment/80">
+                    ${log.resource_type ? `
+                        <div class="font-medium">${log.resource_type}</div>
+                        ${log.resource_id ? `<div class="text-xs text-gray-500 dark:text-parchment/60">ID: ${log.resource_id}</div>` : ''}
+                    ` : '<span class="text-gray-400 dark:text-parchment/40">—</span>'}
+                </td>
+                <td class="px-4 py-3 text-sm text-gray-700 dark:text-parchment/80">
+                    ${log.description}
+                </td>
+            </tr>
+        `).join('');
+    }
+
+    // Update pagination controls
+    function updatePagination(pagination, params) {
+        const paginationContainer = document.querySelector('.bg-gray-50.dark\\:bg-deep-space-700');
+        if (!paginationContainer || pagination.pages <= 1) return;
+
+        // Update page info text
+        const pageInfo = paginationContainer.querySelector('p');
+        if (pageInfo) {
+            const start = ((pagination.page - 1) * pagination.per_page) + 1;
+            const end = Math.min(pagination.page * pagination.per_page, pagination.total);
+            pageInfo.innerHTML = `Zeige <span class="font-medium">${start}</span> bis <span class="font-medium">${end}</span> von <span class="font-medium">${pagination.total}</span> Einträgen`;
+        }
+    }
+
+    // Update sort arrow in header
+    function updateSortArrow(sortOrder) {
+        const arrow = timestampHeader?.querySelector('svg path');
+        if (!arrow) return;
+
+        // Only update the path's 'd' attribute, not innerHTML (prevents flicker)
+        if (sortOrder === 'desc') {
+            arrow.setAttribute('d', 'M19 9l-7 7-7-7');
+        } else {
+            arrow.setAttribute('d', 'M5 15l7-7 7 7');
+        }
+    }
+
+    // Update stats summary
+    function updateStats(pagination, params) {
+        const totalCard = document.querySelector('.grid.grid-cols-1.md\\:grid-cols-3 .text-2xl');
+        if (totalCard) {
+            totalCard.textContent = pagination.total;
+        }
+
+        const entriesCard = document.querySelectorAll('.grid.grid-cols-1.md\\:grid-cols-3 .text-lg')[2];
+        if (entriesCard) {
+            const pageText = entriesCard.previousElementSibling;
+            if (pageText) {
+                pageText.textContent = `Seite ${pagination.page} von ${pagination.pages}`;
+            }
+            entriesCard.textContent = `${pagination.total} Einträge`;
+        }
+    }
+
+    // Track if a fetch is in progress to prevent duplicate requests
+    let isFetching = false;
+
+    // Fetch and update audit logs
+    async function fetchAuditLogs(params) {
+        // Prevent duplicate requests
+        if (isFetching) return;
+        isFetching = true;
+
+        try {
+            const queryString = new URLSearchParams(params).toString();
+            const response = await fetch(`/admin/audit/data?${queryString}`);
+
+            if (!response.ok) {
+                throw new Error('Failed to fetch audit logs');
+            }
+
+            const data = await response.json();
+
+            // Update the table
+            updateTable(data);
+
+            // Update pagination
+            updatePagination(data.pagination, params);
+
+            // Update sort arrow
+            updateSortArrow(data.sort_order);
+
+            // Update stats
+            updateStats(data.pagination, params);
+
+            // Update URL without reload
+            const newUrl = `${window.location.pathname}?${queryString}`;
+            window.history.pushState({}, '', newUrl);
+
+        } catch (error) {
+            console.error('Error fetching audit logs:', error);
+        } finally {
+            isFetching = false;
+        }
+    }
+
+    // Handle timestamp header click
+    if (timestampHeader) {
+        timestampHeader.addEventListener('click', (e) => {
+            e.preventDefault();
+            const params = getCurrentParams();
+            params.sort = params.sort === 'desc' ? 'asc' : 'desc';
+            params.page = '1'; // Reset to first page when sorting
+            fetchAuditLogs(params);
+        });
+    }
+
+    // Handle pagination link clicks
+    document.addEventListener('click', (e) => {
+        const link = e.target.closest('a[href*="page="]');
+        if (link && link.href.includes('/admin/audit')) {
+            e.preventDefault();
+            const url = new URL(link.href);
+            const params = {
+                action: url.searchParams.get('action') || '',
+                user_id: url.searchParams.get('user_id') || '',
+                sort: url.searchParams.get('sort') || 'desc',
+                page: url.searchParams.get('page') || '1',
+                per_page: url.searchParams.get('per_page') || '50'
+            };
+            fetchAuditLogs(params);
+        }
+    });
+</script>
+{% endblock %}

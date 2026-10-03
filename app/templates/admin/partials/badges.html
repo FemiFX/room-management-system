@@ -1,0 +1,99 @@
+{% macro room_status_badge(status) %}
+{% set cfg = {
+    'available':               (_('Available'),    'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'),
+    'occupied':                (_('Occupied'),     'bg-teal-100 text-teal-700 dark:bg-teal-900/30 dark:text-teal-400'),
+    'booked_now':              (_('Booked Now'),   'bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400'),
+    'available_until_booking': (_('Expiring Soon'),'bg-amber-100 text-amber-600 dark:bg-amber-900/30 dark:text-amber-400'),
+    'unavailable':             (_('Unavailable'),  'bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400'),
+} %}
+{% set info = cfg.get(status, (_('Unknown'), 'bg-gray-100 text-gray-500 dark:bg-gray-700/40 dark:text-gray-400')) %}
+<span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium {{ info[1] }}">{{ info[0] }}</span>
+{% endmacro %}
+
+{% macro lease_status_badge(status) %}
+{% set cfg = {
+    'active':     (_('Active'),     'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'),
+    'draft':      (_('Draft'),      'bg-gray-100 text-gray-600 dark:bg-gray-700/40 dark:text-gray-400'),
+    'expired':    (_('Expired'),    'bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400'),
+    'terminated': (_('Terminated'), 'bg-orange-100 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400'),
+    'cancelled':  (_('Cancelled'),  'bg-gray-100 text-gray-500 dark:bg-gray-700/40 dark:text-gray-400'),
+} %}
+{% set info = cfg.get(status, (_('Unknown'), 'bg-gray-100 text-gray-500')) %}
+<span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium {{ info[1] }}">{{ info[0] }}</span>
+{% endmacro %}
+
+{% macro booking_status_badge(status) %}
+{% set cfg = {
+    'pending':   (_('Pending'),   'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'),
+    'approved':  (_('Approved'),  'bg-teal-100 text-teal-700 dark:bg-teal-900/30 dark:text-teal-400'),
+    'rejected':  (_('Rejected'),  'bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400'),
+    'cancelled': (_('Cancelled'), 'bg-gray-100 text-gray-500 dark:bg-gray-700/40 dark:text-gray-400'),
+    'completed': (_('Completed'), 'bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400'),
+} %}
+{% set info = cfg.get(status, (_('Unknown'), 'bg-gray-100 text-gray-500')) %}
+<span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium {{ info[1] }}">{{ info[0] }}</span>
+{% endmacro %}
+
+{% macro booking_source_badge(source) %}
+{% set cfg = {
+    'staff':    (_('Staff'),    'bg-gray-100 text-gray-600 dark:bg-gray-700/40 dark:text-gray-400'),
+    'internal': (_('Internal'), 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400'),
+    'public':   (_('Public'),   'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'),
+} %}
+{% set info = cfg.get(source, (_('Unknown'), 'bg-gray-100 text-gray-500')) %}
+<span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium {{ info[1] }}">{{ info[0] }}</span>
+{% endmacro %}
+
+{% macro party_type_badge(party_type) %}
+{% set cfg = {
+    'person':       (_('Person'),       'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'),
+    'organization': (_('Organization'), 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400'),
+    'team':         (_('Team'),         'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400'),
+    'external':     (_('External'),     'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'),
+} %}
+{% set info = cfg.get(party_type, (_('Unknown'), 'bg-gray-100 text-gray-500')) %}
+<span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium {{ info[1] }}">{{ info[0] }}</span>
+{% endmacro %}
+
+{% macro occupancy_mode_badge(mode) %}
+{% set cfg = {
+    'leasable': (_('Leasable'), 'bg-teal-100 text-teal-700 dark:bg-teal-900/30 dark:text-teal-400'),
+    'bookable': (_('Bookable'), 'bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400'),
+    'internal': (_('Internal'), 'bg-gray-100 text-gray-600 dark:bg-gray-700/40 dark:text-gray-400'),
+    'mixed':    (_('Mixed'),    'bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-400'),
+} %}
+{% set info = cfg.get(mode, (_('Unknown'), 'bg-gray-100 text-gray-500')) %}
+<span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium {{ info[1] }}">{{ info[0] }}</span>
+{% endmacro %}
+
+{% macro role_badge(role) %}
+{% set cfg = {
+    'super_admin': (_('Super Admin'), 'bg-golden-bronze-100 text-golden-bronze-800 dark:bg-golden-bronze-300/20 dark:text-golden-bronze-300'),
+    'admin':       (_('Admin'),       'bg-deep-space-100 text-deep-space-700 dark:bg-deep-space-400/20 dark:text-deep-space-200'),
+    'editor':      (_('Editor'),      'bg-turf-green-100 text-turf-green-700 dark:bg-turf-green-600/20 dark:text-turf-green-400'),
+    'viewer':      (_('Viewer'),      'bg-gray-100 text-gray-600 dark:bg-gray-700/40 dark:text-gray-400'),
+} %}
+{% set info = cfg.get(role, (_('Unknown'), 'bg-gray-100 text-gray-500')) %}
+<span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium {{ info[1] }}">{{ info[0] }}</span>
+{% endmacro %}
+
+
+{% macro audit_action_label(action) %}
+{#
+  Audit actions are lowercase machine strings. Passing them to _() directly
+  looks up a msgid that was never extracted, so the raw English leaks onto a
+  translated page. Map them to real literals and fall back to the raw value
+  for actions this table does not cover.
+#}
+{%- set labels = {
+    'created':   _('created'),
+    'updated':   _('updated'),
+    'approved':  _('approved'),
+    'rejected':  _('rejected'),
+    'cancelled': _('cancelled'),
+    'deleted':   _('deleted'),
+    'uploaded':  _('uploaded'),
+    'insurance_reminder_sent': _('insurance reminder sent'),
+} -%}
+{{- labels.get(action, action) -}}
+{% endmacro %}

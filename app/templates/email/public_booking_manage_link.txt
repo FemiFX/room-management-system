@@ -1,0 +1,12 @@
+{{ _('Here is the link to view or change your booking request.') }}
+
+{{ _('Reference') }}: {{ public_ref }}
+{{ _('Event') }}: {{ title }}
+{{ _('Room') }}: {{ room_name }}
+{{ _('From') }}: {{ start_at }}
+{{ _('Until') }}: {{ end_at }}
+
+{{ _('Open my booking') }}: {{ manage_url }}
+
+{{ _('Keep this link private — anyone who has it can view and change your request.') }}
+{{ _('If you did not ask for this email, you can ignore it.') }}

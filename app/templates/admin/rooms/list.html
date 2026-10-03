@@ -1,0 +1,348 @@
+{% extends "admin/layout.html" %}
+{% from "admin/partials/listing.html" import view_toggle, thumb, thumb_button, thumb_script, view_script %}
+
+{% block title %}{{ _('Rooms') }}{% endblock %}
+{% block page_title %}{{ _('Rooms') }}{% endblock %}
+{% block page_subtitle %}{{ _('All rooms') }} · <span id="rooms-count">{{ rooms_with_status|length }}</span> {{ _('total') }}{% endblock %}
+
+{% block nav_extra %}
+{# Filters live in the header rather than on a line of their own -- the page
+   is a listing, and a whole row spent on four chips is the space the listing
+   wanted. #}
+<span class="hidden items-center gap-1 rounded-lg border border-gray-200 bg-white p-0.5 2xl:inline-flex dark:border-carbon-600 dark:bg-carbon-800">
+    <button class="room-filter-btn rounded-md bg-gray-100 px-2.5 py-1.5 text-[12.5px] font-semibold text-gray-800 transition-colors dark:bg-carbon-700 dark:text-parchment" data-filter="all">{{ _('All') }}</button>
+    <button class="room-filter-btn rounded-md px-2.5 py-1.5 text-[12.5px] font-medium text-gray-500 transition-colors hover:bg-gray-50 dark:text-parchment/60 dark:hover:bg-carbon-700" data-filter="available">{{ _('Available') }}</button>
+    <button class="room-filter-btn rounded-md px-2.5 py-1.5 text-[12.5px] font-medium text-gray-500 transition-colors hover:bg-gray-50 dark:text-parchment/60 dark:hover:bg-carbon-700" data-filter="occupied">{{ _('Occupied') }}</button>
+    <button class="room-filter-btn rounded-md px-2.5 py-1.5 text-[12.5px] font-medium text-gray-500 transition-colors hover:bg-gray-50 dark:text-parchment/60 dark:hover:bg-carbon-700" data-filter="booked_now">{{ _('Booked Now') }}</button>
+</span>
+{% if buildings %}
+<select id="building-filter" class="form-input w-auto max-w-[170px] py-1.5 text-[12.5px]">
+    <option value="">{{ _('All Buildings') }}</option>
+    {% for b in buildings %}
+    <option value="{{ b.id }}">{{ b.name }}</option>
+    {% endfor %}
+</select>
+{% endif %}
+{{ view_toggle(view_mode) }}
+<button onclick="openRoomCreateModal()" class="btn-primary inline-flex shrink-0 items-center gap-2 whitespace-nowrap text-sm">
+    <i class="fa-solid fa-plus text-xs"></i> {{ _('New Room') }}
+</button>
+{% endblock %}
+
+{% block admin_content %}
+<div class="space-y-4" data-view-active="{{ view_mode }}">
+
+    <span class="flex items-center gap-1 overflow-x-auto rounded-lg border border-gray-200 bg-white p-0.5 2xl:hidden dark:border-carbon-600 dark:bg-carbon-800">
+        <button class="room-filter-btn shrink-0 rounded-md bg-gray-100 px-2.5 py-1.5 text-[12.5px] font-semibold text-gray-800 dark:bg-carbon-700 dark:text-parchment" data-filter="all">{{ _('All') }}</button>
+        <button class="room-filter-btn shrink-0 rounded-md px-2.5 py-1.5 text-[12.5px] font-medium text-gray-500 dark:text-parchment/60" data-filter="available">{{ _('Available') }}</button>
+        <button class="room-filter-btn shrink-0 rounded-md px-2.5 py-1.5 text-[12.5px] font-medium text-gray-500 dark:text-parchment/60" data-filter="occupied">{{ _('Occupied') }}</button>
+        <button class="room-filter-btn shrink-0 rounded-md px-2.5 py-1.5 text-[12.5px] font-medium text-gray-500 dark:text-parchment/60" data-filter="booked_now">{{ _('Booked Now') }}</button>
+    </span>
+
+    {% if rooms_with_status %}
+    {# ─── Card view ────────────────────────────────────────────────── #}
+    <div data-view="grid" class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+      {% for item in rooms_with_status %}
+      {% set room = item.room %}
+      {% set status = item.status %}
+      <div class="room-row card flex flex-col overflow-hidden"
+           data-status="{{ status }}"
+           data-building="{{ room.floor.building.id if room.floor and room.floor.building else '' }}">
+        <div class="relative">
+          {{ thumb(item.thumb_url, room.name[:1] | upper, loop.index0, height='h-28', alt=room.name) }}
+          <span class="absolute right-2 top-2">{{ room_status_badge(status) }}</span>
+        </div>
+        <div class="flex flex-grow flex-col gap-1.5 px-4 pb-3.5 pt-3">
+          <div class="flex items-baseline justify-between gap-2">
+            <a href="/rooms/{{ room.id }}" class="text-[14.5px] font-semibold text-gray-900 hover:text-turf-green-600 dark:text-parchment dark:hover:text-golden-bronze-300">{{ room.name }}</a>
+            <span class="font-mono text-[10.5px] text-gray-400 dark:text-parchment/40">{{ room.room_code }}</span>
+          </div>
+          <span class="text-[12.5px] text-gray-500 dark:text-parchment/60">
+            {%- if room.floor and room.floor.building %}{{ room.floor.building.name }}{% endif -%}
+            {%- if room.capacity %} · {{ _('Up to %(count)s people')|format(count=room.capacity) }}{% endif -%}
+          </span>
+          <div class="mt-auto flex items-center justify-end gap-1 border-t border-gray-100 pt-2.5 dark:border-carbon-700">
+            {{ thumb_button('rooms', room.id, item.thumb_url) }}
+            <a href="/rooms/{{ room.id }}" title="{{ _('View') }}" aria-label="{{ _('View') }}"
+               class="inline-flex h-[30px] w-[30px] items-center justify-center rounded-lg text-gray-500 hover:bg-gray-100 hover:text-gray-900 dark:text-parchment/60 dark:hover:bg-carbon-700 dark:hover:text-parchment">
+              <i class="fa-solid fa-eye text-[13px]"></i>
+            </a>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    <div id="no-rooms-message" class="card hidden py-12 text-center">
+        <i class="fa-solid fa-door-open mb-3 block text-3xl text-gray-200 dark:text-parchment/20"></i>
+        <p class="text-sm text-gray-500 dark:text-parchment/50">{{ _('No rooms match the current filter.') }}</p>
+    </div>
+
+    <div data-view="list" class="card overflow-hidden">
+        {% if rooms_with_status %}
+        <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+                <thead>
+                    <tr class="border-b border-gray-100 dark:border-carbon-700 bg-gray-50/60 dark:bg-carbon-700/30">
+                        <th class="text-left px-6 py-3 text-xs font-semibold text-gray-500 dark:text-parchment/60 uppercase tracking-wide">Code</th>
+                        <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-parchment/60 uppercase tracking-wide">Name</th>
+                        <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-parchment/60 uppercase tracking-wide hidden md:table-cell">Floor / Building</th>
+                        <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-parchment/60 uppercase tracking-wide hidden lg:table-cell">Mode</th>
+                        <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-parchment/60 uppercase tracking-wide">Status</th>
+                        <th class="px-4 py-3 text-xs font-semibold text-gray-500 dark:text-parchment/60 uppercase tracking-wide"></th>
+                    </tr>
+                </thead>
+                <tbody id="rooms-table-body" class="divide-y divide-gray-50 dark:divide-carbon-700/50">
+                    {% for item in rooms_with_status %}
+                    {% set room = item.room %}
+                    {% set status = item.status %}
+                    <tr class="room-row hover:bg-gray-50/60 dark:hover:bg-carbon-700/30 transition-colors"
+                        data-status="{{ status }}"
+                        data-building="{{ room.floor.building.id if room.floor and room.floor.building else '' }}">
+                        <td class="px-6 py-3.5">
+                            <span class="font-mono text-xs font-semibold text-gray-700 dark:text-parchment bg-gray-100 dark:bg-carbon-700 px-2 py-0.5 rounded">{{ room.room_code }}</span>
+                        </td>
+                        <td class="px-4 py-3.5">
+                            <span class="font-medium text-gray-800 dark:text-parchment">{{ room.name }}</span>
+                            {% if room.usage_type %}
+                            <span class="ml-1.5 text-xs text-gray-400 dark:text-parchment/50">{{ room.usage_type }}</span>
+                            {% endif %}
+                        </td>
+                        <td class="px-4 py-3.5 hidden md:table-cell">
+                            {% if room.floor %}
+                            <p class="text-gray-700 dark:text-parchment/90">{{ room.floor.name }}</p>
+                            {% if room.floor.building %}
+                            <p class="text-xs text-gray-400 dark:text-parchment/50">{{ room.floor.building.name }}</p>
+                            {% endif %}
+                            {% else %}
+                            <span class="text-gray-400">—</span>
+                            {% endif %}
+                        </td>
+                        <td class="px-4 py-3.5 hidden lg:table-cell">
+                            {{ occupancy_mode_badge(room.occupancy_mode.value) }}
+                        </td>
+                        <td class="px-4 py-3.5">
+                            {{ room_status_badge(status) }}
+                        </td>
+                        <td class="px-4 py-3.5 text-right">
+                            <a href="/rooms/{{ room.id }}" class="text-xs font-medium text-turf-green-600 dark:text-golden-bronze-300 hover:underline">View &rarr;</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="py-16 text-center">
+            <i class="fa-solid fa-door-open text-4xl text-gray-200 dark:text-parchment/20 mb-4 block"></i>
+            <p class="text-base font-medium text-gray-600 dark:text-parchment/60">No rooms found</p>
+            <p class="text-sm text-gray-400 dark:text-parchment/40 mt-1">Add buildings, floors and rooms to get started.</p>
+        </div>
+        {% endif %}
+    </div>
+
+    {# ─── Create Room Modal ────────────────────────────────────────────── #}
+<dialog id="modal-room-create" class="rounded-xl shadow-2xl p-0 w-full max-w-lg bg-white dark:bg-carbon-800 backdrop:bg-black/50">
+    <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-carbon-700">
+        <h2 class="text-base font-semibold text-gray-900 dark:text-parchment">New Room</h2>
+        <button type="button" onclick="closeModal('modal-room-create')" class="w-8 h-8 flex items-center justify-center rounded-lg text-gray-400 hover:bg-gray-100 dark:hover:bg-carbon-700 hover:text-gray-600 transition-colors">&times;</button>
+    </div>
+    <form id="form-room-create" class="px-6 py-5 space-y-4" novalidate>
+        <div class="grid grid-cols-2 gap-4">
+            <div class="col-span-2">
+                <label class="form-label" for="rc-floor">Floor <span class="text-red-500">*</span></label>
+                <select id="rc-floor" name="floor_id" class="form-input" required>
+                    <option value="">Loading…</option>
+                </select>
+            </div>
+            <div>
+                <label class="form-label" for="rc-code">Room Code <span class="text-red-500">*</span></label>
+                <input id="rc-code" name="room_code" type="text" required class="form-input" placeholder="e.g. A-201">
+            </div>
+            <div>
+                <label class="form-label" for="rc-name">Name <span class="text-red-500">*</span></label>
+                <input id="rc-name" name="name" type="text" required class="form-input" placeholder="e.g. Conference Room">
+            </div>
+            <div>
+                <label class="form-label" for="rc-usage">Usage Type <span class="text-red-500">*</span></label>
+                <input id="rc-usage" name="usage_type" type="text" required class="form-input" placeholder="e.g. office, lab">
+            </div>
+            <div>
+                <label class="form-label" for="rc-mode">Occupancy Mode</label>
+                <select id="rc-mode" name="occupancy_mode" class="form-input">
+                    <option value="leasable">Leasable</option>
+                    <option value="bookable">Bookable</option>
+                    <option value="mixed">Mixed</option>
+                    <option value="internal">Internal</option>
+                </select>
+            </div>
+            <div>
+                <label class="form-label" for="rc-area">Area (m²)</label>
+                <input id="rc-area" name="area_sqm" type="number" step="0.01" min="0" class="form-input" placeholder="0.00">
+            </div>
+            <div>
+                <label class="form-label" for="rc-meter">Meter Number</label>
+                <input id="rc-meter" name="meter_number" type="text" class="form-input" placeholder="optional">
+            </div>
+            <div>
+                <label class="form-label" for="rc-capacity">{{ _('Capacity') }}</label>
+                <input id="rc-capacity" name="capacity" type="number" min="1" class="form-input" placeholder="{{ _('seats') }}">
+            </div>
+            <div>
+                <label class="form-label" for="rc-cleaning">{{ _('Cleaning rate (per day)') }}</label>
+                <input id="rc-cleaning" name="cleaning_rate_daily" type="number" step="0.01" min="0" class="form-input" placeholder="0.00">
+            </div>
+            <div class="col-span-2">
+                <label class="form-label" for="rc-public-desc">{{ _('Public description') }}</label>
+                <textarea id="rc-public-desc" name="public_description" rows="2" class="form-input"
+                          placeholder="{{ _('Shown on the public booking form') }}"></textarea>
+            </div>
+            <div class="col-span-2 flex flex-wrap items-center gap-5">
+                <div class="flex items-center gap-2">
+                    <input id="rc-rentable" name="rentable" type="checkbox" class="rounded border-gray-300 text-turf-green-600">
+                    <label for="rc-rentable" class="text-sm text-gray-700 dark:text-parchment">Rentable</label>
+                </div>
+                <div class="flex items-center gap-2">
+                    <input id="rc-bookable" name="bookable" type="checkbox" class="rounded border-gray-300 text-turf-green-600">
+                    <label for="rc-bookable" class="text-sm text-gray-700 dark:text-parchment">{{ _('Bookable internally') }}</label>
+                </div>
+                <div class="flex items-center gap-2">
+                    <input id="rc-public-bookable" name="public_bookable" type="checkbox" class="rounded border-gray-300 text-turf-green-600">
+                    <label for="rc-public-bookable" class="text-sm text-gray-700 dark:text-parchment">{{ _('Bookable publicly') }}</label>
+                </div>
+                <div class="flex items-center gap-2">
+                    <input id="rc-active" name="is_active" type="checkbox" class="rounded border-gray-300 text-turf-green-600" checked>
+                    <label for="rc-active" class="text-sm text-gray-700 dark:text-parchment">Active</label>
+                </div>
+                <div class="flex items-center gap-2">
+                    <input id="rc-internet" name="has_internet" type="checkbox" class="rounded border-gray-300 text-blue-500">
+                    <label for="rc-internet" class="text-sm text-gray-700 dark:text-parchment">Has Internet</label>
+                </div>
+            </div>
+        </div>
+        <p id="err-room-create" class="text-sm text-red-600 dark:text-red-400 hidden"></p>
+    </form>
+    <div class="flex justify-end gap-3 px-6 py-4 border-t border-gray-100 dark:border-carbon-700">
+        <button type="button" onclick="closeModal('modal-room-create')" class="btn-secondary">Cancel</button>
+        <button type="submit" form="form-room-create" class="btn-primary">Create</button>
+    </div>
+</dialog>
+</div>
+{% endblock %}
+
+{% block page_scripts %}
+{{ thumb_script() }}
+{{ view_script('roomsView') }}
+<script>
+(function () {
+    // ── Create Room ─────────────────────────────────────────────────────
+    let floorsLoaded = false;
+    window.openRoomCreateModal = async function() {
+        if (!floorsLoaded) {
+            const sel = document.getElementById('rc-floor');
+            try {
+                const [bRes, fRes] = await Promise.all([
+                    fetch('/api/v1/buildings'),
+                    fetch('/api/v1/floors'),
+                ]);
+                const buildings = await bRes.json();
+                const floors = await fRes.json();
+                const bMap = Object.fromEntries(buildings.map(b => [b.id, b.name]));
+                sel.innerHTML = '';
+                const blank = document.createElement('option');
+                blank.value = ''; blank.textContent = 'Select floor…';
+                sel.appendChild(blank);
+                floors.forEach(f => {
+                    const opt = document.createElement('option');
+                    opt.value = f.id;
+                    opt.textContent = (bMap[f.building_id] ? bMap[f.building_id] + ' — ' : '') + f.name;
+                    sel.appendChild(opt);
+                });
+            } catch { sel.innerHTML = '<option value="">Failed to load floors</option>'; }
+            floorsLoaded = true;
+        }
+        clearModalError('modal-room-create');
+        openModal('modal-room-create');
+    };
+
+    document.getElementById('form-room-create').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const optional = ['area_sqm', 'meter_number'];
+        const data = formToObject(e.target, optional);
+        if (!data.floor_id) { setModalError('modal-room-create', 'Please select a floor.'); return; }
+        if (!data.room_code) { setModalError('modal-room-create', 'Room code is required.'); return; }
+        if (!data.name) { setModalError('modal-room-create', 'Name is required.'); return; }
+        if (!data.usage_type) { setModalError('modal-room-create', 'Usage type is required.'); return; }
+        data.floor_id = parseInt(data.floor_id);
+        if (data.area_sqm) data.area_sqm = parseFloat(data.area_sqm);
+        setSubmitting('form-room-create', true);
+        clearModalError('modal-room-create');
+        const res = await apiPost('/api/v1/rooms', data);
+        setSubmitting('form-room-create', false);
+        if (res.ok) { location.reload(); }
+        else { setModalError('modal-room-create', await parseApiError(res)); }
+    });
+
+    const filterBtns = document.querySelectorAll('.room-filter-btn');
+    const buildingFilter = document.getElementById('building-filter');
+    const rows = Array.from(document.querySelectorAll('.room-row'));
+    const countEl = document.getElementById('rooms-count');
+    const noMsg = document.getElementById('no-rooms-message');
+    const tableBody = document.getElementById('rooms-table-body');
+    let activeStatus = 'all';
+    let activeBuilding = '';
+
+    // `.room-row` is on both the table rows and the cards, so one pass filters
+    // whichever view happens to be showing.
+    const gridWrap = document.querySelector('[data-view="grid"]');
+
+    function applyFilters() {
+        let visible = 0;
+        rows.forEach(row => {
+            const statusMatch = activeStatus === 'all' || row.dataset.status === activeStatus;
+            const buildingMatch = !activeBuilding || row.dataset.building === activeBuilding;
+            const show = statusMatch && buildingMatch;
+            row.classList.toggle('hidden', !show);
+            if (show) visible++;
+        });
+        // Each room appears once per view, so the raw count double-counts.
+        const perView = gridWrap ? Math.round(visible / 2) : visible;
+        if (countEl) countEl.textContent = perView;
+        if (noMsg) {
+            if (tableBody) tableBody.classList.toggle('hidden', perView === 0);
+            if (gridWrap) gridWrap.classList.toggle('is-empty', perView === 0);
+            noMsg.classList.toggle('hidden', perView > 0);
+        }
+    }
+
+    filterBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            filterBtns.forEach(b => {
+                b.classList.remove('bg-gray-100', 'dark:bg-carbon-700', 'text-gray-800', 'dark:text-parchment');
+                b.classList.add('text-gray-500', 'dark:text-parchment/60', 'hover:bg-gray-50', 'dark:hover:bg-carbon-700');
+            });
+            btn.classList.add('bg-gray-100', 'dark:bg-carbon-700', 'text-gray-800', 'dark:text-parchment');
+            btn.classList.remove('text-gray-500', 'dark:text-parchment/60', 'hover:bg-gray-50', 'dark:hover:bg-carbon-700');
+            activeStatus = btn.dataset.filter;
+            applyFilters();
+        });
+    });
+
+    if (buildingFilter) {
+        buildingFilter.addEventListener('change', function() {
+            activeBuilding = this.value;
+            applyFilters();
+        });
+    }
+
+    // Apply status from URL param if present
+    const urlParams = new URLSearchParams(window.location.search);
+    const statusParam = urlParams.get('status');
+    if (statusParam) {
+        const btn = document.querySelector(`.room-filter-btn[data-filter="${statusParam}"]`);
+        if (btn) btn.click();
+    }
+})();
+</script>
+{% endblock %}

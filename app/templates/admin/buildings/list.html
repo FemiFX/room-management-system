@@ -1,0 +1,569 @@
+{% extends "admin/layout.html" %}
+{% from "admin/partials/listing.html" import view_toggle, thumb, thumb_button, thumb_script, view_script %}
+
+{% block title %}{{ _('Buildings') }}{% endblock %}
+{% block page_title %}{{ _('Buildings') }}{% endblock %}
+{% block page_subtitle %}{{ buildings_data|length }} {{ _('building') }}{{ 's' if buildings_data|length != 1 else '' }}{% endblock %}
+
+{% block nav_extra %}
+{{ view_toggle(view_mode) }}
+<button onclick="openModal('modal-building-create')" class="btn-primary inline-flex shrink-0 items-center gap-2 whitespace-nowrap text-sm">
+    <i class="fa-solid fa-plus text-xs"></i> {{ _('New Building') }}
+</button>
+{% endblock %}
+
+{% block admin_content %}
+<div class="space-y-4" data-view-active="{{ view_mode }}">
+
+  {% if buildings_data %}
+
+  {# ─── Card view ───────────────────────────────────────────────────── #}
+  <div data-view="grid" class="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
+    {% for item in buildings_data %}
+    {% set b = item.building %}
+    <div class="card flex flex-col overflow-hidden">
+      {{ thumb(item.thumb_url, b.name[:1] | upper, loop.index0, alt=b.name) }}
+      <div class="flex flex-grow flex-col gap-2.5 px-4 pb-4 pt-3.5">
+        <div class="flex flex-col gap-0.5">
+          <span class="text-[15px] font-semibold text-gray-900 dark:text-parchment">{{ b.name }}</span>
+          <span class="text-[12.5px] text-gray-500 dark:text-parchment/60">
+            {%- if b.street %}{{ b.street }}{% endif -%}
+            {%- if b.street and b.city %} · {% endif -%}
+            {%- if b.city %}{{ b.city }}{% endif -%}
+            {%- if not b.street and not b.city %}—{% endif -%}
+          </span>
+        </div>
+        <div class="flex flex-wrap gap-2">
+          <span class="inline-flex items-center rounded-full bg-gray-100 px-2.5 py-0.5 text-[11.5px] text-gray-600 dark:bg-carbon-700 dark:text-parchment/70">
+            <span data-floor-count-for="{{ b.id }}">{{ item.floor_count }}</span>&nbsp;{{ _('Floors') }}
+          </span>
+          <span class="inline-flex items-center rounded-full bg-gray-100 px-2.5 py-0.5 text-[11.5px] text-gray-600 dark:bg-carbon-700 dark:text-parchment/70">
+            {{ item.room_count }} {{ _('Rooms') }}
+          </span>
+        </div>
+        <div class="mt-auto flex items-center justify-end border-t border-gray-100 pt-2.5 dark:border-carbon-700">
+          <div class="inline-flex items-center gap-1">
+  {{ thumb_button('buildings', b.id, item.thumb_url) }}
+  <button type="button" onclick='openFloorsModal({{ b.id }}, {{ b.name | tojson }})'
+          title="{{ _('Floors') }}" aria-label="{{ _('Floors') }}"
+          class="inline-flex h-[30px] w-[30px] items-center justify-center rounded-lg text-gray-500 hover:bg-gray-100 hover:text-gray-900 dark:text-parchment/60 dark:hover:bg-carbon-700 dark:hover:text-parchment">
+    <i class="fa-solid fa-layer-group text-[13px]"></i>
+  </button>
+  <button type="button" onclick="openBuildingCloneModal(this)"
+          data-name="{{ b.name | e }}" data-street="{{ (b.street or '') | e }}"
+          data-postal-code="{{ (b.postal_code or '') | e }}" data-city="{{ (b.city or '') | e }}"
+          data-notes="{{ (b.notes or '') | e }}"
+          title="{{ _('Clone') }}" aria-label="{{ _('Clone') }}"
+          class="inline-flex h-[30px] w-[30px] items-center justify-center rounded-lg text-gray-500 hover:bg-gray-100 hover:text-gray-900 dark:text-parchment/60 dark:hover:bg-carbon-700 dark:hover:text-parchment">
+    <i class="fa-solid fa-clone text-[13px]"></i>
+  </button>
+  <button type="button" onclick="openBuildingEditModal(this)"
+          data-id="{{ b.id }}" data-name="{{ b.name | e }}" data-street="{{ (b.street or '') | e }}"
+          data-postal-code="{{ (b.postal_code or '') | e }}" data-city="{{ (b.city or '') | e }}"
+          data-notes="{{ (b.notes or '') | e }}"
+          title="{{ _('Edit') }}" aria-label="{{ _('Edit') }}"
+          class="inline-flex h-[30px] w-[30px] items-center justify-center rounded-lg text-gray-500 hover:bg-gray-100 hover:text-gray-900 dark:text-parchment/60 dark:hover:bg-carbon-700 dark:hover:text-parchment">
+    <i class="fa-solid fa-pen text-[13px]"></i>
+  </button>
+  <button type="button" onclick='deleteBuilding({{ b.id }}, {{ b.name | tojson }})'
+          title="{{ _('Delete') }}" aria-label="{{ _('Delete') }}"
+          class="inline-flex h-[30px] w-[30px] items-center justify-center rounded-lg text-gray-500 hover:!bg-red-50 hover:!text-red-600 dark:text-parchment/60 dark:hover:!bg-red-900/30 dark:hover:!text-red-400">
+    <i class="fa-solid fa-trash text-[13px]"></i>
+  </button>
+</div>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  {# ─── List view ───────────────────────────────────────────────────── #}
+  <div data-view="list" class="card overflow-hidden">
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm">
+        <thead>
+          <tr class="border-b border-gray-100 bg-gray-50/60 dark:border-carbon-700 dark:bg-carbon-700/30">
+            <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-parchment/60">{{ _('Name') }}</th>
+            <th class="hidden px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500 md:table-cell dark:text-parchment/60">{{ _('Address') }}</th>
+            <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-parchment/60">{{ _('Floors') }}</th>
+            <th class="hidden px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500 sm:table-cell dark:text-parchment/60">{{ _('Rooms') }}</th>
+            <th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-parchment/60">{{ _('Actions') }}</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-50 dark:divide-carbon-700/50">
+          {% for item in buildings_data %}
+          {% set b = item.building %}
+          <tr class="transition-colors hover:bg-gray-50/60 dark:hover:bg-carbon-700/30">
+            <td class="px-6 py-3">
+              <span class="flex items-center gap-3">
+                {% if item.thumb_url %}
+                <img src="{{ item.thumb_url }}" alt="" loading="lazy" class="h-9 w-9 shrink-0 rounded-lg object-cover">
+                {% else %}
+                <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-turf-green-600 text-sm font-bold text-parchment">{{ b.name[:1] | upper }}</span>
+                {% endif %}
+                <span class="font-medium text-gray-800 dark:text-parchment">{{ b.name }}</span>
+              </span>
+            </td>
+            <td class="hidden px-4 py-3 md:table-cell">
+              {% if b.street or b.city %}
+              <p class="text-gray-700 dark:text-parchment/90">{{ b.street or '' }}</p>
+              <p class="text-xs text-gray-400 dark:text-parchment/50">
+                {% if b.postal_code and b.city %}{{ b.postal_code }} {{ b.city }}
+                {% elif b.city %}{{ b.city }}{% elif b.postal_code %}{{ b.postal_code }}{% endif %}
+              </p>
+              {% else %}<span class="text-gray-300 dark:text-parchment/30">—</span>{% endif %}
+            </td>
+            <td class="px-4 py-3">
+              <span data-floor-count-for="{{ b.id }}" class="rounded bg-gray-100 px-1.5 py-0.5 font-mono text-xs font-semibold text-gray-700 dark:bg-carbon-700 dark:text-parchment">{{ item.floor_count }}</span>
+            </td>
+            <td class="hidden px-4 py-3 sm:table-cell">
+              <span class="rounded bg-gray-100 px-1.5 py-0.5 font-mono text-xs font-semibold text-gray-700 dark:bg-carbon-700 dark:text-parchment">{{ item.room_count }}</span>
+            </td>
+            <td class="px-4 py-3 text-right"><div class="inline-flex items-center gap-1">
+  {{ thumb_button('buildings', b.id, item.thumb_url) }}
+  <button type="button" onclick='openFloorsModal({{ b.id }}, {{ b.name | tojson }})'
+          title="{{ _('Floors') }}" aria-label="{{ _('Floors') }}"
+          class="inline-flex h-[30px] w-[30px] items-center justify-center rounded-lg text-gray-500 hover:bg-gray-100 hover:text-gray-900 dark:text-parchment/60 dark:hover:bg-carbon-700 dark:hover:text-parchment">
+    <i class="fa-solid fa-layer-group text-[13px]"></i>
+  </button>
+  <button type="button" onclick="openBuildingCloneModal(this)"
+          data-name="{{ b.name | e }}" data-street="{{ (b.street or '') | e }}"
+          data-postal-code="{{ (b.postal_code or '') | e }}" data-city="{{ (b.city or '') | e }}"
+          data-notes="{{ (b.notes or '') | e }}"
+          title="{{ _('Clone') }}" aria-label="{{ _('Clone') }}"
+          class="inline-flex h-[30px] w-[30px] items-center justify-center rounded-lg text-gray-500 hover:bg-gray-100 hover:text-gray-900 dark:text-parchment/60 dark:hover:bg-carbon-700 dark:hover:text-parchment">
+    <i class="fa-solid fa-clone text-[13px]"></i>
+  </button>
+  <button type="button" onclick="openBuildingEditModal(this)"
+          data-id="{{ b.id }}" data-name="{{ b.name | e }}" data-street="{{ (b.street or '') | e }}"
+          data-postal-code="{{ (b.postal_code or '') | e }}" data-city="{{ (b.city or '') | e }}"
+          data-notes="{{ (b.notes or '') | e }}"
+          title="{{ _('Edit') }}" aria-label="{{ _('Edit') }}"
+          class="inline-flex h-[30px] w-[30px] items-center justify-center rounded-lg text-gray-500 hover:bg-gray-100 hover:text-gray-900 dark:text-parchment/60 dark:hover:bg-carbon-700 dark:hover:text-parchment">
+    <i class="fa-solid fa-pen text-[13px]"></i>
+  </button>
+  <button type="button" onclick='deleteBuilding({{ b.id }}, {{ b.name | tojson }})'
+          title="{{ _('Delete') }}" aria-label="{{ _('Delete') }}"
+          class="inline-flex h-[30px] w-[30px] items-center justify-center rounded-lg text-gray-500 hover:!bg-red-50 hover:!text-red-600 dark:text-parchment/60 dark:hover:!bg-red-900/30 dark:hover:!text-red-400">
+    <i class="fa-solid fa-trash text-[13px]"></i>
+  </button>
+</div></td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  {% else %}
+  <div class="card py-16 text-center">
+    <i class="fa-solid fa-building mb-4 block text-4xl text-gray-200 dark:text-parchment/20"></i>
+    <p class="text-base font-medium text-gray-600 dark:text-parchment/60">{{ _('No buildings yet') }}</p>
+    <p class="mt-1 text-sm text-gray-400 dark:text-parchment/40">{{ _('Add a building to get started.') }}</p>
+  </div>
+  {% endif %}
+
+</div>
+
+{# ─── Create Building Modal ─────────────────────────────────────────── #}
+<dialog id="modal-building-create" class="rounded-xl shadow-2xl p-0 w-full max-w-md bg-white dark:bg-carbon-800 backdrop:bg-black/50">
+    <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-carbon-700">
+        <h2 class="text-base font-semibold text-gray-900 dark:text-parchment">New Building</h2>
+        <button type="button" onclick="closeModal('modal-building-create')" class="w-8 h-8 flex items-center justify-center rounded-lg text-gray-400 hover:bg-gray-100 dark:hover:bg-carbon-700 hover:text-gray-600 transition-colors">&times;</button>
+    </div>
+    <form id="form-building-create" class="px-6 py-5 space-y-4" novalidate>
+        <div>
+            <label class="form-label" for="bc-name">Name <span class="text-red-500">*</span></label>
+            <input id="bc-name" name="name" type="text" required class="form-input" placeholder="e.g. Main Campus">
+        </div>
+        <div>
+            <label class="form-label" for="bc-street">Street</label>
+            <input id="bc-street" name="street" type="text" class="form-input" placeholder="e.g. 123 Main St">
+        </div>
+        <div class="grid grid-cols-2 gap-4">
+            <div>
+                <label class="form-label" for="bc-postal">Postal Code</label>
+                <input id="bc-postal" name="postal_code" type="text" class="form-input" placeholder="e.g. 12345">
+            </div>
+            <div>
+                <label class="form-label" for="bc-city">City</label>
+                <input id="bc-city" name="city" type="text" class="form-input" placeholder="e.g. Springfield">
+            </div>
+        </div>
+        <div>
+            <label class="form-label" for="bc-notes">Notes</label>
+            <textarea id="bc-notes" name="notes" rows="2" class="form-input" placeholder="Optional notes…"></textarea>
+        </div>
+        <p id="err-building-create" class="text-sm text-red-600 dark:text-red-400 hidden"></p>
+    </form>
+    <div class="flex justify-end gap-3 px-6 py-4 border-t border-gray-100 dark:border-carbon-700">
+        <button type="button" onclick="closeModal('modal-building-create')" class="btn-secondary">Cancel</button>
+        <button type="submit" form="form-building-create" class="btn-primary">Create</button>
+    </div>
+</dialog>
+
+{# ─── Edit Building Modal ───────────────────────────────────────────── #}
+<dialog id="modal-building-edit" class="rounded-xl shadow-2xl p-0 w-full max-w-md bg-white dark:bg-carbon-800 backdrop:bg-black/50">
+    <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-carbon-700">
+        <h2 class="text-base font-semibold text-gray-900 dark:text-parchment">Edit Building</h2>
+        <button type="button" onclick="closeModal('modal-building-edit')" class="w-8 h-8 flex items-center justify-center rounded-lg text-gray-400 hover:bg-gray-100 dark:hover:bg-carbon-700 hover:text-gray-600 transition-colors">&times;</button>
+    </div>
+    <form id="form-building-edit" class="px-6 py-5 space-y-4" novalidate>
+        <input type="hidden" id="be-id">
+        <div>
+            <label class="form-label" for="be-name">Name <span class="text-red-500">*</span></label>
+            <input id="be-name" name="name" type="text" required class="form-input">
+        </div>
+        <div>
+            <label class="form-label" for="be-street">Street</label>
+            <input id="be-street" name="street" type="text" class="form-input">
+        </div>
+        <div class="grid grid-cols-2 gap-4">
+            <div>
+                <label class="form-label" for="be-postal">Postal Code</label>
+                <input id="be-postal" name="postal_code" type="text" class="form-input">
+            </div>
+            <div>
+                <label class="form-label" for="be-city">City</label>
+                <input id="be-city" name="city" type="text" class="form-input">
+            </div>
+        </div>
+        <div>
+            <label class="form-label" for="be-notes">Notes</label>
+            <textarea id="be-notes" name="notes" rows="2" class="form-input"></textarea>
+        </div>
+        <p id="err-building-edit" class="text-sm text-red-600 dark:text-red-400 hidden"></p>
+    </form>
+    <div class="flex justify-end gap-3 px-6 py-4 border-t border-gray-100 dark:border-carbon-700">
+        <button type="button" onclick="closeModal('modal-building-edit')" class="btn-secondary">Cancel</button>
+        <button type="submit" form="form-building-edit" class="btn-primary">Save</button>
+    </div>
+</dialog>
+
+{# ─── Delete Building Confirmation Modal ────────────────────────────── #}
+<dialog id="modal-building-delete" class="rounded-xl shadow-2xl p-0 w-full max-w-sm bg-white dark:bg-carbon-800 backdrop:bg-black/50">
+    <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-carbon-700">
+        <h2 id="delete-modal-title" class="text-base font-semibold text-gray-900 dark:text-parchment">Delete Building</h2>
+        <button type="button" onclick="closeModal('modal-building-delete')" class="w-8 h-8 flex items-center justify-center rounded-lg text-gray-400 hover:bg-gray-100 dark:hover:bg-carbon-700 hover:text-gray-600 transition-colors">&times;</button>
+    </div>
+    <div class="px-6 py-5">
+        <p id="delete-building-message" class="text-sm text-gray-600 dark:text-parchment/80"></p>
+        <p id="err-building-delete" class="mt-3 text-sm text-red-600 dark:text-red-400 hidden"></p>
+    </div>
+    <div class="flex justify-end gap-3 px-6 py-4 border-t border-gray-100 dark:border-carbon-700">
+        <button type="button" onclick="closeModal('modal-building-delete')" class="btn-secondary">Cancel</button>
+        <button id="btn-building-delete-confirm" class="btn-danger">Delete</button>
+    </div>
+</dialog>
+
+{# ─── Floors Modal ──────────────────────────────────────────────────── #}
+<dialog id="modal-floors" class="rounded-xl shadow-2xl p-0 w-full max-w-lg bg-white dark:bg-carbon-800 backdrop:bg-black/50">
+    <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-carbon-700">
+        <h2 class="text-base font-semibold text-gray-900 dark:text-parchment">
+            Floors &mdash; <span id="floors-modal-building-name" class="text-turf-green-600 dark:text-golden-bronze-300"></span>
+        </h2>
+        <button type="button" onclick="closeModal('modal-floors')" class="w-8 h-8 flex items-center justify-center rounded-lg text-gray-400 hover:bg-gray-100 dark:hover:bg-carbon-700 hover:text-gray-600 transition-colors">&times;</button>
+    </div>
+    <div class="px-6 py-4 space-y-4">
+        <div id="floors-list" class="space-y-2 max-h-60 overflow-y-auto min-h-[3rem]"></div>
+        <div class="border-t border-gray-100 dark:border-carbon-700 pt-4">
+            <p class="text-xs font-semibold text-gray-500 dark:text-parchment/60 uppercase tracking-wide mb-3">Add Floor</p>
+            <form id="form-floor-create" novalidate>
+                <input type="hidden" id="fc-building-id">
+                <div class="grid grid-cols-2 gap-3 mb-3">
+                    <div>
+                        <label class="form-label text-xs" for="fc-name">Name <span class="text-red-500">*</span></label>
+                        <input id="fc-name" name="name" type="text" required class="form-input text-sm" placeholder="e.g. Ground Floor">
+                    </div>
+                    <div>
+                        <label class="form-label text-xs" for="fc-number">Floor Number <span class="text-red-500">*</span></label>
+                        <input id="fc-number" name="floor_number" type="number" step="1" required class="form-input text-sm" placeholder="0">
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-3 mb-3">
+                    <div>
+                        <label class="form-label text-xs" for="fc-floorplan-object-key">Floorplan Object Key</label>
+                        <input id="fc-floorplan-object-key" name="floorplan_object_key" type="text" class="form-input text-sm" placeholder="floorplans/main-campus-gf.pdf">
+                    </div>
+                    <div>
+                        <label class="form-label text-xs" for="fc-image-object-key">Image Object Key</label>
+                        <input id="fc-image-object-key" name="image_object_key" type="text" class="form-input text-sm" placeholder="images/main-campus-gf.png">
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label text-xs" for="fc-notes">Notes</label>
+                    <textarea id="fc-notes" name="notes" rows="2" class="form-input text-sm" placeholder="Optional floor notes"></textarea>
+                </div>
+                <p id="err-floors" class="text-sm text-red-600 dark:text-red-400 hidden mb-2"></p>
+                <div class="flex justify-end">
+                    <button type="submit" form="form-floor-create" class="btn-primary text-sm">Add Floor</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</dialog>
+
+{% endblock %}
+
+{% block page_scripts %}
+{{ thumb_script() }}
+{{ view_script('buildingsView') }}
+<script>
+(function () {
+    const byId = (id) => document.getElementById(id);
+
+    // ── Create Building ──────────────────────────────────────────────────
+    const createBuildingForm = byId('form-building-create');
+    if (createBuildingForm) {
+        createBuildingForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const optional = ['street', 'postal_code', 'city', 'notes'];
+            const data = formToObject(e.target, optional);
+            if (!data.name) { setModalError('modal-building-create', 'Name is required.'); return; }
+            setSubmitting('form-building-create', true);
+            clearModalError('modal-building-create');
+            const res = await apiPost('/api/v1/buildings', data);
+            setSubmitting('form-building-create', false);
+            if (res.ok) { location.reload(); }
+            else { setModalError('modal-building-create', await parseApiError(res)); }
+        });
+    }
+
+    // ── Edit Building ────────────────────────────────────────────────────
+    window.openBuildingEditModal = function (btn) {
+        const beId = byId('be-id');
+        const beName = byId('be-name');
+        const beStreet = byId('be-street');
+        const bePostal = byId('be-postal');
+        const beCity = byId('be-city');
+        const beNotes = byId('be-notes');
+        if (!beId || !beName || !beStreet || !bePostal || !beCity || !beNotes) return;
+        beId.value = btn.dataset.id;
+        beName.value = btn.dataset.name;
+        beStreet.value = btn.dataset.street;
+        bePostal.value = btn.dataset.postalCode;
+        beCity.value = btn.dataset.city;
+        beNotes.value = btn.dataset.notes;
+        clearModalError('modal-building-edit');
+        openModal('modal-building-edit');
+    };
+
+    window.openBuildingCloneModal = function (btn) {
+        const bcName = byId('bc-name');
+        const bcStreet = byId('bc-street');
+        const bcPostal = byId('bc-postal');
+        const bcCity = byId('bc-city');
+        const bcNotes = byId('bc-notes');
+        if (!bcName || !bcStreet || !bcPostal || !bcCity || !bcNotes) return;
+        bcName.value = `${btn.dataset.name || 'Building'} (Copy)`;
+        bcStreet.value = btn.dataset.street || '';
+        bcPostal.value = btn.dataset.postalCode || '';
+        bcCity.value = btn.dataset.city || '';
+        bcNotes.value = btn.dataset.notes || '';
+        clearModalError('modal-building-create');
+        openModal('modal-building-create');
+    };
+
+    const editBuildingForm = byId('form-building-edit');
+    if (editBuildingForm) {
+        editBuildingForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const id = byId('be-id')?.value;
+            if (!id) return;
+            const optional = ['street', 'postal_code', 'city', 'notes'];
+            const data = formToObject(e.target, optional);
+            if (!data.name) { setModalError('modal-building-edit', 'Name is required.'); return; }
+            setSubmitting('form-building-edit', true);
+            clearModalError('modal-building-edit');
+            const res = await apiPatch(`/api/v1/buildings/${id}`, data);
+            setSubmitting('form-building-edit', false);
+            if (res.ok) { location.reload(); }
+            else { setModalError('modal-building-edit', await parseApiError(res)); }
+        });
+    }
+
+    // ── Delete Building ──────────────────────────────────────────────────
+    let pendingDelete = null;
+
+    function getBuildingFloorCount(buildingId) {
+        const el = document.querySelector(`[data-floor-count-for="${buildingId}"]`);
+        return parseInt(el?.textContent || '0', 10) || 0;
+    }
+
+    function setBuildingFloorCount(buildingId, value) {
+        const el = document.querySelector(`[data-floor-count-for="${buildingId}"]`);
+        if (!el) return;
+        el.textContent = String(Math.max(0, value));
+    }
+
+    function openDeleteModal({ title, message, action }) {
+        const titleEl = byId('delete-modal-title');
+        const msgEl = byId('delete-building-message');
+        if (!titleEl || !msgEl) return;
+        pendingDelete = action;
+        titleEl.textContent = title;
+        msgEl.innerHTML = message;
+        clearModalError('modal-building-delete');
+        openModal('modal-building-delete');
+    }
+
+    window.confirmDeleteBuilding = function (id, name, floorCount) {
+        if (!byId('delete-building-message')) return;
+        if (floorCount > 0) {
+            openDeleteModal({
+                title: 'Delete Building',
+                message: `Delete <strong class="text-gray-900 dark:text-parchment">${escHtml(name)}</strong>? This will also permanently delete all ${floorCount} floor(s) and their rooms.`,
+                action: { kind: 'building', id },
+            });
+        } else {
+            openDeleteModal({
+                title: 'Delete Building',
+                message: `Delete <strong class="text-gray-900 dark:text-parchment">${escHtml(name)}</strong>? This action cannot be undone.`,
+                action: { kind: 'building', id },
+            });
+        }
+    };
+
+    window.deleteBuilding = function (id, name) {
+        const floorCount = getBuildingFloorCount(id);
+        window.confirmDeleteBuilding(id, name, floorCount);
+    };
+
+    const deleteConfirmBtn = byId('btn-building-delete-confirm');
+    if (deleteConfirmBtn) {
+        deleteConfirmBtn.addEventListener('click', async () => {
+            if (!pendingDelete) return;
+            deleteConfirmBtn.disabled = true;
+            deleteConfirmBtn.textContent = 'Deleting…';
+            clearModalError('modal-building-delete');
+            const endpoint = pendingDelete.kind === 'floor'
+                ? `/api/v1/floors/${pendingDelete.id}`
+                : `/api/v1/buildings/${pendingDelete.id}`;
+            const res = await apiDelete(endpoint);
+            deleteConfirmBtn.disabled = false;
+            deleteConfirmBtn.textContent = 'Delete';
+            if (!res.ok) {
+                setModalError('modal-building-delete', await parseApiError(res));
+                return;
+            }
+            closeModal('modal-building-delete');
+            if (pendingDelete.kind === 'floor') {
+                const buildingId = pendingDelete.buildingId;
+                pendingDelete = null;
+                if (Number.isInteger(buildingId)) await loadFloors(buildingId);
+                return;
+            }
+            pendingDelete = null;
+            location.reload();
+        });
+    }
+
+    // ── Floors Modal ─────────────────────────────────────────────────────
+    let currentBuildingId = null;
+
+    function escHtml(str) {
+        return String(str)
+            .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+
+    function renderFloorsList(floors) {
+        const container = byId('floors-list');
+        if (!container) return;
+        if (!floors.length) {
+            container.innerHTML = '<p class="text-sm text-gray-400 dark:text-parchment/40 text-center py-2">No floors yet. Add one below.</p>';
+            return;
+        }
+        container.innerHTML = [...floors]
+            .sort((a, b) => a.floor_number - b.floor_number)
+            .map(f => `
+                <div class="flex items-center justify-between px-3 py-2 rounded-lg bg-gray-50 dark:bg-carbon-700/40 gap-3">
+                    <div class="flex items-center gap-2 min-w-0">
+                        <span class="font-mono text-xs font-semibold bg-gray-200 dark:bg-carbon-600 text-gray-700 dark:text-parchment px-1.5 py-0.5 rounded">${f.floor_number}</span>
+                        <span class="text-sm font-medium text-gray-800 dark:text-parchment truncate">${escHtml(f.name)}</span>
+                    </div>
+                    <button type="button" data-floor-id="${f.id}" data-floor-name="${escHtml(f.name)}"
+                            onclick="deleteFloor(parseInt(this.dataset.floorId, 10), this.dataset.floorName)"
+                            class="flex-shrink-0 inline-flex items-center px-2 py-0.5 text-xs font-semibold rounded-lg bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/40 transition-colors">
+                        <i class="fa-solid fa-trash text-[9px]"></i>
+                    </button>
+                </div>
+            `).join('');
+    }
+
+    async function loadFloors(buildingId) {
+        const container = byId('floors-list');
+        if (!container) return;
+        container.innerHTML = '<p class="text-sm text-gray-400 dark:text-parchment/40 text-center py-2">Loading…</p>';
+        try {
+            const res = await fetch(`/api/v1/floors?building_id=${encodeURIComponent(buildingId)}`);
+            if (!res.ok) throw new Error(`Error ${res.status}`);
+            const all = await res.json();
+            renderFloorsList(all);
+            setBuildingFloorCount(buildingId, all.length);
+        } catch {
+            container.innerHTML = '<p class="text-sm text-red-500 text-center py-2">Failed to load floors.</p>';
+        }
+    }
+
+    window.openFloorsModal = async function (buildingId, buildingName) {
+        currentBuildingId = buildingId;
+        const floorsModalBuildingName = byId('floors-modal-building-name');
+        const floorCreateForm = byId('form-floor-create');
+        const floorCreateBuildingId = byId('fc-building-id');
+        if (!floorsModalBuildingName || !floorCreateForm || !floorCreateBuildingId) return;
+        floorsModalBuildingName.textContent = buildingName;
+        floorCreateBuildingId.value = buildingId;
+        floorCreateForm.reset();
+        floorCreateBuildingId.value = buildingId;
+        clearModalError('modal-floors');
+        openModal('modal-floors');
+        await loadFloors(buildingId);
+    };
+
+    window.deleteFloor = async function (floorId, floorName) {
+        openDeleteModal({
+            title: 'Delete Floor',
+            message: `Delete <strong class="text-gray-900 dark:text-parchment">${escHtml(floorName)}</strong>? This will also delete all rooms on this floor.`,
+            action: { kind: 'floor', id: floorId, buildingId: currentBuildingId },
+        });
+    };
+
+    const createFloorForm = byId('form-floor-create');
+    if (createFloorForm) {
+        createFloorForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const buildingId = parseInt(byId('fc-building-id')?.value || '', 10);
+            const name = byId('fc-name')?.value.trim() || '';
+            const floorNumber = byId('fc-number')?.value.trim() || '';
+            const floorplanObjectKey = byId('fc-floorplan-object-key')?.value.trim() || '';
+            const imageObjectKey = byId('fc-image-object-key')?.value.trim() || '';
+            const notes = byId('fc-notes')?.value.trim() || '';
+            clearModalError('modal-floors');
+            if (!Number.isInteger(buildingId)) { setModalError('modal-floors', 'Building is missing.'); return; }
+            if (!name) { setModalError('modal-floors', 'Floor name is required.'); return; }
+            if (floorNumber === '') { setModalError('modal-floors', 'Floor number is required.'); return; }
+            setSubmitting('form-floor-create', true);
+            const res = await apiPost('/api/v1/floors', {
+                building_id: buildingId,
+                name,
+                floor_number: parseInt(floorNumber, 10),
+                floorplan_object_key: floorplanObjectKey || null,
+                image_object_key: imageObjectKey || null,
+                notes: notes || null,
+            });
+            setSubmitting('form-floor-create', false);
+            if (res.ok) {
+                e.target.reset();
+                const buildingField = byId('fc-building-id');
+                if (buildingField) buildingField.value = String(buildingId);
+                await loadFloors(buildingId);
+            } else {
+                setModalError('modal-floors', await parseApiError(res));
+            }
+        });
+    }
+
+})();
+</script>
+{% endblock %}

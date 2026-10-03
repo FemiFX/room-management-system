@@ -1,0 +1,6 @@
+{% extends "email/base_email.html" %}
+{% block body %}
+<p>{{ _('Your booking has been cancelled and the room is free again.') }}</p>
+{% include "email/_booking_details.html" %}
+
+{% endblock %}

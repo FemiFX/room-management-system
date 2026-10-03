@@ -1,0 +1,276 @@
+{% extends "admin/layout.html" %}
+
+{% block title %}{{ _('Notifications') }}{% endblock %}
+{% block page_title %}{{ _('Notifications') }}{% endblock %}
+{% block page_subtitle %}{{ _('Inbox and alert history') }}{% endblock %}
+
+{% block admin_content %}
+<div class="space-y-6">
+
+    {# ─── Filter tabs + bulk actions ──────────────────────────────── #}
+    <div class="card">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div class="flex items-center gap-1 bg-gray-100 dark:bg-carbon-700/50 rounded-lg p-1">
+                <a href="/notifications?status=all"
+                   class="px-4 py-2 text-sm font-medium rounded-md transition-colors
+                          {% if status_filter == 'all' %}bg-white dark:bg-carbon-600 text-gray-900 dark:text-parchment shadow-sm
+                          {% else %}text-gray-600 dark:text-parchment/70 hover:text-gray-900 dark:hover:text-parchment{% endif %}">
+                    All
+                    <span class="ml-1.5 text-xs text-gray-400 dark:text-parchment/50">{{ total }}</span>
+                </a>
+                <a href="/notifications?status=unread"
+                   class="px-4 py-2 text-sm font-medium rounded-md transition-colors
+                          {% if status_filter == 'unread' %}bg-white dark:bg-carbon-600 text-gray-900 dark:text-parchment shadow-sm
+                          {% else %}text-gray-600 dark:text-parchment/70 hover:text-gray-900 dark:hover:text-parchment{% endif %}">
+                    Unread
+                    {% if unread_total > 0 %}
+                    <span class="ml-1.5 inline-flex items-center justify-center px-1.5 py-0.5 text-[10px] font-bold rounded-full bg-turf-green-600 text-white dark:bg-golden-bronze-300 dark:text-carbon-900">{{ unread_total }}</span>
+                    {% else %}
+                    <span class="ml-1.5 text-xs text-gray-400 dark:text-parchment/50">0</span>
+                    {% endif %}
+                </a>
+                <a href="/notifications?status=read"
+                   class="px-4 py-2 text-sm font-medium rounded-md transition-colors
+                          {% if status_filter == 'read' %}bg-white dark:bg-carbon-600 text-gray-900 dark:text-parchment shadow-sm
+                          {% else %}text-gray-600 dark:text-parchment/70 hover:text-gray-900 dark:hover:text-parchment{% endif %}">
+                    Read
+                    <span class="ml-1.5 text-xs text-gray-400 dark:text-parchment/50">{{ total - unread_total }}</span>
+                </a>
+            </div>
+
+            <div class="flex items-center gap-3">
+                {% if unread_total > 0 %}
+                <button id="bulk-mark-read"
+                        class="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-turf-green-600 dark:text-golden-bronze-300 hover:bg-turf-green-600/10 dark:hover:bg-golden-bronze-300/10 rounded-lg transition-colors">
+                    <i class="fa-solid fa-check-double text-xs"></i> Mark all read
+                </button>
+                {% endif %}
+                {% if (total - unread_total) > 0 %}
+                <button id="bulk-delete-read"
+                        class="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors">
+                    <i class="fa-solid fa-trash-can text-xs"></i> Delete read
+                </button>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    {# ─── Notification list ────────────────────────────────────────── #}
+    <div class="card p-0 overflow-hidden">
+        {% if page_notifications %}
+        <div id="notifications-list-page">
+            {% for n in page_notifications %}
+            <div class="notification-row flex items-start gap-4 px-6 py-4 border-l-4 transition-colors
+                        {% if n.status.value == 'unread' %}border-l-turf-green-600 dark:border-l-golden-bronze-300 bg-turf-green-600/[0.03] dark:bg-golden-bronze-300/[0.03] hover:bg-gray-50 dark:hover:bg-carbon-700/30
+                        {% else %}border-l-transparent opacity-60 hover:opacity-90{% endif %}
+                        {% if not loop.last %}border-b border-gray-100 dark:border-carbon-700/60{% endif %}"
+                 data-notification-id="{{ n.id }}"
+                 data-status="{{ n.status.value }}">
+
+                <div class="flex-1 min-w-0">
+                    <div class="flex items-center gap-3 mb-1">
+                        <h3 class="notification-title text-sm
+                                   {% if n.status.value == 'unread' %}font-semibold text-gray-900 dark:text-parchment
+                                   {% else %}font-medium text-gray-500 dark:text-parchment/60{% endif %}">
+                            {{ n.title }}
+                        </h3>
+                        {% if n.status.value == 'unread' %}
+                        <span class="notification-unread-pill inline-flex items-center px-2 py-0.5 text-[10px] font-bold rounded-full bg-turf-green-600/10 text-turf-green-600 dark:bg-golden-bronze-300/15 dark:text-golden-bronze-300">New</span>
+                        {% endif %}
+                    </div>
+                    <p class="notification-message text-sm leading-relaxed
+                               {% if n.status.value == 'unread' %}text-gray-600 dark:text-parchment/70
+                               {% else %}text-gray-400 dark:text-parchment/50{% endif %}">
+                        {{ n.message }}
+                    </p>
+                    <div class="flex items-center gap-3 mt-2">
+                        <span class="text-xs text-gray-400 dark:text-parchment/50">
+                            <i class="fa-regular fa-clock mr-1"></i>{{ n.created_at.strftime('%d.%m.%Y %H:%M') }}
+                        </span>
+                        {% if n.link %}
+                        <a href="{{ n.link }}" class="text-xs font-medium text-turf-green-600 dark:text-golden-bronze-300 hover:underline">View &rarr;</a>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-1 flex-shrink-0">
+                    {% if n.status.value == 'unread' %}
+                    <button class="action-mark-read w-8 h-8 flex items-center justify-center rounded-lg text-gray-400 hover:bg-turf-green-600/10 hover:text-turf-green-600 dark:hover:bg-golden-bronze-300/10 dark:hover:text-golden-bronze-300 transition-colors"
+                            data-id="{{ n.id }}" title="Mark as read">
+                        <i class="fa-solid fa-check text-xs"></i>
+                    </button>
+                    {% else %}
+                    <button class="action-mark-unread w-8 h-8 flex items-center justify-center rounded-lg text-gray-400 hover:bg-blue-50 hover:text-blue-500 dark:hover:bg-blue-900/20 dark:hover:text-blue-400 transition-colors"
+                            data-id="{{ n.id }}" title="Mark as unread">
+                        <i class="fa-solid fa-envelope text-xs"></i>
+                    </button>
+                    {% endif %}
+                    <button class="action-delete w-8 h-8 flex items-center justify-center rounded-lg text-gray-400 hover:bg-red-50 hover:text-red-500 dark:hover:bg-red-900/20 dark:hover:text-red-400 transition-colors"
+                            data-id="{{ n.id }}" title="Delete">
+                        <i class="fa-solid fa-trash-can text-xs"></i>
+                    </button>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="py-16 text-center">
+            <i class="fa-regular fa-bell-slash text-5xl text-gray-300 dark:text-parchment/20 mb-4 block"></i>
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-parchment mb-2">No notifications</h3>
+            <p class="text-sm text-gray-500 dark:text-parchment/60">
+                {% if status_filter == 'unread' %}No unread notifications.
+                {% elif status_filter == 'read' %}No read notifications.
+                {% else %}Your notifications will appear here.{% endif %}
+            </p>
+        </div>
+        {% endif %}
+    </div>
+
+    {# ─── Pagination ───────────────────────────────────────────────── #}
+    {% if total_pages > 1 %}
+    <div class="flex items-center justify-between">
+        <p class="text-sm text-gray-600 dark:text-parchment/70">
+            Page {{ current_page }} of {{ total_pages }}
+            <span class="text-gray-400 dark:text-parchment/50">({{ total }} total)</span>
+        </p>
+        <div class="flex items-center gap-2">
+            {% if current_page > 1 %}
+            <a href="/notifications?status={{ status_filter }}&page={{ current_page - 1 }}"
+               class="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-700 dark:text-parchment bg-white dark:bg-carbon-700 border border-gray-300 dark:border-carbon-600 rounded-lg hover:bg-gray-50 dark:hover:bg-carbon-600 transition-colors">
+                <i class="fa-solid fa-chevron-left text-xs mr-1.5"></i> Prev
+            </a>
+            {% endif %}
+
+            {% for p in range(1, total_pages + 1) %}
+                {% if p == current_page %}
+                <span class="inline-flex items-center justify-center w-9 h-9 text-sm font-bold text-white bg-turf-green-600 dark:bg-golden-bronze-300 dark:text-carbon-900 rounded-lg">{{ p }}</span>
+                {% elif p == 1 or p == total_pages or (p >= current_page - 2 and p <= current_page + 2) %}
+                <a href="/notifications?status={{ status_filter }}&page={{ p }}"
+                   class="inline-flex items-center justify-center w-9 h-9 text-sm text-gray-700 dark:text-parchment bg-white dark:bg-carbon-700 border border-gray-300 dark:border-carbon-600 rounded-lg hover:bg-gray-50 dark:hover:bg-carbon-600 transition-colors">{{ p }}</a>
+                {% elif p == 2 or p == total_pages - 1 %}
+                <span class="text-gray-400 dark:text-parchment/50">…</span>
+                {% endif %}
+            {% endfor %}
+
+            {% if current_page < total_pages %}
+            <a href="/notifications?status={{ status_filter }}&page={{ current_page + 1 }}"
+               class="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-700 dark:text-parchment bg-white dark:bg-carbon-700 border border-gray-300 dark:border-carbon-600 rounded-lg hover:bg-gray-50 dark:hover:bg-carbon-600 transition-colors">
+                Next <i class="fa-solid fa-chevron-right text-xs ml-1.5"></i>
+            </a>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+
+</div>
+
+{% endblock %}
+
+
+{% block page_scripts %}
+<script>
+(function () {
+    const csrf = document.querySelector('meta[name="csrf-token"]')?.content;
+    const bellBadge = document.getElementById('notification-badge');
+
+    async function postJSON(url) {
+        const headers = { 'Content-Type': 'application/json' };
+        if (csrf) headers['x-csrf-token'] = csrf;
+        return fetch(url, { method: 'POST', headers });
+    }
+
+    async function deleteJSON(url) {
+        const headers = { 'Content-Type': 'application/json' };
+        if (csrf) headers['x-csrf-token'] = csrf;
+        return fetch(url, { method: 'DELETE', headers });
+    }
+
+    function getBellCount() { return parseInt(bellBadge?.textContent || '0', 10); }
+    function updateBellBadge(count) {
+        if (!bellBadge) return;
+        if (count > 0) { bellBadge.textContent = count; bellBadge.style.display = 'flex'; }
+        else { bellBadge.style.display = 'none'; }
+    }
+
+    const unreadRowCls = ['border-l-turf-green-600','dark:border-l-golden-bronze-300','bg-turf-green-600/[0.03]','dark:bg-golden-bronze-300/[0.03]','hover:bg-gray-50','dark:hover:bg-carbon-700/30'];
+    const readRowCls = ['border-l-transparent','opacity-60','hover:opacity-90'];
+
+    function applyReadStyle(row) {
+        row.classList.remove(...unreadRowCls); row.classList.add(...readRowCls);
+        row.dataset.status = 'read';
+        row.querySelector('.notification-unread-pill')?.remove();
+        const t = row.querySelector('.notification-title');
+        if (t) { t.classList.remove('font-semibold','text-gray-900','dark:text-parchment'); t.classList.add('font-medium','text-gray-500','dark:text-parchment/60'); }
+        const m = row.querySelector('.notification-message');
+        if (m) { m.classList.remove('text-gray-600','dark:text-parchment/70'); m.classList.add('text-gray-400','dark:text-parchment/50'); }
+    }
+
+    function applyUnreadStyle(row) {
+        row.classList.remove(...readRowCls); row.classList.add(...unreadRowCls);
+        row.dataset.status = 'unread';
+        const t = row.querySelector('.notification-title');
+        if (t) {
+            t.classList.remove('font-medium','text-gray-500','dark:text-parchment/60');
+            t.classList.add('font-semibold','text-gray-900','dark:text-parchment');
+            if (!row.querySelector('.notification-unread-pill')) {
+                const pill = document.createElement('span');
+                pill.className = 'notification-unread-pill inline-flex items-center px-2 py-0.5 text-[10px] font-bold rounded-full bg-turf-green-600/10 text-turf-green-600 dark:bg-golden-bronze-300/15 dark:text-golden-bronze-300';
+                pill.textContent = 'New';
+                t.after(pill);
+            }
+        }
+        const m = row.querySelector('.notification-message');
+        if (m) { m.classList.remove('text-gray-400','dark:text-parchment/50'); m.classList.add('text-gray-600','dark:text-parchment/70'); }
+    }
+
+    document.getElementById('notifications-list-page')?.addEventListener('click', async (e) => {
+        const readBtn = e.target.closest('.action-mark-read');
+        const unreadBtn = e.target.closest('.action-mark-unread');
+        const deleteBtn = e.target.closest('.action-delete');
+
+        if (readBtn) {
+            const id = readBtn.dataset.id;
+            const res = await postJSON(`/api/v1/notifications/${id}/mark-read`);
+            if (res.ok) {
+                const row = readBtn.closest('.notification-row');
+                applyReadStyle(row);
+                readBtn.outerHTML = `<button class="action-mark-unread w-8 h-8 flex items-center justify-center rounded-lg text-gray-400 hover:bg-blue-50 hover:text-blue-500 dark:hover:bg-blue-900/20 dark:hover:text-blue-400 transition-colors" data-id="${id}" title="Mark as unread"><i class="fa-solid fa-envelope text-xs"></i></button>`;
+                updateBellBadge(getBellCount() - 1);
+            }
+        } else if (unreadBtn) {
+            const id = unreadBtn.dataset.id;
+            const res = await postJSON(`/api/v1/notifications/${id}/mark-unread`);
+            if (res.ok) {
+                const row = unreadBtn.closest('.notification-row');
+                applyUnreadStyle(row);
+                unreadBtn.outerHTML = `<button class="action-mark-read w-8 h-8 flex items-center justify-center rounded-lg text-gray-400 hover:bg-turf-green-600/10 hover:text-turf-green-600 dark:hover:bg-golden-bronze-300/10 dark:hover:text-golden-bronze-300 transition-colors" data-id="${id}" title="Mark as read"><i class="fa-solid fa-check text-xs"></i></button>`;
+                updateBellBadge(getBellCount() + 1);
+            }
+        } else if (deleteBtn) {
+            const id = deleteBtn.dataset.id;
+            const row = deleteBtn.closest('.notification-row');
+            const wasUnread = row.dataset.status === 'unread';
+            const res = await deleteJSON(`/api/v1/notifications/${id}`);
+            if (res.ok) {
+                row.style.transition = 'opacity 0.2s, max-height 0.3s';
+                row.style.opacity = '0';
+                row.style.maxHeight = row.offsetHeight + 'px';
+                setTimeout(() => { row.style.maxHeight = '0'; row.style.padding = '0'; row.style.overflow = 'hidden'; }, 200);
+                setTimeout(() => row.remove(), 500);
+                if (wasUnread) updateBellBadge(getBellCount() - 1);
+            }
+        }
+    });
+
+    document.getElementById('bulk-mark-read')?.addEventListener('click', async () => {
+        const res = await postJSON('/api/v1/notifications/mark-all-read');
+        if (res.ok) { updateBellBadge(0); location.reload(); }
+    });
+
+    document.getElementById('bulk-delete-read')?.addEventListener('click', async () => {
+        const res = await deleteJSON('/api/v1/notifications/delete-all-read');
+        if (res.ok) { location.reload(); }
+    });
+})();
+</script>
+{% endblock %}

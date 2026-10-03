@@ -1,0 +1,212 @@
+{% extends "portal/layout.html" %}
+{% block title %}{{ _('Book a room') }}{% endblock %}
+
+{% block portal_content %}
+<div class="mx-auto flex w-full max-w-2xl flex-col gap-7">
+  <div class="flex flex-col gap-2.5">
+    <h1 class="ui-h text-[28px] leading-[32px] [hyphens:auto] sm:text-4xl sm:leading-tight">{{ _('Book a room') }}</h1>
+    <p class="text-primary/80">
+      {{ _('Internal rooms are confirmed straight away. If a room is taken you will be told at once.') }}
+    </p>
+  </div>
+
+  {% if not linked %}
+  <div class="flex items-center gap-4 rounded-[18px] bg-accent/15 px-6 py-5">
+    <i class="fa-solid fa-circle-info text-xl text-accent-700" aria-hidden="true"></i>
+    <p class="text-sm leading-6 text-accent-800">
+      {{ _('Your account is not linked to a contact record yet, so you cannot book. Please contact an administrator.') }}
+    </p>
+  </div>
+  {% elif not rooms %}
+  <p class="text-primary/60">{{ _('No rooms are available for internal booking.') }}</p>
+  {% else %}
+
+  <form id="portal-booking-form" class="ui-card flex flex-col gap-6 p-6 sm:p-9">
+    <div class="flex flex-col gap-3">
+      <span class="font-heading text-sm font-bold uppercase text-primary">{{ _('Room') }}</span>
+      <div role="radiogroup" aria-label="{{ _('Room') }}" class="grid gap-4 sm:grid-cols-2">
+        {% for room in rooms %}
+        <label class="relative flex cursor-pointer flex-col gap-1.5 rounded-[18px] border-[1.5px] border-primary/25 bg-white p-5
+                      has-[:checked]:border-[3px] has-[:checked]:border-accent has-[:checked]:p-[calc(1.25rem-1.5px)]">
+          <input type="radio" name="room_id" value="{{ room.id }}" data-capacity="{{ room.capacity or '' }}"
+                 class="peer sr-only" {% if loop.first %}checked{% endif %}>
+          <span class="font-heading text-[17px] font-bold uppercase leading-snug">{{ room.name }}</span>
+          {% if room.capacity %}
+          <span class="text-[13px] text-primary/75">{{ _('Up to %(count)s people')|format(count=room.capacity) }}</span>
+          {% endif %}
+          <i class="fa-solid fa-circle-check absolute right-4 top-4 !hidden text-xl text-accent peer-checked:!block" aria-hidden="true"></i>
+        </label>
+        {% endfor %}
+      </div>
+    </div>
+
+    <div>
+      <label class="ui-label mb-1.5" for="pb-title">{{ _('What is it for') }}</label>
+      <input class="ui-input" id="pb-title" name="title" required maxlength="255"
+             placeholder="{{ _('e.g. Team meeting') }}">
+    </div>
+
+    <div class="grid gap-4 sm:grid-cols-3">
+      <div>
+        <label class="ui-label mb-1.5" for="pb-date">{{ _('Date') }}</label>
+        <input class="ui-input" id="pb-date" type="date" required
+               min="{{ min_date }}" max="{{ max_date }}">
+      </div>
+      <div>
+        <label class="ui-label mb-1.5" for="pb-start">{{ _('From') }}</label>
+        <input class="ui-input" id="pb-start" type="time" required value="09:00">
+      </div>
+      <div>
+        <label class="ui-label mb-1.5" for="pb-end">{{ _('Until') }}</label>
+        <input class="ui-input" id="pb-end" type="time" required value="10:00">
+      </div>
+    </div>
+    <p class="-mt-2 text-xs text-primary/60">
+      {{ _('Up to %(hours)s hours, and no more than %(days)s days ahead.')|format(hours=max_hours, days=90) }}
+    </p>
+
+    <div>
+      <label class="ui-label mb-1.5" for="pb-attendees">{{ _('Number of attendees') }}</label>
+      <input class="ui-input" id="pb-attendees" type="number" min="1">
+    </div>
+
+    {% for room in rooms %}
+      {% if room.room_equipment %}
+      <div class="room-equipment flex flex-col gap-3" data-room="{{ room.id }}" hidden>
+        <p class="font-heading text-sm font-bold uppercase text-primary">{{ _('Equipment') }}</p>
+        <div class="grid gap-3.5 sm:grid-cols-2">
+          {% for link in room.room_equipment %}
+            <label class="flex items-center justify-between gap-3 rounded-[14px] border-[1.5px] border-primary/20 bg-white px-4 py-3.5">
+              <span class="flex flex-col">
+                <span class="text-sm font-semibold">{{ link.equipment.name }}</span>
+                <span class="text-xs text-primary/60">{{ _('%(count)s available')|format(count=link.quantity) }}</span>
+              </span>
+              <input class="ui-input w-20 text-center font-heading font-bold" type="number" min="0" max="{{ link.quantity }}"
+                     value="0" data-equipment="{{ link.equipment_id }}" data-room="{{ room.id }}">
+            </label>
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %}
+    {% endfor %}
+
+    <div id="pb-availability" class="text-sm text-primary/70"></div>
+    <div id="pb-error" class="hidden rounded-2xl bg-highlight/10 px-5 py-4 text-sm font-semibold text-highlight" role="alert"></div>
+
+    <div class="flex justify-end border-t border-primary/10 pt-6">
+      <button type="submit" class="btn-brand px-8 pb-3 pt-4 text-lg">{{ _('Book it') }}</button>
+    </div>
+  </form>
+  {% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', path='js/crud.js') }}"></script>
+<script>
+(function () {
+  const form = document.getElementById('portal-booking-form');
+  if (!form) return;
+
+  const T = {
+    taken: {{ _('That room is already taken then.') | tojson }},
+    free: {{ _('That room is free then.') | tojson }},
+    busyOn: {{ _('Already booked that day:') | tojson }},
+    failed: {{ _('Could not book the room.') | tojson }},
+  };
+
+  function roomValue() {
+    const checked = form.querySelector('input[name="room_id"]:checked');
+    return checked ? checked.value : '';
+  }
+  const dateInput = document.getElementById('pb-date');
+  const startInput = document.getElementById('pb-start');
+  const endInput = document.getElementById('pb-end');
+  const availability = document.getElementById('pb-availability');
+  const errorBox = document.getElementById('pb-error');
+
+  function localIso(date, time) {
+    // Send a naive local datetime; the server normalises to the app timezone.
+    return date + 'T' + time + ':00';
+  }
+
+  function showEquipment() {
+    document.querySelectorAll('.room-equipment').forEach(function (block) {
+      block.hidden = block.dataset.room !== roomValue();
+    });
+  }
+
+  function setError(message) {
+    errorBox.textContent = message || '';
+    errorBox.classList.toggle('hidden', !message);
+  }
+
+  function timeOf(iso) {
+    return new Date(iso).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
+  }
+
+  async function refreshAvailability() {
+    if (!dateInput.value) { availability.textContent = ''; return; }
+    const params = new URLSearchParams({
+      room_id: roomValue(),
+      from: localIso(dateInput.value, '00:00'),
+      to: localIso(dateInput.value, '23:59'),
+    });
+    try {
+      const res = await fetch('/api/v1/portal/availability?' + params.toString());
+      if (!res.ok) { availability.textContent = ''; return; }
+      const busy = await res.json();
+      // Intervals only -- the API deliberately returns no titles or names.
+      availability.textContent = busy.length
+        ? T.busyOn + ' ' + busy.map(b => timeOf(b.start_at) + '–' + timeOf(b.end_at)).join(', ')
+        : T.free;
+    } catch (e) { availability.textContent = ''; }
+  }
+
+  form.querySelectorAll('input[name="room_id"]').forEach(function (radio) {
+    radio.addEventListener('change', function () { showEquipment(); refreshAvailability(); });
+  });
+  [dateInput, startInput, endInput].forEach(el => el.addEventListener('change', refreshAvailability));
+
+  form.addEventListener('submit', async function (event) {
+    event.preventDefault();
+    setError('');
+    const equipment = Array.from(
+      document.querySelectorAll(`[data-equipment][data-room="${roomValue()}"]`)
+    ).filter(input => Number(input.value) > 0)
+     .map(input => ({ equipment_id: Number(input.dataset.equipment), quantity: Number(input.value) }));
+
+    const attendees = document.getElementById('pb-attendees').value;
+    setSubmitting('portal-booking-form', true);
+    const res = await apiPost('/api/v1/portal/bookings', {
+      room_id: Number(roomValue()),
+      title: document.getElementById('pb-title').value,
+      start_at: localIso(dateInput.value, startInput.value),
+      end_at: localIso(dateInput.value, endInput.value),
+      attendee_count: attendees ? Number(attendees) : null,
+      equipment: equipment,
+    });
+    setSubmitting('portal-booking-form', false);
+
+    if (res.ok) { window.location = '/portal/bookings'; return; }
+
+    if (res.status === 409) {
+      // The whole point of instant confirm: say so now, and say when.
+      try {
+        const body = await res.json();
+        const detail = body.detail || {};
+        const clash = (detail.conflicts || [])[0];
+        setError(clash && clash.start_at
+          ? `${detail.detail || T.taken} (${timeOf(clash.start_at)}–${timeOf(clash.end_at)})`
+          : (detail.detail || T.taken));
+      } catch (e) { setError(T.taken); }
+      return;
+    }
+    setError(await parseApiError(res) || T.failed);
+  });
+
+  showEquipment();
+  refreshAvailability();
+})();
+</script>
+{% endblock %}

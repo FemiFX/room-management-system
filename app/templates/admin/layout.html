@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% from "admin/partials/fa_icon_macro.html" import fa_icon %}
+{% from "admin/partials/badges.html" import room_status_badge, lease_status_badge, booking_status_badge, party_type_badge, occupancy_mode_badge, role_badge %}
+
+{% block body_class %}bg-gray-50 dark:bg-carbon-900{% endblock %}
+
+{% block content %}
+{% set _page_title %}{% block page_title %}{{ _('Dashboard') }}{% endblock %}{% endset %}
+{% set _page_subtitle %}{% block page_subtitle %}{% endblock %}{% endset %}
+{% set _nav_extra %}{% block nav_extra %}{% endblock %}{% endset %}
+<div class="flex h-screen overflow-hidden">
+    {% include "admin/partials/sidebar_desktop.html" %}
+    {% include "admin/partials/sidebar_mobile.html" %}
+
+    <div class="admin-layout flex-1 flex flex-col min-h-0 overflow-y-auto">
+        {% include "admin/partials/admin_header.html" %}
+
+        <main class="flex-1 p-6">
+            {% block admin_content %}{% endblock %}
+        </main>
+    </div>
+</div>
+
+{% include "admin/partials/search_overlay.html" %}
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', path='js/sidebar.js') }}?v={{ asset_version('js/sidebar.js') }}"></script>
+<script src="{{ url_for('static', path='js/header.js') }}?v={{ asset_version('js/header.js') }}"></script>
+<script src="{{ url_for('static', path='js/crud.js') }}?v={{ asset_version('js/crud.js') }}"></script>
+{% block page_scripts %}{% endblock %}
+{% endblock %}

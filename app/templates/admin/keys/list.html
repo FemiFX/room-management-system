@@ -1,0 +1,696 @@
+{% extends "admin/layout.html" %}
+
+{% block title %}{{ _('Keys') }}{% endblock %}
+{% block page_title %}{{ _('Keys') }}{% endblock %}
+{% block page_subtitle %}{{ _('Key inventory and assignments') }}{% endblock %}
+
+{% block admin_content %}
+<div class="space-y-6">
+
+    <div class="flex items-center justify-end gap-2">
+        <button onclick="openAssignModal()" class="btn-secondary inline-flex items-center gap-2">
+            <i class="fa-solid fa-arrow-right-to-bracket text-xs"></i> Assign Key
+        </button>
+        <button onclick="openModal('modal-key-create')" class="btn-primary inline-flex items-center gap-2">
+            <i class="fa-solid fa-plus text-xs"></i> New Key
+        </button>
+    </div>
+
+    {% if hanging_summary %}
+    <div class="card p-4">
+        <div class="flex flex-wrap items-center gap-2">
+            <span class="text-xs font-semibold text-gray-500 dark:text-parchment/60 uppercase tracking-wide">Available by Hanging Location</span>
+            {% for location, count in hanging_summary %}
+            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-gray-100 dark:bg-carbon-700 text-xs font-medium text-gray-700 dark:text-parchment">
+                <i class="fa-solid fa-map-pin text-[10px] text-gray-400 dark:text-parchment/40"></i>
+                {{ location }}: <span class="font-mono">{{ count }}</span>
+            </span>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    {# ─── Key Inventory ───────────────────────────────────────────────── #}
+    <div class="card overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-100 dark:border-carbon-700 flex items-center justify-between">
+            <h3 class="text-base font-semibold text-gray-900 dark:text-parchment flex items-center gap-2">
+                <i class="fa-solid fa-key text-amber-500 text-sm"></i> Key Inventory
+            </h3>
+            <span class="text-xs text-gray-400 dark:text-parchment/50">
+                {{ keys | length }} types · {{ total_key_units }} total · {{ assigned_key_units }} out · {{ available_key_units }} available
+            </span>
+        </div>
+        {% if keys %}
+        <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+                <thead>
+                    <tr class="border-b border-gray-100 dark:border-carbon-700 bg-gray-50/60 dark:bg-carbon-700/30">
+                        <th class="text-left px-6 py-3 text-xs font-semibold text-gray-500 dark:text-parchment/60 uppercase tracking-wide">Key Code</th>
+                        <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-parchment/60 uppercase tracking-wide hidden md:table-cell">Description</th>
+                        <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-parchment/60 uppercase tracking-wide hidden md:table-cell">Room</th>
+                        <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-parchment/60 uppercase tracking-wide hidden lg:table-cell">Hanging Location</th>
+                        <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-parchment/60 uppercase tracking-wide">Total</th>
+                        <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-parchment/60 uppercase tracking-wide">Out</th>
+                        <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-parchment/60 uppercase tracking-wide">Available</th>
+                        <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-parchment/60 uppercase tracking-wide">Availability</th>
+                        <th class="px-4 py-3"></th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-50 dark:divide-carbon-700/50">
+                    {% for key in keys %}
+                    {% set assigned_qty = key.total_quantity - key.available_quantity %}
+                    <tr class="hover:bg-gray-50/60 dark:hover:bg-carbon-700/30 transition-colors">
+                        <td class="px-6 py-3.5">
+                            <div class="flex items-center gap-2">
+                                <span class="font-mono text-xs font-semibold bg-gray-100 dark:bg-carbon-700 text-gray-700 dark:text-parchment px-2 py-0.5 rounded">{{ key.key_code }}</span>
+                                {% if key.master_key %}
+                                <span class="text-[10px] font-semibold bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 px-1.5 py-0.5 rounded">MASTER</span>
+                                {% endif %}
+                            </div>
+                        </td>
+                        <td class="px-4 py-3.5 text-gray-600 dark:text-parchment/80 hidden md:table-cell">{{ key.description or '—' }}</td>
+                        <td class="px-4 py-3.5 hidden md:table-cell">
+                            {% if key.room %}
+                            <a href="/rooms/{{ key.room.id }}" class="font-mono text-xs font-semibold bg-gray-100 dark:bg-carbon-700 text-gray-700 dark:text-parchment px-1.5 py-0.5 rounded hover:bg-gray-200">
+                                {{ key.room.room_code }}
+                            </a>
+                            {% else %}
+                            <span class="text-gray-300 dark:text-parchment/30 text-xs">—</span>
+                            {% endif %}
+                        </td>
+                        <td class="px-4 py-3.5 hidden lg:table-cell">
+                            {% if key.hanging_location %}
+                            <span class="inline-flex items-center gap-1.5 text-xs font-medium bg-gray-100 dark:bg-carbon-700 text-gray-700 dark:text-parchment px-2 py-0.5 rounded">
+                                <i class="fa-solid fa-map-pin text-[9px] text-gray-400 dark:text-parchment/40"></i>
+                                {{ key.hanging_location }}
+                            </span>
+                            {% else %}
+                            <span class="text-gray-300 dark:text-parchment/30 text-xs">—</span>
+                            {% endif %}
+                        </td>
+                        <td class="px-4 py-3.5">
+                            <span class="font-mono text-xs font-semibold bg-gray-100 dark:bg-carbon-700 text-gray-700 dark:text-parchment px-1.5 py-0.5 rounded">{{ key.total_quantity }}</span>
+                        </td>
+                        <td class="px-4 py-3.5">
+                            <span class="font-mono text-xs font-semibold bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400 px-1.5 py-0.5 rounded">{{ assigned_qty }}</span>
+                        </td>
+                        <td class="px-4 py-3.5">
+                            <span class="font-mono text-xs font-semibold bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 px-1.5 py-0.5 rounded">{{ key.available_quantity }}</span>
+                        </td>
+                        <td class="px-4 py-3.5">
+                            {% if not key.is_active %}
+                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-500 dark:bg-gray-700/40 dark:text-gray-400">Deactivated</span>
+                            {% elif key.available_quantity == 0 %}
+                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400">
+                                <i class="fa-solid fa-circle text-[6px] mr-1.5"></i>Out
+                            </span>
+                            {% else %}
+                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">
+                                <i class="fa-solid fa-circle text-[6px] mr-1.5"></i>Available
+                            </span>
+                            {% endif %}
+                        </td>
+                        <td class="px-4 py-3.5 text-right">
+                            <div class="inline-flex items-center gap-2">
+                                <button
+                                    onclick="openKeyEditModal(this)"
+                                    data-id="{{ key.id }}"
+                                    data-key-code="{{ key.key_code | e }}"
+                                    data-description="{{ (key.description or '') | e }}"
+                                    data-hanging-location="{{ (key.hanging_location or '') | e }}"
+                                    data-room-id="{{ key.room_id or '' }}"
+                                    data-total-quantity="{{ key.total_quantity }}"
+                                    data-master-key="{{ 'true' if key.master_key else 'false' }}"
+                                    data-active="{{ 'true' if key.is_active else 'false' }}"
+                                    data-assigned-quantity="{{ assigned_qty }}"
+                                    class="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold rounded-lg bg-gray-100 dark:bg-carbon-700 text-gray-600 dark:text-parchment/80 hover:bg-gray-200 dark:hover:bg-carbon-600 transition-colors">
+                                    <i class="fa-solid fa-pen text-[9px]"></i> Edit
+                                </button>
+                                {% if key.is_active and key.available_quantity > 0 %}
+                                <button onclick="openAssignForKey({{ key.id }})"
+                                        class="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold rounded-lg bg-gray-100 dark:bg-carbon-700 text-gray-600 dark:text-parchment/80 hover:bg-gray-200 dark:hover:bg-carbon-600 transition-colors">
+                                    <i class="fa-solid fa-arrow-right-to-bracket text-[9px]"></i> Assign
+                                </button>
+                                {% endif %}
+                                <button
+                                    onclick='openKeyDeleteModal({{ key.id }}, {{ key.key_code | tojson }})'
+                                    class="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold rounded-lg bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/40 transition-colors">
+                                    <i class="fa-solid fa-trash text-[9px]"></i> Delete
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="py-16 text-center">
+            <i class="fa-solid fa-key text-4xl text-gray-200 dark:text-parchment/20 mb-4 block"></i>
+            <p class="text-base font-medium text-gray-600 dark:text-parchment/60">No keys found</p>
+        </div>
+        {% endif %}
+    </div>
+
+    {# ─── Currently Assigned Keys ─────────────────────────────────── #}
+    {% if assigned %}
+    <div class="card overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-100 dark:border-carbon-700 bg-gray-50/40 dark:bg-carbon-700/20 flex items-center justify-between">
+            <h3 class="text-base font-semibold text-gray-900 dark:text-parchment flex items-center gap-2">
+                <i class="fa-solid fa-id-card text-blue-500 text-sm"></i>
+                Assigned Keys
+            </h3>
+            <span class="text-xs font-semibold text-gray-500 dark:text-parchment/70">{{ assigned | length }}</span>
+        </div>
+        <table class="w-full text-sm">
+            <thead>
+                <tr class="border-b border-gray-100 dark:border-carbon-700 bg-gray-50/60 dark:bg-carbon-700/30">
+                    <th class="text-left px-6 py-3 text-xs font-semibold text-gray-500 dark:text-parchment/60 uppercase tracking-wide">Key</th>
+                    <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-parchment/60 uppercase tracking-wide">Held By</th>
+                    <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-parchment/60 uppercase tracking-wide hidden sm:table-cell">Room</th>
+                    <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-parchment/60 uppercase tracking-wide hidden md:table-cell">Issued</th>
+                    <th class="px-4 py-3"></th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-50 dark:divide-carbon-700/50">
+                {% for ka in assigned %}
+                <tr class="hover:bg-gray-50/60 dark:hover:bg-carbon-700/30 transition-colors">
+                    <td class="px-6 py-3.5">
+                        <span class="font-mono text-xs font-semibold bg-gray-100 dark:bg-carbon-700 text-gray-700 dark:text-parchment px-2 py-0.5 rounded">{{ ka.key.key_code if ka.key else '—' }}</span>
+                    </td>
+                    <td class="px-4 py-3.5">
+                        {% if ka.party %}
+                        <a href="/parties/{{ ka.party.id }}" class="text-gray-700 dark:text-parchment font-medium hover:text-turf-green-600 dark:hover:text-golden-bronze-300">{{ ka.party.name }}</a>
+                        {% else %}<span class="text-gray-400">—</span>{% endif %}
+                    </td>
+                    <td class="px-4 py-3.5 hidden sm:table-cell">
+                        {% if ka.room %}
+                        <a href="/rooms/{{ ka.room.id }}" class="font-mono text-xs font-semibold bg-gray-100 dark:bg-carbon-700 text-gray-700 dark:text-parchment px-1.5 py-0.5 rounded hover:bg-gray-200">{{ ka.room.room_code }}</a>
+                        {% else %}<span class="text-gray-300 dark:text-parchment/30 text-xs">—</span>{% endif %}
+                    </td>
+                    <td class="px-4 py-3.5 hidden md:table-cell text-xs text-gray-500 dark:text-parchment/60">
+                        {{ ka.issued_at.strftime('%d.%m.%Y') if ka.issued_at else '—' }}
+                    </td>
+                    <td class="px-4 py-3.5 text-right">
+                        <button onclick="openReturnModal({{ ka.id }}, '{{ (ka.key.key_code if ka.key else '') | e }}')"
+                                class="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold rounded-lg bg-gray-100 dark:bg-carbon-700 text-gray-600 dark:text-parchment/80 hover:bg-gray-200 dark:hover:bg-carbon-600 transition-colors">
+                            <i class="fa-solid fa-arrow-right-from-bracket text-[9px]"></i> Return
+                        </button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+
+    {# ─── Keys Requiring Recovery ─────────────────────────────────── #}
+    {% if recovery_required %}
+    <div class="card overflow-hidden border-orange-200 dark:border-orange-900/40">
+        <div class="px-6 py-4 border-b border-orange-100 dark:border-orange-900/30 bg-orange-50/40 dark:bg-orange-900/10 flex items-center justify-between">
+            <h3 class="text-base font-semibold text-orange-800 dark:text-orange-300 flex items-center gap-2">
+                <i class="fa-solid fa-triangle-exclamation text-orange-500 text-sm"></i>
+                Keys Requiring Recovery
+            </h3>
+            <span class="text-xs font-semibold text-orange-600 dark:text-orange-400">{{ recovery_required | length }}</span>
+        </div>
+        <table class="w-full text-sm">
+            <thead>
+                <tr class="border-b border-gray-100 dark:border-carbon-700 bg-gray-50/60 dark:bg-carbon-700/30">
+                    <th class="text-left px-6 py-3 text-xs font-semibold text-gray-500 dark:text-parchment/60 uppercase tracking-wide">Key</th>
+                    <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-parchment/60 uppercase tracking-wide">Held By</th>
+                    <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-parchment/60 uppercase tracking-wide hidden sm:table-cell">Room</th>
+                    <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-parchment/60 uppercase tracking-wide hidden sm:table-cell">Reason</th>
+                    <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-parchment/60 uppercase tracking-wide hidden md:table-cell">Issued</th>
+                    <th class="px-4 py-3"></th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-50 dark:divide-carbon-700/50">
+                {% for ka in recovery_required %}
+                <tr class="hover:bg-orange-50/30 dark:hover:bg-orange-900/5 transition-colors">
+                    <td class="px-6 py-3.5">
+                        <span class="font-mono text-xs font-semibold bg-gray-100 dark:bg-carbon-700 text-gray-700 dark:text-parchment px-2 py-0.5 rounded">{{ ka.key.key_code if ka.key else '—' }}</span>
+                    </td>
+                    <td class="px-4 py-3.5">
+                        {% if ka.party %}
+                        <a href="/parties/{{ ka.party.id }}" class="text-gray-700 dark:text-parchment font-medium hover:text-turf-green-600 dark:hover:text-golden-bronze-300">{{ ka.party.name }}</a>
+                        {% else %}<span class="text-gray-400">—</span>{% endif %}
+                    </td>
+                    <td class="px-4 py-3.5 hidden sm:table-cell">
+                        {% if ka.room %}
+                        <a href="/rooms/{{ ka.room.id }}" class="font-mono text-xs font-semibold bg-gray-100 dark:bg-carbon-700 text-gray-700 dark:text-parchment px-1.5 py-0.5 rounded hover:bg-gray-200">{{ ka.room.room_code }}</a>
+                        {% else %}<span class="text-gray-300 dark:text-parchment/30 text-xs">—</span>{% endif %}
+                    </td>
+                    <td class="px-4 py-3.5 hidden sm:table-cell text-xs">
+                        <span class="inline-flex items-center px-2 py-0.5 rounded-full bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300 font-medium">
+                            {{ ka.recovery_reason_text }}
+                        </span>
+                    </td>
+                    <td class="px-4 py-3.5 hidden md:table-cell text-xs text-gray-500 dark:text-parchment/60">
+                        {{ ka.issued_at.strftime('%d.%m.%Y') if ka.issued_at else '—' }}
+                    </td>
+                    <td class="px-4 py-3.5 text-right">
+                        <button onclick="openReturnModal({{ ka.id }}, '{{ (ka.key.key_code if ka.key else '') | e }}')"
+                                class="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold rounded-lg bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400 hover:bg-orange-200 dark:hover:bg-orange-900/50 transition-colors">
+                            <i class="fa-solid fa-arrow-right-from-bracket text-[9px]"></i> Return
+                        </button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+
+</div>
+
+{# ─── Create Key Modal ─────────────────────────────────────────────── #}
+<dialog id="modal-key-create" class="rounded-xl shadow-2xl p-0 w-full max-w-md bg-white dark:bg-carbon-800 backdrop:bg-black/50">
+    <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-carbon-700">
+        <h2 class="text-base font-semibold text-gray-900 dark:text-parchment">New Key</h2>
+        <button type="button" onclick="closeModal('modal-key-create')" class="w-8 h-8 flex items-center justify-center rounded-lg text-gray-400 hover:bg-gray-100 dark:hover:bg-carbon-700 hover:text-gray-600 transition-colors">&times;</button>
+    </div>
+    <form id="form-key-create" class="px-6 py-5 space-y-4" novalidate>
+        <div>
+            <label class="form-label" for="kc-code">Key Code <span class="text-red-500">*</span></label>
+            <input id="kc-code" name="key_code" type="text" required class="form-input font-mono" placeholder="e.g. K-EG-001">
+        </div>
+        <div>
+            <label class="form-label" for="kc-desc">Description</label>
+            <input id="kc-desc" name="description" type="text" class="form-input" placeholder="e.g. Front door master">
+        </div>
+        <div>
+            <label class="form-label" for="kc-room">Assigned Room</label>
+            <select id="kc-room" name="room_id" class="form-input">
+                <option value="">— none —</option>
+                {% for room in rooms %}
+                <option value="{{ room.id }}">{{ room.room_code }}{% if room.name %} — {{ room.name }}{% endif %}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div>
+            <label class="form-label" for="kc-location">Hanging Location</label>
+            <input id="kc-location" name="hanging_location" type="text" class="form-input" placeholder="e.g. Reception board">
+        </div>
+        <div>
+            <label class="form-label" for="kc-total">Total Quantity <span class="text-red-500">*</span></label>
+            <input id="kc-total" name="total_quantity" type="number" min="1" step="1" required class="form-input" value="1">
+        </div>
+        <div class="flex items-center gap-4">
+            <div class="flex items-center gap-2">
+                <input id="kc-master" name="master_key" type="checkbox" class="rounded border-gray-300 text-amber-500">
+                <label for="kc-master" class="text-sm text-gray-700 dark:text-parchment">Master key</label>
+            </div>
+            <div class="flex items-center gap-2">
+                <input id="kc-active" name="is_active" type="checkbox" class="rounded border-gray-300 text-turf-green-600" checked>
+                <label for="kc-active" class="text-sm text-gray-700 dark:text-parchment">Active</label>
+            </div>
+        </div>
+        <p id="err-key-create" class="text-sm text-red-600 dark:text-red-400 hidden"></p>
+    </form>
+    <div class="flex justify-end gap-3 px-6 py-4 border-t border-gray-100 dark:border-carbon-700">
+        <button type="button" onclick="closeModal('modal-key-create')" class="btn-secondary">Cancel</button>
+        <button type="submit" form="form-key-create" class="btn-primary">Create</button>
+    </div>
+</dialog>
+
+{# ─── Edit Key Modal ───────────────────────────────────────────────── #}
+<dialog id="modal-key-edit" class="rounded-xl shadow-2xl p-0 w-full max-w-md bg-white dark:bg-carbon-800 backdrop:bg-black/50">
+    <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-carbon-700">
+        <h2 class="text-base font-semibold text-gray-900 dark:text-parchment">Edit Key</h2>
+        <button type="button" onclick="closeModal('modal-key-edit')" class="w-8 h-8 flex items-center justify-center rounded-lg text-gray-400 hover:bg-gray-100 dark:hover:bg-carbon-700 hover:text-gray-600 transition-colors">&times;</button>
+    </div>
+    <form id="form-key-edit" class="px-6 py-5 space-y-4" novalidate>
+        <input type="hidden" id="ke-id">
+        <input type="hidden" id="ke-assigned">
+        <div>
+            <label class="form-label" for="ke-code">Key Code <span class="text-red-500">*</span></label>
+            <input id="ke-code" name="key_code" type="text" required class="form-input font-mono">
+        </div>
+        <div>
+            <label class="form-label" for="ke-desc">Description</label>
+            <input id="ke-desc" name="description" type="text" class="form-input">
+        </div>
+        <div>
+            <label class="form-label" for="ke-room">Assigned Room</label>
+            <select id="ke-room" name="room_id" class="form-input">
+                <option value="">— none —</option>
+                {% for room in rooms %}
+                <option value="{{ room.id }}">{{ room.room_code }}{% if room.name %} — {{ room.name }}{% endif %}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div>
+            <label class="form-label" for="ke-location">Hanging Location</label>
+            <input id="ke-location" name="hanging_location" type="text" class="form-input">
+        </div>
+        <div>
+            <label class="form-label" for="ke-total">Total Quantity <span class="text-red-500">*</span></label>
+            <input id="ke-total" name="total_quantity" type="number" min="1" step="1" required class="form-input">
+            <p class="mt-1 text-xs text-gray-500 dark:text-parchment/60">
+                Currently assigned: <span id="ke-assigned-label" class="font-mono">0</span>
+            </p>
+        </div>
+        <div class="flex items-center gap-4">
+            <div class="flex items-center gap-2">
+                <input id="ke-master" name="master_key" type="checkbox" class="rounded border-gray-300 text-amber-500">
+                <label for="ke-master" class="text-sm text-gray-700 dark:text-parchment">Master key</label>
+            </div>
+            <div class="flex items-center gap-2">
+                <input id="ke-active" name="is_active" type="checkbox" class="rounded border-gray-300 text-turf-green-600">
+                <label for="ke-active" class="text-sm text-gray-700 dark:text-parchment">Active</label>
+            </div>
+        </div>
+        <p id="err-key-edit" class="text-sm text-red-600 dark:text-red-400 hidden"></p>
+    </form>
+    <div class="flex justify-end gap-3 px-6 py-4 border-t border-gray-100 dark:border-carbon-700">
+        <button type="button" onclick="closeModal('modal-key-edit')" class="btn-secondary">Cancel</button>
+        <button type="submit" form="form-key-edit" class="btn-primary">Save</button>
+    </div>
+</dialog>
+
+{# ─── Delete Key Modal ─────────────────────────────────────────────── #}
+<dialog id="modal-key-delete" class="rounded-xl shadow-2xl p-0 w-full max-w-sm bg-white dark:bg-carbon-800 backdrop:bg-black/50">
+    <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-carbon-700">
+        <h2 class="text-base font-semibold text-gray-900 dark:text-parchment">Delete Key</h2>
+        <button type="button" onclick="closeModal('modal-key-delete')" class="w-8 h-8 flex items-center justify-center rounded-lg text-gray-400 hover:bg-gray-100 dark:hover:bg-carbon-700 hover:text-gray-600 transition-colors">&times;</button>
+    </div>
+    <div class="px-6 py-5">
+        <p id="delete-key-message" class="text-sm text-gray-600 dark:text-parchment/80"></p>
+        <p id="err-key-delete" class="mt-3 text-sm text-red-600 dark:text-red-400 hidden"></p>
+    </div>
+    <div class="flex justify-end gap-3 px-6 py-4 border-t border-gray-100 dark:border-carbon-700">
+        <button type="button" onclick="closeModal('modal-key-delete')" class="btn-secondary">Cancel</button>
+        <button id="btn-key-delete-confirm" class="btn-danger">Delete</button>
+    </div>
+</dialog>
+
+{# ─── Assign Key Modal ─────────────────────────────────────────────── #}
+<dialog id="modal-key-assign" class="rounded-xl shadow-2xl p-0 w-full max-w-lg bg-white dark:bg-carbon-800 backdrop:bg-black/50">
+    <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-carbon-700">
+        <h2 class="text-base font-semibold text-gray-900 dark:text-parchment">Assign Key</h2>
+        <button type="button" onclick="closeModal('modal-key-assign')" class="w-8 h-8 flex items-center justify-center rounded-lg text-gray-400 hover:bg-gray-100 dark:hover:bg-carbon-700 hover:text-gray-600 transition-colors">&times;</button>
+    </div>
+    <form id="form-key-assign" class="px-6 py-5 space-y-4" novalidate>
+        <div class="grid grid-cols-2 gap-4">
+            <div class="col-span-2">
+                <label class="form-label" for="ka-key">Key <span class="text-red-500">*</span></label>
+                <select id="ka-key" name="key_id" class="form-input" required>
+                    <option value="">Loading…</option>
+                </select>
+            </div>
+            <div class="col-span-2">
+                <label class="form-label" for="ka-party">Party <span class="text-red-500">*</span></label>
+                <select id="ka-party" name="party_id" class="form-input" required>
+                    <option value="">Loading…</option>
+                </select>
+            </div>
+            <div class="col-span-2">
+                <label class="form-label" for="ka-room">Room <span class="text-red-500">*</span></label>
+                <select id="ka-room" name="room_id" class="form-input" required>
+                    <option value="">Loading…</option>
+                </select>
+            </div>
+            <div class="col-span-2 sm:col-span-1">
+                <label class="form-label" for="ka-issued">Issued At <span class="text-red-500">*</span></label>
+                <input id="ka-issued" name="issued_at" type="datetime-local" required class="form-input">
+            </div>
+            <div class="col-span-2">
+                <label class="form-label" for="ka-note">Issue Note</label>
+                <input id="ka-note" name="issue_note" type="text" class="form-input" placeholder="Optional note">
+            </div>
+            <div class="col-span-2">
+                <label class="form-label" for="ka-receipt-file">Signed Receipt (optional)</label>
+                <input id="ka-receipt-file" name="receipt_file" type="file" class="form-input" accept=".pdf,.png,.jpg,.jpeg,.webp,.doc,.docx">
+                <p class="mt-1 text-xs text-gray-400 dark:text-parchment/50">Schluesselempfangsbestaetigung or similar receipt document.</p>
+            </div>
+        </div>
+        <p id="err-key-assign" class="text-sm text-red-600 dark:text-red-400 hidden"></p>
+    </form>
+    <div class="flex justify-end gap-3 px-6 py-4 border-t border-gray-100 dark:border-carbon-700">
+        <button type="button" onclick="closeModal('modal-key-assign')" class="btn-secondary">Cancel</button>
+        <button type="submit" form="form-key-assign" class="btn-primary">Assign</button>
+    </div>
+</dialog>
+
+{# ─── Return Key Modal ─────────────────────────────────────────────── #}
+<dialog id="modal-key-return" class="rounded-xl shadow-2xl p-0 w-full max-w-md bg-white dark:bg-carbon-800 backdrop:bg-black/50">
+    <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-carbon-700">
+        <h2 class="text-base font-semibold text-gray-900 dark:text-parchment">Return Key <span id="kr-key-label" class="font-mono text-sm text-gray-400 dark:text-parchment/50"></span></h2>
+        <button type="button" onclick="closeModal('modal-key-return')" class="w-8 h-8 flex items-center justify-center rounded-lg text-gray-400 hover:bg-gray-100 dark:hover:bg-carbon-700 hover:text-gray-600 transition-colors">&times;</button>
+    </div>
+    <form id="form-key-return" class="px-6 py-5 space-y-4" novalidate>
+        <input type="hidden" id="kr-assignment-id">
+        <div>
+            <label class="form-label" for="kr-returned">Returned At <span class="text-red-500">*</span></label>
+            <input id="kr-returned" name="returned_at" type="datetime-local" required class="form-input">
+        </div>
+        <div>
+            <label class="form-label" for="kr-note">Return Note</label>
+            <input id="kr-note" name="return_note" type="text" class="form-input" placeholder="Optional note">
+        </div>
+        <p id="err-key-return" class="text-sm text-red-600 dark:text-red-400 hidden"></p>
+    </form>
+    <div class="flex justify-end gap-3 px-6 py-4 border-t border-gray-100 dark:border-carbon-700">
+        <button type="button" onclick="closeModal('modal-key-return')" class="btn-secondary">Cancel</button>
+        <button type="submit" form="form-key-return" class="btn-primary">Confirm Return</button>
+    </div>
+</dialog>
+
+{% endblock %}
+
+
+{% block page_scripts %}
+<script>
+(function () {
+    let staticAssignSelectsLoaded = false;
+    let assignableKeys = [];
+    let deleteTargetKeyId = null;
+    let assignInFlight = false;
+
+    // ── Create Key ──────────────────────────────────────────────────────
+    document.getElementById('form-key-create').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const data = formToObject(e.target, ['description', 'hanging_location']);
+        if (!data.key_code) { setModalError('modal-key-create', 'Key code is required.'); return; }
+        if (data.room_id) data.room_id = parseInt(data.room_id, 10);
+        else delete data.room_id;
+        data.total_quantity = parseInt(data.total_quantity, 10);
+        if (!Number.isInteger(data.total_quantity) || data.total_quantity < 1) {
+            setModalError('modal-key-create', 'Total quantity must be at least 1.');
+            return;
+        }
+        setSubmitting('form-key-create', true);
+        clearModalError('modal-key-create');
+        const res = await apiPost('/api/v1/keys', data);
+        setSubmitting('form-key-create', false);
+        if (res.ok) { location.reload(); }
+        else { setModalError('modal-key-create', await parseApiError(res)); }
+    });
+
+    // ── Edit Key ────────────────────────────────────────────────────────
+    window.openKeyEditModal = function(triggerEl) {
+        const data = triggerEl?.dataset || {};
+        document.getElementById('ke-id').value = data.id || '';
+        document.getElementById('ke-code').value = data.keyCode || '';
+        document.getElementById('ke-desc').value = data.description || '';
+        document.getElementById('ke-room').value = data.roomId || '';
+        document.getElementById('ke-location').value = data.hangingLocation || '';
+        document.getElementById('ke-total').value = data.totalQuantity || '1';
+        document.getElementById('ke-master').checked = data.masterKey === 'true';
+        document.getElementById('ke-active').checked = data.active === 'true';
+        const assignedQty = parseInt(data.assignedQuantity || '0', 10) || 0;
+        document.getElementById('ke-assigned').value = String(assignedQty);
+        document.getElementById('ke-assigned-label').textContent = String(assignedQty);
+        const totalInput = document.getElementById('ke-total');
+        totalInput.min = String(Math.max(1, assignedQty));
+        if ((parseInt(totalInput.value, 10) || 0) < assignedQty) {
+            totalInput.value = String(assignedQty);
+        }
+        clearModalError('modal-key-edit');
+        openModal('modal-key-edit');
+    };
+
+    document.getElementById('form-key-edit').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const id = document.getElementById('ke-id').value;
+        const assignedQty = parseInt(document.getElementById('ke-assigned').value || '0', 10) || 0;
+        const data = formToObject(e.target, ['description', 'hanging_location']);
+        if (!data.key_code) { setModalError('modal-key-edit', 'Key code is required.'); return; }
+        if (data.room_id) data.room_id = parseInt(data.room_id, 10);
+        else data.room_id = null;
+        data.total_quantity = parseInt(data.total_quantity, 10);
+        if (!Number.isInteger(data.total_quantity) || data.total_quantity < 1) {
+            setModalError('modal-key-edit', 'Total quantity must be at least 1.');
+            return;
+        }
+        if (data.total_quantity < assignedQty) {
+            setModalError('modal-key-edit', `Total quantity cannot be below currently assigned (${assignedQty}).`);
+            return;
+        }
+        setSubmitting('form-key-edit', true);
+        clearModalError('modal-key-edit');
+        const res = await apiPatch(`/api/v1/keys/${id}`, data);
+        setSubmitting('form-key-edit', false);
+        if (res.ok) { location.reload(); }
+        else { setModalError('modal-key-edit', await parseApiError(res)); }
+    });
+
+    // ── Assign Key ──────────────────────────────────────────────────────
+    async function populateAssignableKeys(preselectedKeyId) {
+        const keySelect = document.getElementById('ka-key');
+        if (!keySelect) return;
+        keySelect.disabled = true;
+        keySelect.innerHTML = '<option value="">Loading…</option>';
+        try {
+            const res = await fetch('/api/v1/keys', { headers: { 'x-csrf-token': getCsrf() } });
+            if (!res.ok) {
+                throw new Error(`Failed to load keys: ${res.status}`);
+            }
+            const keys = await res.json();
+            const assignable = keys.filter((k) => k.is_active && k.available_quantity > 0);
+            assignableKeys = assignable;
+            keySelect.innerHTML = '';
+            const blank = document.createElement('option');
+            blank.value = '';
+            blank.textContent = assignable.length ? '— select —' : 'No keys available';
+            keySelect.appendChild(blank);
+            assignable.forEach((k) => {
+                const opt = document.createElement('option');
+                opt.value = String(k.id);
+                const locationLabel = k.hanging_location ? ` · ${k.hanging_location}` : '';
+                opt.textContent = `${k.key_code}${locationLabel} (${k.available_quantity}/${k.total_quantity} available)`;
+                keySelect.appendChild(opt);
+            });
+            if (preselectedKeyId && assignable.some((k) => String(k.id) === String(preselectedKeyId))) {
+                keySelect.value = String(preselectedKeyId);
+            }
+        } catch (err) {
+            console.error(err);
+            keySelect.innerHTML = '<option value="">Failed to load keys</option>';
+        } finally {
+            keySelect.disabled = false;
+        }
+    }
+
+    async function loadAssignSelects(preselectedKeyId) {
+        await populateAssignableKeys(preselectedKeyId);
+        if (staticAssignSelectsLoaded) {
+            return;
+        }
+        await Promise.all([
+            populateSelect(document.getElementById('ka-party'), '/api/v1/parties', p => p.name, p => p.id),
+            populateSelect(document.getElementById('ka-room'), '/api/v1/rooms', r => `${r.room_code}${r.name ? ' — ' + r.name : ''}`, r => r.id),
+        ]);
+        staticAssignSelectsLoaded = true;
+    }
+
+    function applyKeyDefaultRoomSelection() {
+        const keyId = document.getElementById('ka-key')?.value;
+        const roomSelect = document.getElementById('ka-room');
+        if (!keyId || !roomSelect) return;
+        const key = assignableKeys.find((k) => String(k.id) === String(keyId));
+        if (key && key.room_id) {
+            roomSelect.value = String(key.room_id);
+        }
+    }
+
+    window.openAssignModal = async function() {
+        await loadAssignSelects();
+        document.getElementById('form-key-assign').reset();
+        document.getElementById('ka-issued').value = nowLocalISO();
+        applyKeyDefaultRoomSelection();
+        clearModalError('modal-key-assign');
+        openModal('modal-key-assign');
+    };
+
+    window.openAssignForKey = async function(keyId) {
+        await loadAssignSelects(keyId);
+        document.getElementById('form-key-assign').reset();
+        document.getElementById('ka-key').value = String(keyId);
+        document.getElementById('ka-issued').value = nowLocalISO();
+        applyKeyDefaultRoomSelection();
+        clearModalError('modal-key-assign');
+        openModal('modal-key-assign');
+    };
+
+    document.getElementById('ka-key')?.addEventListener('change', () => {
+        applyKeyDefaultRoomSelection();
+    });
+
+    document.getElementById('form-key-assign').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        if (assignInFlight) return;
+        const data = formToObject(e.target, ['issue_note']);
+        if (!data.key_id) { setModalError('modal-key-assign', 'Please select a key.'); return; }
+        if (!data.party_id) { setModalError('modal-key-assign', 'Please select a party.'); return; }
+        if (!data.room_id) { setModalError('modal-key-assign', 'Please select a room.'); return; }
+        const fd = new FormData();
+        fd.append('key_id', String(parseInt(data.key_id, 10)));
+        fd.append('party_id', String(parseInt(data.party_id, 10)));
+        fd.append('room_id', String(parseInt(data.room_id, 10)));
+        fd.append('issued_at', data.issued_at);
+        if (data.issue_note) fd.append('issue_note', data.issue_note);
+        const fileInput = document.getElementById('ka-receipt-file');
+        if (fileInput && fileInput.files && fileInput.files.length > 0) {
+            fd.append('receipt_file', fileInput.files[0]);
+        }
+        assignInFlight = true;
+        setSubmitting('form-key-assign', true);
+        clearModalError('modal-key-assign');
+        const res = await apiPostForm('/api/v1/key-assignments/upload', fd);
+        setSubmitting('form-key-assign', false);
+        assignInFlight = false;
+        if (res.ok) { location.reload(); }
+        else { setModalError('modal-key-assign', await parseApiError(res)); }
+    });
+
+    // ── Return Key ──────────────────────────────────────────────────────
+    window.openReturnModal = function(assignmentId, keyCode) {
+        document.getElementById('kr-assignment-id').value = assignmentId;
+        document.getElementById('kr-key-label').textContent = keyCode;
+        document.getElementById('kr-returned').value = nowLocalISO();
+        document.getElementById('kr-note').value = '';
+        clearModalError('modal-key-return');
+        openModal('modal-key-return');
+    };
+
+    document.getElementById('form-key-return').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const id = document.getElementById('kr-assignment-id').value;
+        const data = formToObject(e.target, ['return_note']);
+        delete data[''];
+        if (!data.returned_at) { setModalError('modal-key-return', 'Return time is required.'); return; }
+        setSubmitting('form-key-return', true);
+        clearModalError('modal-key-return');
+        const res = await apiPost(`/api/v1/key-assignments/${id}/return`, data);
+        setSubmitting('form-key-return', false);
+        if (res.ok) { location.reload(); }
+        else { setModalError('modal-key-return', await parseApiError(res)); }
+    });
+
+    window.openKeyDeleteModal = function(keyId, keyCode) {
+        deleteTargetKeyId = keyId;
+        document.getElementById('delete-key-message').textContent = `Delete ${keyCode}? This cannot be undone.`;
+        clearModalError('modal-key-delete');
+        openModal('modal-key-delete');
+    };
+
+    document.getElementById('btn-key-delete-confirm')?.addEventListener('click', async () => {
+        if (!deleteTargetKeyId) return;
+        const btn = document.getElementById('btn-key-delete-confirm');
+        btn.disabled = true;
+        btn.textContent = 'Deleting…';
+        clearModalError('modal-key-delete');
+        const res = await apiDelete(`/api/v1/keys/${deleteTargetKeyId}`);
+        btn.disabled = false;
+        btn.textContent = 'Delete';
+        if (!res.ok) {
+            setModalError('modal-key-delete', await parseApiError(res));
+            return;
+        }
+        location.reload();
+    });
+})();
+</script>
+{% endblock %}

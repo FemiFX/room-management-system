@@ -1,0 +1,211 @@
+{#
+  Media file viewer partial aligned with current public publication flow.
+
+  Expected context:
+  - media: object with fields object_key, file_size, mime_type
+  - storage_url: template helper function
+  - optional title
+#}
+{% if media and media.object_key %}
+  {% set file_url = storage_url(media.object_key) %}
+  {% set filename = media.object_key.split('/')[-1] %}
+  {% set file_ext = filename.split('.')[-1]|lower %}
+  {% set file_size_mb = ((media.file_size or 0) / (1024 * 1024))|round(2) %}
+
+  <div class="mb-8 bg-gray-50 dark:bg-gray-800 rounded-lg p-6">
+    <div class="flex items-center justify-between mb-4 gap-4">
+      <div class="min-w-0">
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-white truncate">{{ title or filename }}</h3>
+        <p class="text-sm text-gray-600 dark:text-gray-400">
+          {{ file_ext|upper }}{% if file_size_mb %} • {{ file_size_mb }} MB{% endif %}
+        </p>
+      </div>
+      <a href="{{ file_url }}" download class="px-4 py-2 bg-turf-green dark:bg-golden-bronze text-white rounded-lg hover:opacity-90 transition-opacity text-sm font-medium">
+        {{ _('Download') }}
+      </a>
+    </div>
+
+    {% if file_ext in ['png', 'jpg', 'jpeg', 'webp', 'gif'] %}
+      <div class="mt-4">
+        <img
+          src="{{ file_url }}"
+          alt="{{ title or filename }}"
+          class="rounded-lg border border-gray-300 dark:border-gray-600 max-h-96 object-contain mx-auto hover:shadow-lg transition-shadow cursor-pointer"
+          onclick="openMediaFileModal('{{ file_url }}', '{{ file_ext }}')"
+        >
+      </div>
+    {% elif file_ext == 'pdf' %}
+      <div class="mt-4">
+        <embed src="{{ file_url }}#toolbar=1" type="application/pdf" class="w-full h-[900px] rounded-lg border border-gray-300 dark:border-gray-600" />
+        <div class="mt-3 flex gap-3">
+          <a href="{{ file_url }}" target="_blank" rel="noopener" class="flex-1 px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 text-sm font-medium text-center">
+            {{ _('In neuem Tab öffnen') }}
+          </a>
+          <button onclick="openMediaFileModal('{{ file_url }}', 'pdf')" class="flex-1 px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 text-sm font-medium">
+            {{ _('Im Vollbild öffnen') }}
+          </button>
+        </div>
+      </div>
+    {% elif file_ext in ['docx', 'doc'] %}
+      <div class="mt-4 text-center p-8 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg">
+        <svg class="w-16 h-16 mx-auto text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+        </svg>
+        <p class="text-gray-600 dark:text-gray-400 mb-4">{{ _('DOCX-Dokument') }}</p>
+        <button onclick="openMediaFileModal('{{ file_url }}', '{{ file_ext }}')" class="px-4 py-2 bg-turf-green dark:bg-golden-bronze text-white rounded-lg hover:opacity-90 transition-opacity text-sm font-medium">
+          {{ _('Dokument anzeigen') }}
+        </button>
+      </div>
+    {% else %}
+      <div class="mt-4 text-center p-8 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg">
+        <svg class="w-16 h-16 mx-auto text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+        </svg>
+        <p class="text-gray-600 dark:text-gray-400">{{ _('%(ext)s-Datei', ext=file_ext|upper) }}</p>
+      </div>
+    {% endif %}
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/mammoth@1.6.0/mammoth.browser.min.js"></script>
+
+  <style>
+    .media-file-modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.9);
+      z-index: 9999;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+    }
+    .media-file-modal-backdrop.show { display: flex; }
+    .media-file-modal-close {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      color: #111827;
+      background: #f8fafc;
+      border-radius: 9999px;
+      width: 48px;
+      height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      cursor: pointer;
+      border: 1px solid rgba(17, 24, 39, 0.15);
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
+      z-index: 10000;
+      font-weight: bold;
+    }
+    .media-file-modal-body {
+      position: relative;
+      width: 95vw;
+      height: 95vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .media-file-modal-content {
+      width: 100%;
+      height: 100%;
+      max-width: 100%;
+      max-height: 100%;
+      border: none;
+      background: transparent;
+      object-fit: contain;
+      margin: 0;
+      display: block;
+    }
+  </style>
+
+  <script>
+    (function() {
+      const modalId = 'media-file-viewer-modal';
+      if (!document.getElementById(modalId)) {
+        const modal = document.createElement('div');
+        modal.id = modalId;
+        modal.className = 'media-file-modal-backdrop';
+        modal.innerHTML = `
+          <div class="media-file-modal-body">
+            <button id="media-file-modal-close" class="media-file-modal-close" aria-label="{{ _('Schließen') }}">&times;</button>
+            <div id="media-file-modal-body" class="w-full h-full flex items-center justify-center">
+              <p class="text-sm text-gray-100">{{ _('Laden…') }}</p>
+            </div>
+          </div>
+        `;
+        document.body.appendChild(modal);
+
+        document.getElementById('media-file-modal-close').addEventListener('click', () => {
+          modal.classList.remove('show');
+        });
+        modal.addEventListener('click', (e) => {
+          if (e.target === modal) modal.classList.remove('show');
+        });
+      }
+
+      window.openMediaFileModal = async function(src, type) {
+        const modal = document.getElementById(modalId);
+        const body = document.getElementById('media-file-modal-body');
+        const loadingText = {{ _('Laden…') | tojson }};
+        const documentLabel = {{ _('Dokument') | tojson }};
+        const docErrorText = {{ _('Fehler beim Laden des Dokuments') | tojson }};
+        const downloadInsteadText = {{ _('Stattdessen herunterladen') | tojson }};
+
+        body.innerHTML = `<p class="text-sm text-gray-100">${loadingText}</p>`;
+
+        const isImage = ['png', 'jpg', 'jpeg', 'webp', 'gif'].includes(type);
+        const isPdf = type === 'pdf';
+        const isDocx = ['docx', 'doc'].includes(type);
+
+        if (isImage) {
+          const img = document.createElement('img');
+          img.src = src;
+          img.alt = documentLabel;
+          img.className = 'media-file-modal-content';
+          img.style.objectFit = 'contain';
+          body.innerHTML = '';
+          body.appendChild(img);
+        } else if (isPdf) {
+          const iframe = document.createElement('iframe');
+          iframe.src = `${src}#toolbar=1`;
+          iframe.className = 'media-file-modal-content';
+          body.innerHTML = '';
+          body.appendChild(iframe);
+        } else if (isDocx && typeof mammoth !== 'undefined') {
+          try {
+            const response = await fetch(src);
+            const arrayBuffer = await response.arrayBuffer();
+            const result = await mammoth.convertToHtml({ arrayBuffer });
+            const container = document.createElement('div');
+            container.className = 'media-file-modal-content overflow-auto p-8 bg-white dark:bg-gray-800 rounded-lg';
+            container.style.maxWidth = '900px';
+            container.style.height = '100%';
+            container.innerHTML = result.value;
+            body.innerHTML = '';
+            body.appendChild(container);
+          } catch (error) {
+            console.error('DOCX render error:', error);
+            body.innerHTML = `
+              <div class="text-center p-8 bg-white dark:bg-gray-800 rounded-lg">
+                <p class="text-red-600 dark:text-red-400 mb-4">${docErrorText}</p>
+                <a href="${src}" download class="px-4 py-2 bg-turf-green dark:bg-golden-bronze text-white rounded-lg hover:opacity-90 transition-opacity">
+                  ${downloadInsteadText}
+                </a>
+              </div>
+            `;
+          }
+        } else {
+          const iframe = document.createElement('iframe');
+          iframe.src = src;
+          iframe.className = 'media-file-modal-content';
+          body.innerHTML = '';
+          body.appendChild(iframe);
+        }
+
+        modal.classList.add('show');
+      };
+    })();
+  </script>
+{% endif %}

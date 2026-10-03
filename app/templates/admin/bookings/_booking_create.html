@@ -1,0 +1,53 @@
+{# The create-booking dialog. Shared by both views of the bookings page, so
+   "New Booking" works from the calendar as well as from the list. #}
+<dialog id="modal-booking-create" class="rounded-xl shadow-2xl p-0 w-full max-w-lg bg-white dark:bg-carbon-800 backdrop:bg-black/50">
+    <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-carbon-700">
+        <h2 class="text-base font-semibold text-gray-900 dark:text-parchment">{{ _('New Booking') }}</h2>
+        <button type="button" onclick="closeModal('modal-booking-create')" class="w-8 h-8 flex items-center justify-center rounded-lg text-gray-400 hover:bg-gray-100 dark:hover:bg-carbon-700 hover:text-gray-600 transition-colors">&times;</button>
+    </div>
+    <form id="form-booking-create" class="px-6 py-5 space-y-4" novalidate>
+        <div class="grid grid-cols-2 gap-4">
+            <div class="col-span-2">
+                <label class="form-label" for="bc-title">{{ _('Title') }} <span class="text-red-500">*</span></label>
+                <input id="bc-title" name="title" type="text" required class="form-input" placeholder="{{ _('e.g. Team Meeting') }}">
+            </div>
+            <div class="col-span-2">
+                <label class="form-label" for="bc-room">{{ _('Room') }} <span class="text-red-500">*</span></label>
+                <select id="bc-room" name="room_id" class="form-input" required>
+                    <option value="">{{ _('Loading…') }}</option>
+                </select>
+            </div>
+            <div class="col-span-2">
+                <label class="form-label" for="bc-party">{{ _('Party') }} <span class="text-red-500">*</span></label>
+                <select id="bc-party" name="party_id" class="form-input" required>
+                    <option value="">{{ _('Loading…') }}</option>
+                </select>
+            </div>
+            <div class="col-span-2 sm:col-span-1">
+                <label class="form-label" for="bc-start">{{ _('Start') }} <span class="text-red-500">*</span></label>
+                <input id="bc-start" name="start_at" type="datetime-local" required class="form-input">
+            </div>
+            <div class="col-span-2 sm:col-span-1">
+                <label class="form-label" for="bc-end">{{ _('End') }} <span class="text-red-500">*</span></label>
+                <input id="bc-end" name="end_at" type="datetime-local" required class="form-input">
+            </div>
+            <div class="col-span-2 sm:col-span-1">
+                <label class="form-label" for="bc-attendees">{{ _('Attendees') }}</label>
+                <input id="bc-attendees" name="attendee_count" type="number" min="1" class="form-input" placeholder="0">
+            </div>
+            <div class="col-span-2">
+                <label class="form-label" for="bc-purpose">{{ _('Purpose') }}</label>
+                <input id="bc-purpose" name="purpose" type="text" class="form-input" placeholder="{{ _('e.g. Weekly standup') }}">
+            </div>
+            <div class="col-span-2">
+                <label class="form-label" for="bc-notes">{{ _('Notes') }}</label>
+                <textarea id="bc-notes" name="notes" rows="2" class="form-input resize-none"></textarea>
+            </div>
+        </div>
+        <p id="err-booking-create" class="text-sm text-red-600 dark:text-red-400 hidden"></p>
+    </form>
+    <div class="flex justify-end gap-3 px-6 py-4 border-t border-gray-100 dark:border-carbon-700">
+        <button type="button" onclick="closeModal('modal-booking-create')" class="btn-secondary">{{ _('Cancel') }}</button>
+        <button type="submit" form="form-booking-create" class="btn-primary">{{ _('Create') }}</button>
+    </div>
+</dialog>

@@ -1,0 +1,32 @@
+{% set _icon_i18n = _('Icon') %}
+{% macro fa_icon(name) -%}
+    {% if name == 'home' %}fa-house
+    {% elif name == 'gauge' %}fa-gauge-high
+    {% elif name == 'bolt' %}fa-bolt
+    {% elif name == 'door' %}fa-door-open
+    {% elif name == 'building' %}fa-building
+    {% elif name == 'key' %}fa-key
+    {% elif name == 'wifi' %}fa-wifi
+    {% elif name == 'chair' %}fa-couch
+    {% elif name == 'file-contract' %}fa-file-contract
+    {% elif name == 'bell' %}fa-bell
+    {% elif name == 'calendar' %}fa-calendar-days
+    {% elif name == 'users' %}fa-users
+    {% elif name == 'person' %}fa-address-card
+    {% elif name == 'table' %}fa-table-cells
+    {% elif name == 'file' %}fa-file-lines
+    {% elif name == 'document' %}fa-file-lines
+    {% elif name == 'settings' %}fa-gear
+    {% elif name == 'folder' %}fa-folder
+    {% elif name == 'search' %}fa-magnifying-glass
+    {% elif name == 'chart-bar' %}fa-chart-column
+    {% elif name == 'photo' %}fa-images
+    {% elif name == 'tag' %}fa-tag
+    {% elif name == 'plus' %}fa-plus
+    {% elif name == 'upload' %}fa-upload
+    {% elif name == 'book' %}fa-book
+    {% elif name == 'grid' %}fa-table-cells-large
+    {% elif name == 'globe' %}fa-globe
+    {% elif name == 'sliders' %}fa-sliders
+    {% else %}fa-circle-dot{% endif %}
+{%- endmacro %}

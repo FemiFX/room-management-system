@@ -1,0 +1,111 @@
+{% extends "admin/layout.html" %}
+
+{% block title %}{{ _('Dashboard') }}{% endblock %}
+{% block page_title %}{{ _('Dashboard') }}{% endblock %}
+{% block page_subtitle %}{{ _('Operational overview') }}{% endblock %}
+
+{% block admin_content %}
+{# ─── Stat Cards ──────────────────────────────────────────────────── #}
+<div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 mb-6">
+
+    <div class="card p-5">
+        <div class="flex items-center justify-between mb-2">
+            <p class="text-xs font-medium text-gray-500 dark:text-parchment/60 uppercase tracking-wide">{{ _('Total Rooms') }}</p>
+            <i class="fa-solid fa-door-open text-gray-300 dark:text-parchment/20 text-lg"></i>
+        </div>
+        <p class="text-3xl font-bold text-gray-900 dark:text-parchment">{{ summary.total_rooms }}</p>
+    </div>
+
+    <div class="card p-5">
+        <div class="flex items-center justify-between mb-2">
+            <p class="text-xs font-medium text-gray-500 dark:text-parchment/60 uppercase tracking-wide">{{ _('Active') }}</p>
+            <i class="fa-solid fa-circle-check text-green-400 dark:text-green-500 text-lg"></i>
+        </div>
+        <p class="text-3xl font-bold text-gray-900 dark:text-parchment">{{ summary.active_rooms }}</p>
+        <p class="text-xs text-gray-400 dark:text-parchment/40 mt-1">{{ _('of') }} {{ summary.total_rooms }} {{ _('total') }}</p>
+    </div>
+
+    <div class="card p-5">
+        <div class="flex items-center justify-between mb-2">
+            <p class="text-xs font-medium text-gray-500 dark:text-parchment/60 uppercase tracking-wide">{{ _('Occupied') }}</p>
+            <i class="fa-solid fa-user text-teal-500 text-lg"></i>
+        </div>
+        <p class="text-3xl font-bold text-gray-900 dark:text-parchment">{{ summary.occupied_rooms }}</p>
+        <p class="text-xs text-gray-400 dark:text-parchment/40 mt-1">{{ _('active leases') }}</p>
+    </div>
+
+    <div class="card p-5">
+        <div class="flex items-center justify-between mb-2">
+            <p class="text-xs font-medium text-gray-500 dark:text-parchment/60 uppercase tracking-wide">{{ _('Booked Now') }}</p>
+            <i class="fa-solid fa-calendar-check text-blue-500 text-lg"></i>
+        </div>
+        <p class="text-3xl font-bold text-gray-900 dark:text-parchment">{{ summary.rooms_booked_now }}</p>
+        <p class="text-xs text-gray-400 dark:text-parchment/40 mt-1">{{ _('right now') }}</p>
+    </div>
+
+    <div class="card p-5 {% if summary.expiring_leases_30d > 0 %}border-amber-200 dark:border-amber-900/40{% endif %}">
+        <div class="flex items-center justify-between mb-2">
+            <p class="text-xs font-medium text-gray-500 dark:text-parchment/60 uppercase tracking-wide">{{ _('Expiring') }}</p>
+            <i class="fa-solid fa-clock {% if summary.expiring_leases_30d > 0 %}text-amber-500{% else %}text-gray-300 dark:text-parchment/20{% endif %} text-lg"></i>
+        </div>
+        <p class="text-3xl font-bold {% if summary.expiring_leases_30d > 0 %}text-amber-600 dark:text-amber-400{% else %}text-gray-900 dark:text-parchment{% endif %}">{{ summary.expiring_leases_30d }}</p>
+        <p class="text-xs text-gray-400 dark:text-parchment/40 mt-1">{{ _('leases in 30 days') }}</p>
+    </div>
+
+    <div class="card p-5 {% if summary.unreturned_keys > 0 %}border-orange-200 dark:border-orange-900/40{% endif %}">
+        <div class="flex items-center justify-between mb-2">
+            <p class="text-xs font-medium text-gray-500 dark:text-parchment/60 uppercase tracking-wide">{{ _('Keys Out') }}</p>
+            <i class="fa-solid fa-key {% if summary.unreturned_keys > 0 %}text-orange-500{% else %}text-gray-300 dark:text-parchment/20{% endif %} text-lg"></i>
+        </div>
+        <p class="text-3xl font-bold {% if summary.unreturned_keys > 0 %}text-orange-600 dark:text-orange-400{% else %}text-gray-900 dark:text-parchment{% endif %}">{{ summary.unreturned_keys }}</p>
+        <p class="text-xs text-gray-400 dark:text-parchment/40 mt-1">{{ _('unreturned') }}</p>
+    </div>
+
+</div>
+
+<div class="card p-4">
+    <h3 class="text-sm font-semibold text-gray-700 dark:text-parchment mb-3">{{ _('Quick Links') }}</h3>
+    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-2">
+        <a href="/rooms" class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-gray-50 dark:hover:bg-carbon-700 transition-colors group">
+            <div class="w-8 h-8 rounded-md bg-teal-100 dark:bg-teal-900/30 flex items-center justify-center">
+                <i class="fa-solid fa-door-open text-teal-600 dark:text-teal-400 text-sm"></i>
+            </div>
+            <div class="flex-1 min-w-0">
+                <p class="text-sm font-medium text-gray-800 dark:text-parchment">{{ _('Rooms') }}</p>
+                <p class="text-xs text-gray-400 dark:text-parchment/50">{{ summary.active_rooms }} {{ _('active') }}</p>
+            </div>
+            <i class="fa-solid fa-chevron-right text-gray-300 dark:text-parchment/30 text-xs group-hover:text-gray-500 dark:group-hover:text-parchment/60"></i>
+        </a>
+        <a href="/leases" class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-gray-50 dark:hover:bg-carbon-700 transition-colors group">
+            <div class="w-8 h-8 rounded-md bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
+                <i class="fa-solid fa-file-contract text-blue-600 dark:text-blue-400 text-sm"></i>
+            </div>
+            <div class="flex-1 min-w-0">
+                <p class="text-sm font-medium text-gray-800 dark:text-parchment">{{ _('Leases') }}</p>
+                <p class="text-xs text-gray-400 dark:text-parchment/50">{{ summary.occupied_rooms }} {{ _('occupied') }}</p>
+            </div>
+            <i class="fa-solid fa-chevron-right text-gray-300 dark:text-parchment/30 text-xs group-hover:text-gray-500 dark:group-hover:text-parchment/60"></i>
+        </a>
+        <a href="/keys" class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-gray-50 dark:hover:bg-carbon-700 transition-colors group">
+            <div class="w-8 h-8 rounded-md bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center">
+                <i class="fa-solid fa-key text-amber-600 dark:text-amber-400 text-sm"></i>
+            </div>
+            <div class="flex-1 min-w-0">
+                <p class="text-sm font-medium text-gray-800 dark:text-parchment">{{ _('Keys') }}</p>
+                <p class="text-xs text-gray-400 dark:text-parchment/50">{{ summary.unreturned_keys }} {{ _('unreturned') }}</p>
+            </div>
+            <i class="fa-solid fa-chevron-right text-gray-300 dark:text-parchment/30 text-xs group-hover:text-gray-500 dark:group-hover:text-parchment/60"></i>
+        </a>
+        <a href="/bookings" class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-gray-50 dark:hover:bg-carbon-700 transition-colors group">
+            <div class="w-8 h-8 rounded-md bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center">
+                <i class="fa-solid fa-calendar-days text-purple-600 dark:text-purple-400 text-sm"></i>
+            </div>
+            <div class="flex-1 min-w-0">
+                <p class="text-sm font-medium text-gray-800 dark:text-parchment">{{ _('Bookings') }}</p>
+                <p class="text-xs text-gray-400 dark:text-parchment/50">{{ summary.rooms_booked_now }} {{ _('active now') }}</p>
+            </div>
+            <i class="fa-solid fa-chevron-right text-gray-300 dark:text-parchment/30 text-xs group-hover:text-gray-500 dark:group-hover:text-parchment/60"></i>
+        </a>
+    </div>
+</div>
+{% endblock %}

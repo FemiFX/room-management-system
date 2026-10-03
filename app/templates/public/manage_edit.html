@@ -1,0 +1,185 @@
+{% extends "public/layout.html" %}
+{% from "public/_room_picker.html" import room_picker with context %}
+{% block title %}{{ _('Change your booking') }}{% endblock %}
+
+{% macro val(field, fallback) %}{{ (form or {}).get(field, fallback) or '' }}{% endmacro %}
+
+{% block public_content %}
+<div class="mx-auto flex w-full max-w-3xl flex-col gap-7 px-4 pb-20 pt-12 sm:px-6">
+
+  <div class="flex flex-col gap-1.5">
+    <h1 class="ui-h text-[28px] leading-[32px] [hyphens:auto] sm:text-4xl sm:leading-tight">{{ _('Change your booking') }}</h1>
+    <p class="text-primary/80">{{ _('Reference') }} <span class="font-heading font-bold tracking-[1px]">{{ booking_request.public_ref }}</span></p>
+  </div>
+
+  {% if booking.status.value == 'approved' %}
+  <p class="rounded-2xl bg-accent/15 px-5 py-4 text-sm font-semibold text-accent-700">
+    {{ _('This booking is already confirmed. If you change it, it goes back to us for review.') }}
+  </p>
+  {% endif %}
+
+  {% if errors.get('__all__') %}
+  <p class="rounded-2xl bg-highlight/10 px-5 py-4 text-sm font-semibold text-highlight" role="alert">
+    {{ errors['__all__'] }}
+  </p>
+  {% endif %}
+
+  <form method="post" action="/book/manage/edit" class="flex flex-col gap-8">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+    <input type="hidden" name="t" value="{{ token }}">
+
+    <fieldset class="ui-card flex flex-col gap-6 p-6 sm:p-9">
+      <legend class="sr-only">{{ _('Your details') }}</legend>
+      <div class="flex items-center gap-4">
+        <span class="flex h-11 w-11 items-center justify-center rounded-full bg-accent pt-0.5 font-heading text-xl font-bold text-primary">1</span>
+        <h2 class="ui-h text-xl">{{ _('Your details') }}</h2>
+      </div>
+      <div class="grid gap-4 sm:grid-cols-2">
+        <div>
+          <label class="ui-label mb-1.5" for="first_name">{{ _('First name') }}</label>
+          <input class="ui-input" id="first_name" name="first_name" value="{{ val('first_name', booking_request.requester_first_name) }}">
+        </div>
+        <div>
+          <label class="ui-label mb-1.5" for="last_name">{{ _('Last name') }}</label>
+          <input class="ui-input" id="last_name" name="last_name" value="{{ val('last_name', booking_request.requester_last_name) }}">
+        </div>
+        <div>
+          <label class="ui-label mb-1.5" for="academic_title">{{ _('Title') }}</label>
+          <input class="ui-input" id="academic_title" name="academic_title" value="{{ val('academic_title', booking_request.requester_academic_title) }}">
+        </div>
+        <div>
+          <label class="ui-label mb-1.5" for="organization">{{ _('Organisation') }}</label>
+          <input class="ui-input" id="organization" name="organization" value="{{ val('organization', booking_request.requester_organization) }}">
+        </div>
+        <div class="sm:col-span-2">
+          <label class="ui-label mb-1.5">{{ _('Email') }}</label>
+          {#
+            Not editable. It is the address this link was sent to and the key the
+            contact record was matched on; letting the form rewrite it would hand
+            the booking to someone else.
+          #}
+          <p class="ui-input bg-surface text-primary/70">{{ booking_request.requester_email }}</p>
+          <p class="mt-1 text-xs text-primary/60">{{ _('To change the email address, please contact us.') }}</p>
+        </div>
+        <div>
+          <label class="ui-label mb-1.5" for="phone">{{ _('Phone') }}</label>
+          <input class="ui-input" id="phone" name="phone" value="{{ val('phone', booking_request.requester_phone) }}">
+        </div>
+        <div class="sm:col-span-2">
+          <label class="ui-label mb-1.5" for="address">{{ _('Address') }}</label>
+          <textarea class="ui-input" id="address" name="address" rows="2">{{ val('address', booking_request.requester_address) }}</textarea>
+        </div>
+      </div>
+    </fieldset>
+
+    <fieldset class="ui-card flex flex-col gap-6 p-6 sm:p-9">
+      <legend class="sr-only">{{ _('Your event') }}</legend>
+      <div class="flex items-center gap-4">
+        <span class="flex h-11 w-11 items-center justify-center rounded-full bg-accent pt-0.5 font-heading text-xl font-bold text-primary">2</span>
+        <h2 class="ui-h text-xl">{{ _('Your event') }}</h2>
+      </div>
+      <div class="grid gap-4 sm:grid-cols-2">
+        <div class="sm:col-span-2">
+          <label class="ui-label mb-1.5" for="event_title">{{ _('Event title') }} *</label>
+          <input class="ui-input" id="event_title" name="event_title" required value="{{ val('event_title', booking.title) }}">
+          {% if errors.get('event_title') %}<p class="mt-1 text-sm font-semibold text-highlight">{{ errors['event_title'] }}</p>{% endif %}
+        </div>
+        <div>
+          <label class="ui-label mb-1.5" for="start_date">{{ _('Start date') }} *</label>
+          <input class="ui-input" id="start_date" name="start_date" type="date" required min="{{ min_date }}"
+                 value="{{ val('start_date', booking.start_at | local_datetime('%Y-%m-%d')) }}">
+          {% if errors.get('start_date') %}<p class="mt-1 text-sm font-semibold text-highlight">{{ errors['start_date'] }}</p>{% endif %}
+        </div>
+        <div>
+          <label class="ui-label mb-1.5" for="start_time">{{ _('Start time') }}</label>
+          <input class="ui-input" id="start_time" name="start_time" type="time"
+                 value="{{ val('start_time', booking.start_at | local_datetime('%H:%M')) }}">
+        </div>
+        <div>
+          <label class="ui-label mb-1.5" for="end_date">{{ _('End date') }}</label>
+          <input class="ui-input" id="end_date" name="end_date" type="date" min="{{ min_date }}"
+                 value="{{ val('end_date', booking.end_at | local_datetime('%Y-%m-%d')) }}">
+          {% if errors.get('end_date') %}<p class="mt-1 text-sm font-semibold text-highlight">{{ errors['end_date'] }}</p>{% endif %}
+        </div>
+        <div>
+          <label class="ui-label mb-1.5" for="end_time">{{ _('End time') }}</label>
+          <input class="ui-input" id="end_time" name="end_time" type="time"
+                 value="{{ val('end_time', booking.end_at | local_datetime('%H:%M')) }}">
+        </div>
+        <div class="sm:col-span-2">
+          <label class="inline-flex items-center gap-2.5">
+            <input type="checkbox" name="whole_day" value="1" class="h-5 w-5 rounded-md border-2 border-primary accent-accent"
+                   {% if booking_request.whole_day %}checked{% endif %}>
+            <span class="text-sm font-semibold">{{ _('Whole day — we can sort the times out later') }}</span>
+          </label>
+        </div>
+        <div>
+          <label class="ui-label mb-1.5" for="participants">{{ _('Number of attendees') }}</label>
+          <input class="ui-input" id="participants" name="participants" type="number" min="1"
+                 value="{{ val('participants', booking.attendee_count) }}">
+          {% if errors.get('participants') %}<p class="mt-1 text-sm font-semibold text-highlight">{{ errors['participants'] }}</p>{% endif %}
+        </div>
+        <div>
+          <label class="ui-label mb-1.5" for="contact_person">{{ _('Contact person on the day') }}</label>
+          <input class="ui-input" id="contact_person" name="contact_person" value="{{ val('contact_person', booking_request.contact_person) }}">
+        </div>
+      </div>
+    </fieldset>
+
+    <fieldset class="ui-card flex flex-col gap-6 p-6 sm:p-9">
+      <legend class="sr-only">{{ _('Room & extras') }}</legend>
+      <div class="flex items-center gap-4">
+        <span class="flex h-11 w-11 items-center justify-center rounded-full bg-accent pt-0.5 font-heading text-xl font-bold text-primary">3</span>
+        <h2 class="ui-h text-xl">{{ _('Room & extras') }}</h2>
+      </div>
+
+      {{ room_picker(rooms, room_services, selected_equipment, selected_services, checked_room_id) }}
+      {% if errors.get('room_id') %}<p class="-mt-2 text-sm font-semibold text-highlight">{{ errors['room_id'] }}</p>{% endif %}
+
+    </fieldset>
+
+    <fieldset class="ui-card flex flex-col gap-6 p-6 sm:p-9">
+      <legend class="sr-only">{{ _('Anything else') }}</legend>
+      <div class="flex items-center gap-4">
+        <span class="flex h-11 w-11 items-center justify-center rounded-full bg-accent pt-0.5 font-heading text-xl font-bold text-primary">4</span>
+        <h2 class="ui-h text-xl">{{ _('Anything else') }}</h2>
+      </div>
+      <div class="grid gap-4">
+        <div>
+          <label class="ui-label mb-1.5" for="billing_info">{{ _('Billing details') }}</label>
+          <textarea class="ui-input" id="billing_info" name="billing_info" rows="2">{{ val('billing_info', booking_request.billing_info) }}</textarea>
+        </div>
+        <div>
+          <label class="ui-label mb-1.5" for="additional_info">{{ _('Anything we should know') }}</label>
+          <textarea class="ui-input" id="additional_info" name="additional_info" rows="3">{{ val('additional_info', booking_request.additional_info) }}</textarea>
+        </div>
+      </div>
+      <div class="flex flex-wrap gap-4 border-t border-primary/10 pt-6">
+        <button type="submit" class="btn-brand">{{ _('Save changes') }}</button>
+        <a href="/book/manage?t={{ token }}" class="btn-brand-outline">{{ _('Discard') }}</a>
+      </div>
+    </fieldset>
+  </form>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  // Only the selected room's equipment is relevant; without JS all blocks show.
+  (function () {
+    function selected() {
+      const checked = document.querySelector('input[name="room_id"]:checked');
+      return checked ? checked.value : '';
+    }
+    function sync() {
+      document.querySelectorAll('.room-equipment, .room-services').forEach(function (block) {
+        block.hidden = block.dataset.room !== selected();
+      });
+    }
+    document.querySelectorAll('input[name="room_id"]').forEach(function (radio) {
+      radio.addEventListener('change', sync);
+    });
+    sync();
+  })();
+</script>
+{% endblock %}

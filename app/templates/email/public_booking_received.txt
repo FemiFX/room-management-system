@@ -1,0 +1,15 @@
+{{ _('Thank you — we have received your booking request and will review it shortly.') }}
+
+{{ _('Reference') }}: {{ public_ref }}
+{{ _('Event') }}: {{ title }}
+{{ _('Room') }}: {{ room_name }}
+{{ _('From') }}: {{ start_at }}
+{{ _('Until') }}: {{ end_at }}
+{% if cleaning_charge %}{{ _('Cleaning charge') }}: {{ cleaning_charge }} {{ currency }} ({{ cleaning_days }} x {{ cleaning_rate_daily }} {{ currency }})
+{{ _('The cleaning charge shown is indicative. Invoicing is handled separately.') }}
+{% endif %}
+{{ _('Your request is not confirmed yet. We will email you once a decision has been made.') }}
+{% if manage_url %}
+{{ _('View or change your request') }}: {{ manage_url }}
+{{ _('Keep this link private — anyone who has it can view and change your request.') }}
+{% endif %}
