@@ -730,12 +730,12 @@ def seed(db: Session) -> None:
     # an external requester, a cleaning quote, extras, and liability cover
     # promised but not yet proven -- the state staff actually have to chase.
     guest = get_or_create_party(
-        db, party_type=PartyType.EXTERNAL, name="Black Academy Berlin e. V.",
-        email="anfrage@blackacademy.example",
+        db, party_type=PartyType.EXTERNAL, name="Literaturverein Beispielstadt e. V.",
+        email="anfrage@literaturverein.example",
     )
     public_request = get_or_create_booking(
         db, room=rooms["HG-BIB"], party=guest,
-        title="Schreibwerkstatt: Afrodiasporische Lyrik",
+        title="Schreibwerkstatt: Lyrik",
         # A time a person would actually pick, so the demo reads as a real
         # request rather than "now plus some hours".
         start_at=(now + timedelta(days=21)).replace(hour=8, minute=0, second=0, microsecond=0),
@@ -750,15 +750,15 @@ def seed(db: Session) -> None:
                 booking_id=public_request.id,
                 public_ref="RB-DEMO2026",
                 language="de",
-                requester_first_name="Amara",
-                requester_last_name="Okonkwo",
+                requester_first_name="Erika",
+                requester_last_name="Mustermann",
                 requester_academic_title="Dr.",
-                requester_organization="Black Academy Berlin e. V.",
-                requester_email="amara.okonkwo@blackacademy.example",
+                requester_organization="Literaturverein Beispielstadt e. V.",
+                requester_email="erika.mustermann@literaturverein.example",
                 requester_phone="+49 30 1234 5678",
-                requester_address="Oranienstraße 25\n10999 Berlin",
-                contact_person="Kwame Mensah · +49 170 9876543",
-                billing_info="Black Academy Berlin e. V.\nOranienstraße 25, 10999 Berlin",
+                requester_address="Musterstraße 12\n10115 Berlin",
+                contact_person="Max Mustermann · +49 30 1234 5679",
+                billing_info="Literaturverein Beispielstadt e. V.\nMusterstraße 12, 10115 Berlin",
                 additional_info=(
                     "Wir bringen eigene Moderationskoffer mit. Der Raum sollte ab 09:00 "
                     "zugänglich sein, damit wir bestuhlen können."
