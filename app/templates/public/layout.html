@@ -66,18 +66,28 @@
         {# A member or staff member who lands here needs a route back to their
            own surface. #}
         <a href="/auth/login" class="ui-navlink hidden md:inline">{{ _('Sign In') }}</a>
-        {# Plain links: no JavaScript, no CSRF question, and idempotent. #}
-        <span class="flex items-center gap-2 font-heading text-[13px] font-bold" aria-label="{{ _('Language') }}">
-          {% for option in language_options %}
-            {% if option.code == current_language %}
-              <span class="text-primary" aria-current="true">{{ option.code | upper }}</span>
-            {% else %}
-              <a href="?lang={{ option.code }}" class="text-primary/45 hover:text-accent"
-                 title="{{ option.label }}">{{ option.code | upper }}</a>
-            {% endif %}
-            {% if not loop.last %}<span class="text-primary/30">|</span>{% endif %}
-          {% endfor %}
-        </span>
+        {# A native <details> menu: still plain links, no JavaScript, no CSRF
+           question, and idempotent. One button instead of a row of seven codes. #}
+        <details class="group relative">
+          <summary class="flex min-h-[44px] cursor-pointer list-none items-center gap-1.5 rounded-md px-2 font-heading text-[13px] font-bold text-primary hover:text-accent [&::-webkit-details-marker]:hidden"
+                   aria-label="{{ _('Language') }}">
+            <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"></path></svg>
+            {{ current_language | upper }}
+            <svg class="h-3.5 w-3.5 transition-transform group-open:rotate-180" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"></polyline></svg>
+          </summary>
+          <ul class="absolute right-0 top-full z-30 mt-1 min-w-[11rem] rounded-lg border border-primary/10 bg-white py-1 shadow-lg">
+            {% for option in language_options %}
+            <li>
+              <a href="?lang={{ option.code }}" lang="{{ option.code }}"
+                 class="flex items-center justify-between gap-4 px-4 py-2.5 text-[14px] hover:bg-primary/5 {{ 'font-bold text-primary' if option.code == current_language else 'text-primary/80' }}"
+                 {% if option.code == current_language %}aria-current="true"{% endif %}>
+                {{ option.label }}
+                <span class="text-[12px] font-semibold text-primary/45">{{ option.code | upper }}</span>
+              </a>
+            </li>
+            {% endfor %}
+          </ul>
+        </details>
         <a href="/book/new" class="btn-brand btn-brand-sm hidden sm:inline-block">{{ _('Request a room') }}</a>
       </nav>
     </div>

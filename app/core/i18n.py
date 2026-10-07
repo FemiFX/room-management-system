@@ -19,10 +19,10 @@ def language_display_name(code: str) -> str:
     labels = {
         "de": "Deutsch",
         "en": "English",
-        "fr": "Francais",
-        "pt": "Portugues",
-        "es": "Espanol",
-        "yo": "Yoruba",
+        "fr": "Français",
+        "pt": "Português",
+        "es": "Español",
+        "yo": "Yorùbá",
         "sw": "Kiswahili",
     }
     return labels.get(code, code.upper())
